@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consistency Heatmap</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #ffffff;
+    color: #111111;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .card {
+    background: #ffffff;
+    border: 2px solid #111111;
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 720px;
+    width: 100%;
+  }
+
+  .brand {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #16a34a;
+    margin-bottom: 8px;
+  }
+
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111111;
+    margin-bottom: 6px;
+  }
+
+  .subtitle {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .stat-item {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 14px 10px;
+    text-align: center;
+  }
+
+  .stat-val {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111111;
+    margin-bottom: 2px;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #9ca3af;
+  }
+
+  .controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .month-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111111;
+  }
+
+  .nav-btns {
+    display: flex;
+    gap: 8px;
+  }
+
+  .nav-btn {
+    width: 28px;
+    height: 28px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 6px;
+    background: #ffffff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: #374151;
+    transition: all 0.15s;
+  }
+
+  .nav-btn:hover { border-color: #16a34a; color: #16a34a; }
+
+  .heatmap-container {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    overflow-x: auto;
+  }
+
+  .day-labels {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+
+  .day-label {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #9ca3af;
+    text-align: center;
+  }
+
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+
+  .day-cell {
+    aspect-ratio: 1;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 600;
+    transition: transform 0.1s;
+    position: relative;
+  }
+
+  .day-cell:hover { transform: scale(1.15); z-index: 2; }
+  .day-cell.empty { cursor: default; }
+  .day-cell.empty:hover { transform: none; }
+
+  .level-0 { background: #f3f4f6; color: #d1d5db; }
+  .level-1 { background: #dcfce7; color: #15803d; }
+  .level-2 { background: #86efac; color: #14532d; }
+  .level-3 { background: #16a34a; color: #ffffff; }
+  .level-4 { background: #14532d; color: #ffffff; }
+
+  .legend {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-bottom: 24px;
+    font-size: 10px;
+    color: #9ca3af;
+  }
+
+  .legend-box {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+  }
+
+  .legend-items {
+    display: flex;
+    gap: 3px;
+  }
+
+  .streak-section {
+    background: #f0fdf4;
+    border: 1.5px solid #16a34a;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  .streak-flame {
+    font-size: 32px;
+    margin-bottom: 4px;
+  }
+
+  .streak-num {
+    font-size: 28px;
+    font-weight: 700;
+    color: #16a34a;
+    line-height: 1;
+  }
+
+  .streak-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #15803d;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 4px;
+  }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay.active { display: flex; }
+
+  .modal {
+    background: #ffffff;
+    border: 2px solid #111111;
+    border-radius: 16px;
+    padding: 28px;
+    max-width: 320px;
+    width: 90%;
+  }
+
+  .modal-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111111;
+    margin-bottom: 16px;
+  }
+
+  .score-options {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .score-option {
+    padding: 12px 4px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    background: #ffffff;
+  }
+
+  .score-option:hover { border-color: #16a34a; }
+  .score-option.selected { border-color: #111111; background: #111111; }
+  .score-option.selected .opt-label { color: #ffffff; }
+
+  .opt-pct { font-size: 16px; font-weight: 700; display: block; }
+  .opt-label {
+    font-size: 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #6b7280;
+    display: block;
+    margin-top: 2px;
+  }
+
+  .modal-actions { display: flex; gap: 10px; }
+
+  .btn-cancel {
+    flex: 1;
+    padding: 11px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #374151;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .btn-save {
+    flex: 2;
+    padding: 11px;
+    border: none;
+    border-radius: 8px;
+    background: #111111;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .btn-save:hover { background: #16a34a; }
+
+  .reset-btn {
+    width: 100%;
+    padding: 11px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #374151;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .reset-btn:hover { border-color: #dc2626; color: #dc2626; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="brand">🏃 Plant Powered Performance World</div>
+  <h1>Consistency Heatmap</h1>
+  <p class="subtitle">Click any day to log your habit consistency. Darker green means more habits completed. Don't break the chain.</p>
+
+  <div class="stats-grid">
+    <div class="stat-item">
+      <div class="stat-val" id="statTotal">0</div>
+      <div class="stat-label">Days Logged</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val" id="statAvg">0%</div>
+      <div class="stat-label">Avg Score</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val" id="statBest">0</div>
+      <div class="stat-label">Best Streak</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val" id="statPerfect">0</div>
+      <div class="stat-label">Perfect Days</div>
+    </div>
+  </div>
+
+  <div class="streak-section">
+    <div class="streak-flame">🔥</div>
+    <div class="streak-num" id="currentStreak">0</div>
+    <div class="streak-label">Current Streak</div>
+  </div>
+
+  <div class="controls">
+    <span class="month-label" id="monthLabel"></span>
+    <div class="nav-btns">
+      <button class="nav-btn" onclick="changeMonth(-1)">‹</button>
+      <button class="nav-btn" onclick="changeMonth(1)">›</button>
+    </div>
+  </div>
+
+  <div class="heatmap-container">
+    <div class="day-labels">
+      <div class="day-label">Mon</div>
+      <div class="day-label">Tue</div>
+      <div class="day-label">Wed</div>
+      <div class="day-label">Thu</div>
+      <div class="day-label">Fri</div>
+      <div class="day-label">Sat</div>
+      <div class="day-label">Sun</div>
+    </div>
+    <div class="calendar-grid" id="calendarGrid"></div>
+  </div>
+
+  <div class="legend">
+    <span>Less</span>
+    <div class="legend-items">
+      <div class="legend-box level-0"></div>
+      <div class="legend-box level-1"></div>
+      <div class="legend-box level-2"></div>
+      <div class="legend-box level-3"></div>
+      <div class="legend-box level-4"></div>
+    </div>
+    <span>More</span>
+  </div>
+
+  <button class="reset-btn" onclick="resetAll()">Reset All Data</button>
+</div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">Log Your Day</div>
+    <div class="score-options" id="scoreOptions"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveDay()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const data = {};
+let currentDate = new Date();
+let selectedDay = null;
+let selectedScore = null;
+
+const levelColors = ['level-0', 'level-1', 'level-1', 'level-2', 'level-2', 'level-3', 'level-3', 'level-3', 'level-4', 'level-4', 'level-4'];
+const labels = ['0%','10%','20%','30%','40%','50%','60%','70%','80%','90%','100%'];
+
+function getKey(date) {
+  return date.toISOString().split('T')[0];
+}
+
+function renderCalendar() {
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('monthLabel').textContent = `${monthNames[month]} ${year}`;
+
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  let startOffset = firstDay.getDay() - 1;
+  if (startOffset < 0) startOffset = 6;
+
+  const grid = document.getElementById('calendarGrid');
+  grid.innerHTML = '';
+
+  for (let i = 0; i < startOffset; i++) {
+    const empty = document.createElement('div');
+    empty.className = 'day-cell empty';
+    grid.appendChild(empty);
+  }
+
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    const date = new Date(year, month, d);
+    const key = getKey(date);
+    const score = data[key];
+
+    const cell = document.createElement('div');
+    const levelIdx = score !== undefined ? Math.round(score / 10) : 0;
+    cell.className = `day-cell ${levelColors[levelIdx]}`;
+    cell.textContent = d;
+    cell.title = score !== undefined ? `${score}% complete` : 'Click to log';
+    cell.onclick = () => openModal(date);
+    grid.appendChild(cell);
+  }
+
+  updateStats();
+}
+
+function changeMonth(delta) {
+  currentDate.setMonth(currentDate.getMonth() + delta);
+  renderCalendar();
+}
+
+function openModal(date) {
+  selectedDay = date;
+  const key = getKey(date);
+  selectedScore = data[key] !== undefined ? data[key] : null;
+
+  document.getElementById('modalTitle').textContent = date.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+
+  const opts = document.getElementById('scoreOptions');
+  opts.innerHTML = '';
+  [0,10,20,30,40,50,60,70,80,90,100].forEach((val, i) => {
+    if (i % 2 !== 0 && val !== 100) return;
+    const div = document.createElement('div');
+    div.className = 'score-option' + (selectedScore === val ? ' selected' : '');
+    div.innerHTML = `<span class="opt-pct">${val}</span><span class="opt-label">%</span>`;
+    div.onclick = () => {
+      document.querySelectorAll('.score-option').forEach(o => o.classList.remove('selected'));
+      div.classList.add('selected');
+      selectedScore = val;
+    };
+    opts.appendChild(div);
+  });
+
+  document.getElementById('modal').classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('active');
+  selectedDay = null;
+  selectedScore = null;
+}
+
+function saveDay() {
+  if (selectedDay !== null && selectedScore !== null) {
+    data[getKey(selectedDay)] = selectedScore;
+    renderCalendar();
+  }
+  closeModal();
+}
+
+function updateStats() {
+  const entries = Object.entries(data);
+  document.getElementById('statTotal').textContent = entries.length;
+
+  if (entries.length === 0) {
+    document.getElementById('statAvg').textContent = '0%';
+    document.getElementById('statBest').textContent = '0';
+    document.getElementById('statPerfect').textContent = '0';
+    document.getElementById('currentStreak').textContent = '0';
+    return;
+  }
+
+  const avg = Math.round(entries.reduce((a, [,v]) => a + v, 0) / entries.length);
+  document.getElementById('statAvg').textContent = avg + '%';
+
+  const perfectDays = entries.filter(([,v]) => v >= 90).length;
+  document.getElementById('statPerfect').textContent = perfectDays;
+
+  const sortedDates = entries.map(([k]) => k).sort();
+  let bestStreak = 0, tempStreak = 0, prevDate = null;
+
+  sortedDates.forEach(dateStr => {
+    if (data[dateStr] < 50) { tempStreak = 0; prevDate = null; return; }
+    const date = new Date(dateStr);
+    if (prevDate) {
+      const diff = (date - prevDate) / (1000 * 60 * 60 * 24);
+      tempStreak = diff === 1 ? tempStreak + 1 : 1;
+    } else {
+      tempStreak = 1;
+    }
+    bestStreak = Math.max(bestStreak, tempStreak);
+    prevDate = date;
+  });
+  document.getElementById('statBest').textContent = bestStreak;
+
+  let currentStreak = 0;
+  let checkDate = new Date();
+  while (true) {
+    const key = getKey(checkDate);
+    if (data[key] !== undefined && data[key] >= 50) {
+      currentStreak++;
+      checkDate.setDate(checkDate.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+  document.getElementById('currentStreak').textContent = currentStreak;
+}
+
+function resetAll() {
+  Object.keys(data).forEach(k => delete data[k]);
+  renderCalendar();
+}
+
+renderCalendar();
+</script>
+</body>
+</html>
