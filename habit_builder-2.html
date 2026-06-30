@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Habit Stack Builder</title>
+<style>
+*{box-sizing:border-box;font-family:Inter,Arial,sans-serif}
+body{margin:0;background:#fff;color:#111}
+.widget{max-width:760px;margin:0 auto;padding:28px;border:2px solid #111;border-radius:24px;background:#fff}
+.brand{font-size:12px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#16a34a;margin-bottom:10px}
+h1{margin:0;font-size:30px}
+.subtitle{margin:12px 0 24px;color:#333;line-height:1.6}
+label{display:block;margin:18px 0 8px;font-weight:700}
+input,select,textarea{width:100%;padding:13px;border:1.5px solid #d1d5db;border-radius:14px;font-size:15px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#16a34a;box-shadow:0 0 0 3px rgba(22,163,74,.15)}
+textarea{min-height:90px;resize:vertical}
+button{width:100%;margin-top:24px;padding:15px;border:none;border-radius:16px;background:#16a34a;color:#fff;font-weight:800;font-size:16px;cursor:pointer}
+button:hover{background:#15803d}
+.result{display:none;margin-top:26px;padding:22px;background:#f0fdf4;border:1.5px solid #16a34a;border-radius:20px}
+.stack{padding:14px;background:#fff;border:1px solid #bbf7d0;border-radius:14px;font-weight:700;margin:14px 0}
+.footer{margin-top:20px;padding-top:14px;border-top:1px solid #e5e7eb;font-size:12px;font-weight:700;color:#16a34a;text-transform:uppercase;letter-spacing:1px}
+</style>
+</head>
+<body>
+<div class="widget">
+<div class="brand">Plant Powered Performance World</div>
+<h1>Habit Stack Builder</h1>
+<p class="subtitle">Design a simple habit stack by attaching a new habit to one you already perform consistently.</p>
+
+<label>Existing Anchor Habit</label>
+<input id="anchor" placeholder="e.g. After I brush my teeth">
+
+<label>New Habit</label>
+<input id="habit" placeholder="e.g. I will drink one glass of water">
+
+<label>Time of Day</label>
+<select id="time">
+<option>Morning</option>
+<option>Daytime</option>
+<option>Post Training</option>
+<option>Mealtime</option>
+<option>Evening</option>
+</select>
+
+<label>Why is this important?</label>
+<textarea id="why" placeholder="Write your reason..."></textarea>
+
+<button onclick="build()">Build My Habit Stack</button>
+
+<div class="result" id="result">
+<h2>Your Personalised Habit Stack</h2>
+<div class="stack" id="stack"></div>
+<p id="plan"></p>
+<p id="reason"></p>
+<div class="footer">Plant Powered Performance World — small steps, lasting change.</div>
+</div>
+</div>
+
+<script>
+function build(){
+const a=document.getElementById('anchor').value.trim();
+const h=document.getElementById('habit').value.trim();
+const t=document.getElementById('time').value;
+const w=document.getElementById('why').value.trim();
+if(!a||!h){alert('Please complete both habit fields.');return;}
+document.getElementById('stack').innerHTML="<strong>After</strong> "+a+" <strong>I will</strong> "+h+".";
+document.getElementById('plan').textContent="Repeat this stack every "+t.toLowerCase()+" for the next 7 days. Keep the new habit intentionally small until it feels automatic.";
+document.getElementById('reason').textContent=w?("Your motivation: "+w):"Tip: Tiny habits repeated consistently become lasting habits.";
+document.getElementById('result').style.display="block";
+}
+</script>
+</body>
+</html>
