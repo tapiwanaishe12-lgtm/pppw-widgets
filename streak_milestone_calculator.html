@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Streak Milestone Calculator</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #ffffff;
+    color: #111111;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .card {
+    background: #ffffff;
+    border: 2px solid #111111;
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 560px;
+    width: 100%;
+  }
+
+  .brand {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #16a34a;
+    margin-bottom: 8px;
+  }
+
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111111;
+    margin-bottom: 6px;
+  }
+
+  .subtitle {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 28px;
+    line-height: 1.6;
+  }
+
+  .input-group {
+    margin-bottom: 18px;
+  }
+
+  label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #111111;
+    margin-bottom: 8px;
+  }
+
+  input[type="text"], input[type="date"], input[type="number"] {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #111111;
+    background: #ffffff;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  input:focus { border-color: #16a34a; }
+
+  button.calculate {
+    width: 100%;
+    padding: 14px;
+    background: #111111;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    transition: background 0.2s, transform 0.1s;
+    margin-bottom: 24px;
+  }
+
+  button.calculate:hover { background: #16a34a; }
+  button.calculate:active { transform: scale(0.98); }
+
+  .result { display: none; }
+  .result.visible { display: block; }
+
+  .streak-hero {
+    text-align: center;
+    padding: 24px;
+    background: #f0fdf4;
+    border: 2px solid #16a34a;
+    border-radius: 12px;
+    margin-bottom: 20px;
+  }
+
+  .streak-flame { font-size: 36px; margin-bottom: 8px; }
+
+  .streak-days {
+    font-size: 52px;
+    font-weight: 700;
+    color: #16a34a;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .streak-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #15803d;
+    margin-bottom: 12px;
+  }
+
+  .habit-name-display {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+  }
+
+  .started-label {
+    font-size: 12px;
+    color: #9ca3af;
+  }
+
+  .milestones-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #6b7280;
+    margin-bottom: 12px;
+  }
+
+  .milestone-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    border: 1.5px solid #e5e7eb;
+    background: #ffffff;
+    transition: all 0.2s;
+  }
+
+  .milestone-row.achieved {
+    background: #f0fdf4;
+    border-color: #16a34a;
+  }
+
+  .milestone-row.next {
+    background: #fffbeb;
+    border-color: #d97706;
+  }
+
+  .milestone-icon { font-size: 20px; flex-shrink: 0; }
+
+  .milestone-info { flex: 1; }
+
+  .milestone-days {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111111;
+    margin-bottom: 2px;
+  }
+
+  .milestone-desc {
+    font-size: 11px;
+    color: #6b7280;
+  }
+
+  .milestone-status {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .status-achieved { background: #dcfce7; color: #15803d; }
+  .status-next { background: #fef9c3; color: #92400e; }
+  .status-future { background: #f3f4f6; color: #9ca3af; }
+
+  .progress-section {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .progress-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6b7280;
+    margin-bottom: 12px;
+  }
+
+  .progress-bar-wrap {
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: #16a34a;
+    border-radius: 4px;
+    transition: width 0.8s ease;
+  }
+
+  .progress-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #9ca3af;
+  }
+
+  .next-milestone-box {
+    background: #fffbeb;
+    border: 1.5px solid #d97706;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  .nxt-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #d97706;
+    margin-bottom: 4px;
+  }
+
+  .nxt-days {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111111;
+    margin-bottom: 2px;
+  }
+
+  .nxt-sub { font-size: 12px; color: #6b7280; }
+
+  .reset-btn {
+    width: 100%;
+    padding: 11px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #374151;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .reset-btn:hover { border-color: #111111; color: #111111; }
+
+  .divider { border: none; border-top: 1px solid #e5e7eb; margin: 20px 0; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="brand">🏃 Plant Powered Performance World</div>
+  <h1>Streak Milestone Calculator</h1>
+  <p class="subtitle">Enter your habit and start date to see your current streak, progress to the next milestone and every achievement along the way.</p>
+
+  <div class="input-group">
+    <label>Habit Name</label>
+    <input type="text" id="habitName" placeholder="e.g. Morning meditation">
+  </div>
+
+  <div class="input-group">
+    <label>Start Date</label>
+    <input type="date" id="startDate">
+  </div>
+
+  <div class="input-group">
+    <label>Days Missed (total, not consecutive)</label>
+    <input type="number" id="daysMissed" placeholder="0" min="0" value="0">
+  </div>
+
+  <button class="calculate" onclick="calculate()">Calculate My Streak</button>
+
+  <div class="result" id="result">
+    <div class="streak-hero">
+      <div class="streak-flame">🔥</div>
+      <div class="streak-days" id="streakDays">0</div>
+      <div class="streak-label">Day Streak</div>
+      <div class="habit-name-display" id="habitDisplay"></div>
+      <div class="started-label" id="startedLabel"></div>
+    </div>
+
+    <div class="next-milestone-box" id="nextMilestoneBox">
+      <div class="nxt-label">🎯 Next Milestone</div>
+      <div class="nxt-days" id="nextMilestoneDays"></div>
+      <div class="nxt-sub" id="nextMilestoneSub"></div>
+    </div>
+
+    <div class="progress-section">
+      <div class="progress-title" id="progressTitle"></div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar" id="progressBar" style="width:0%"></div>
+      </div>
+      <div class="progress-labels">
+        <span id="progressStart"></span>
+        <span id="progressEnd"></span>
+      </div>
+    </div>
+
+    <div class="milestones-title">🏆 All Milestones</div>
+    <div id="milestonesList"></div>
+
+    <div class="divider"></div>
+
+    <button class="reset-btn" onclick="resetAll()">Calculate Another Habit</button>
+  </div>
+</div>
+
+<script>
+const milestones = [
+  { days: 3, icon: '🌱', label: 'First 3 Days', desc: 'The hardest part — you are past the start' },
+  { days: 7, icon: '⭐', label: '1 Week', desc: 'One full week of consistency' },
+  { days: 14, icon: '🔥', label: '2 Weeks', desc: 'Neural pathway beginning to form' },
+  { days: 21, icon: '💪', label: '21 Days', desc: 'Popular milestone — habit strengthening' },
+  { days: 30, icon: '🏅', label: '30 Days', desc: 'One full month of showing up' },
+  { days: 50, icon: '⚡', label: '50 Days', desc: 'Serious consistency achieved' },
+  { days: 66, icon: '🧠', label: '66 Days', desc: 'Average automaticity point — science backed' },
+  { days: 75, icon: '🎯', label: '75 Days', desc: 'Three quarters of the way to 100' },
+  { days: 100, icon: '🏆', label: '100 Days', desc: 'Habit deeply established' },
+  { days: 180, icon: '🌟', label: '6 Months', desc: 'Half a year of unbroken consistency' },
+  { days: 365, icon: '👑', label: '1 Year', desc: 'A full year — elite level consistency' },
+];
+
+function calculate() {
+  const habitName = document.getElementById('habitName').value.trim();
+  const startDateVal = document.getElementById('startDate').value;
+  const daysMissed = parseInt(document.getElementById('daysMissed').value) || 0;
+
+  if (!habitName || !startDateVal) {
+    alert('Please enter both a habit name and start date.');
+    return;
+  }
+
+  const startDate = new Date(startDateVal);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  startDate.setHours(0, 0, 0, 0);
+
+  const totalDays = Math.floor((today - startDate) / (1000 * 60 * 60 * 24)) + 1;
+  const streakDays = Math.max(0, totalDays - daysMissed);
+
+  document.getElementById('streakDays').textContent = streakDays;
+  document.getElementById('habitDisplay').textContent = habitName;
+  document.getElementById('startedLabel').textContent = `Started ${startDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+
+  const achieved = milestones.filter(m => streakDays >= m.days);
+  const nextMilestone = milestones.find(m => streakDays < m.days);
+
+  if (nextMilestone) {
+    const daysToNext = nextMilestone.days - streakDays;
+    document.getElementById('nextMilestoneDays').textContent = `${daysToNext} day${daysToNext !== 1 ? 's' : ''} to go`;
+    document.getElementById('nextMilestoneSub').textContent = `${nextMilestone.icon} ${nextMilestone.label} — ${nextMilestone.desc}`;
+
+    const prevMilestone = achieved.length > 0 ? achieved[achieved.length - 1].days : 0;
+    const progress = ((streakDays - prevMilestone) / (nextMilestone.days - prevMilestone)) * 100;
+    document.getElementById('progressBar').style.width = Math.min(progress, 100) + '%';
+    document.getElementById('progressTitle').textContent = `Progress to ${nextMilestone.label}`;
+    document.getElementById('progressStart').textContent = `Day ${prevMilestone}`;
+    document.getElementById('progressEnd').textContent = `Day ${nextMilestone.days}`;
+  } else {
+    document.getElementById('nextMilestoneDays').textContent = 'All milestones achieved!';
+    document.getElementById('nextMilestoneSub').textContent = '👑 You have reached elite level consistency';
+    document.getElementById('progressBar').style.width = '100%';
+    document.getElementById('progressTitle').textContent = 'All milestones complete';
+    document.getElementById('progressStart').textContent = '';
+    document.getElementById('progressEnd').textContent = '';
+  }
+
+  const list = document.getElementById('milestonesList');
+  list.innerHTML = milestones.map(m => {
+    const isAchieved = streakDays >= m.days;
+    const isNext = nextMilestone && m.days === nextMilestone.days;
+    const rowClass = isAchieved ? 'achieved' : isNext ? 'next' : '';
+    const statusClass = isAchieved ? 'status-achieved' : isNext ? 'status-next' : 'status-future';
+    const statusText = isAchieved ? '✅ Achieved' : isNext ? `${m.days - streakDays}d to go` : `Day ${m.days}`;
+
+    return `
+      <div class="milestone-row ${rowClass}">
+        <div class="milestone-icon">${m.icon}</div>
+        <div class="milestone-info">
+          <div class="milestone-days">${m.label} — Day ${m.days}</div>
+          <div class="milestone-desc">${m.desc}</div>
+        </div>
+        <span class="milestone-status ${statusClass}">${statusText}</span>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('result').classList.add('visible');
+  document.getElementById('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function resetAll() {
+  document.getElementById('habitName').value = '';
+  document.getElementById('startDate').value = '';
+  document.getElementById('daysMissed').value = '0';
+  document.getElementById('result').classList.remove('visible');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
