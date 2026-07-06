@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Affirmation Generator</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 520px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  .theme-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .theme-btn {
+    flex: 1;
+    min-width: 100px;
+    padding: 10px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    color: #111827;
+  }
+  .theme-btn:hover { border-color: #16a34a; }
+  .theme-btn.selected {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+
+  button.generate {
+    width: 100%;
+    margin-top: 18px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.generate:hover { background: #128a3e; }
+
+  .affirmation-box {
+    margin-top: 22px;
+    padding: 20px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    display: none;
+    text-align: center;
+  }
+  .affirmation-box.visible { display: block; }
+  .affirmation-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+    line-height: 1.5;
+    font-style: italic;
+  }
+  .affirmation-theme-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #16a34a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+  .save-btn {
+    margin-top: 14px;
+    padding: 8px 16px;
+    background: #ffffff;
+    color: #16a34a;
+    border: 1px solid #16a34a;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .save-btn:hover { background: #16a34a; color: #ffffff; }
+  .save-btn.saved { background: #16a34a; color: #ffffff; cursor: default; }
+
+  .saved-section {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+  }
+  .section-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #16a34a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 10px;
+  }
+  .saved-item {
+    font-size: 13px;
+    color: #374151;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .saved-item-text { flex: 1; line-height: 1.4; }
+  .remove-btn {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+  }
+  .remove-btn:hover { color: #b91c1c; }
+  .empty-note {
+    font-size: 13px;
+    color: #9ca3af;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Daily Affirmation Generator</h1>
+  <p class="subtitle">Choose a theme, reveal an affirmation, and save the ones worth carrying with you.</p>
+
+  <div class="theme-row" id="themeRow">
+    <div class="theme-btn selected" data-theme="discipline">Discipline</div>
+    <div class="theme-btn" data-theme="recovery">Recovery</div>
+    <div class="theme-btn" data-theme="identity">Identity</div>
+    <div class="theme-btn" data-theme="growth">Growth</div>
+  </div>
+
+  <button class="generate" onclick="generateAffirmation()">Reveal Today's Affirmation</button>
+
+  <div class="affirmation-box" id="affirmationBox">
+    <p class="affirmation-theme-label" id="affirmationThemeLabel"></p>
+    <p class="affirmation-text" id="affirmationText"></p>
+    <button class="save-btn" id="saveBtn" onclick="saveCurrent()">Save This One</button>
+  </div>
+
+  <div class="saved-section">
+    <p class="section-label">Saved Affirmations</p>
+    <div id="savedList"></div>
+  </div>
+</div>
+
+<script>
+  const affirmations = {
+    discipline: [
+      "Discipline is choosing what you want most over what you want right now.",
+      "You don't need motivation today. You already decided.",
+      "Showing up on the hard days is what makes the easy days possible.",
+      "Consistency is a quiet kind of power."
+    ],
+    recovery: [
+      "Rest is part of the work, not a break from it.",
+      "A slower day isn't a lost day.",
+      "Your body is allowed to ask for less sometimes.",
+      "Recovery is where the real progress gets absorbed."
+    ],
+    identity: [
+      "You are not who you were last year. Keep proving it.",
+      "This isn't something you're trying. It's who you're becoming.",
+      "Every small action is a vote for the person you're building.",
+      "You don't have to feel ready to already be someone new."
+    ],
+    growth: [
+      "Discomfort is often just growth, wearing a disguise.",
+      "You're allowed to be a beginner and still be proud of yourself.",
+      "Progress rarely looks like progress while it's happening.",
+      "The version of you a year from now is built in moments like this one."
+    ]
+  };
+
+  const themeLabels = {
+    discipline: "Discipline",
+    recovery: "Recovery",
+    identity: "Identity",
+    growth: "Growth"
+  };
+
+  let selectedTheme = 'discipline';
+  let currentAffirmation = null;
+  let savedAffirmations = [];
+
+  document.querySelectorAll('.theme-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedTheme = btn.getAttribute('data-theme');
+    });
+  });
+
+  function generateAffirmation() {
+    const pool = affirmations[selectedTheme];
+    const randomIndex = Math.floor(Math.random() * pool.length);
+    currentAffirmation = { text: pool[randomIndex], theme: selectedTheme };
+
+    document.getElementById('affirmationThemeLabel').textContent = themeLabels[selectedTheme];
+    document.getElementById('affirmationText').textContent = '"' + currentAffirmation.text + '"';
+    document.getElementById('affirmationBox').classList.add('visible');
+
+    const saveBtn = document.getElementById('saveBtn');
+    saveBtn.textContent = 'Save This One';
+    saveBtn.classList.remove('saved');
+  }
+
+  function saveCurrent() {
+    if (!currentAffirmation) return;
+
+    const alreadySaved = savedAffirmations.some(a => a.text === currentAffirmation.text);
+    if (!alreadySaved) {
+      savedAffirmations.push(currentAffirmation);
+      renderSaved();
+    }
+
+    const saveBtn = document.getElementById('saveBtn');
+    saveBtn.textContent = 'Saved ✓';
+    saveBtn.classList.add('saved');
+  }
+
+  function removeSaved(index) {
+    savedAffirmations.splice(index, 1);
+    renderSaved();
+  }
+
+  function renderSaved() {
+    const list = document.getElementById('savedList');
+    list.innerHTML = '';
+
+    if (savedAffirmations.length === 0) {
+      list.innerHTML = '<p class="empty-note">No affirmations saved yet. Reveal one above and save it to build your collection.</p>';
+      return;
+    }
+
+    savedAffirmations.forEach((a, i) => {
+      const item = document.createElement('div');
+      item.className = 'saved-item';
+      item.innerHTML = '<span class="saved-item-text">"' + a.text + '"</span><button class="remove-btn" onclick="removeSaved(' + i + ')">✕</button>';
+      list.appendChild(item);
+    });
+  }
+
+  renderSaved();
+</script>
+
+</body>
+</html>
