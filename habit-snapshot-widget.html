@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Today's Habit Snapshot</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 520px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  .category-block {
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-top: 14px;
+  }
+  .category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .category-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111827;
+  }
+  .category-count {
+    font-size: 13px;
+    color: #16a34a;
+    font-weight: 700;
+  }
+  .stepper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .stepper button {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    color: #111827;
+  }
+  .stepper button:hover { border-color: #16a34a; }
+  .stepper-label {
+    font-size: 13px;
+    color: #4b5563;
+    flex: 1;
+  }
+  .mini-progress-track {
+    width: 100%;
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-top: 10px;
+  }
+  .mini-progress-fill {
+    height: 100%;
+    background: #16a34a;
+    border-radius: 999px;
+    transition: width 0.3s ease;
+    width: 0%;
+  }
+
+  .overall-section {
+    margin-top: 22px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    text-align: center;
+  }
+  .overall-percent {
+    font-size: 40px;
+    font-weight: 700;
+    color: #16a34a;
+    margin: 0;
+  }
+  .overall-label {
+    font-size: 13px;
+    color: #4b5563;
+    margin: 2px 0 0 0;
+  }
+
+  .insight-box {
+    font-size: 13px;
+    color: #374151;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-top: 16px;
+    line-height: 1.5;
+    text-align: left;
+  }
+
+  .week-section {
+    margin-top: 20px;
+  }
+  .section-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #16a34a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 10px;
+  }
+  .week-grid {
+    display: flex;
+    gap: 6px;
+  }
+  .week-day {
+    flex: 1;
+    text-align: center;
+  }
+  .week-day-label {
+    font-size: 10px;
+    color: #6b7280;
+    margin-bottom: 4px;
+  }
+  .week-bar-track {
+    height: 46px;
+    width: 100%;
+    background: #e5e7eb;
+    border-radius: 4px;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+  }
+  .week-bar-fill {
+    width: 100%;
+    background: #16a34a;
+    border-radius: 4px 4px 0 0;
+  }
+
+  .reset-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 11px;
+    background: #ffffff;
+    color: #111827;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .reset-btn:hover { border-color: #16a34a; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Today's Habit Snapshot</h1>
+  <p class="subtitle">Log how many habits you completed in each category, out of how many you planned.</p>
+
+  <div id="categoryContainer"></div>
+
+  <div class="overall-section">
+    <p class="overall-percent" id="overallPercent">0%</p>
+    <p class="overall-label">completed today, across all categories</p>
+  </div>
+
+  <div class="insight-box" id="insightBox">Log your categories above to see where today is strongest and where it's slipping.</div>
+
+  <div class="week-section">
+    <p class="section-label">This Week (simulated trend)</p>
+    <div class="week-grid" id="weekGrid"></div>
+  </div>
+
+  <button class="reset-btn" onclick="resetAll()">Reset Today</button>
+</div>
+
+<script>
+  const categories = [
+    { key: 'health', name: '💪 Health & Fitness' },
+    { key: 'mindset', name: '🧠 Mindset & Wellbeing' },
+    { key: 'nutrition', name: '🍎 Nutrition' },
+    { key: 'learning', name: '📚 Learning & Growth' }
+  ];
+
+  let state = {};
+  categories.forEach(c => { state[c.key] = { completed: 0, planned: 3 }; });
+
+  const weekHistory = [72, 85, 60, 90, 78, 68]; // simulated Mon–Sat percentages
+
+  function render() {
+    const container = document.getElementById('categoryContainer');
+    container.innerHTML = '';
+
+    categories.forEach(c => {
+      const s = state[c.key];
+      const percent = s.planned > 0 ? Math.round((s.completed / s.planned) * 100) : 0;
+
+      const block = document.createElement('div');
+      block.className = 'category-block';
+      block.innerHTML = `
+        <div class="category-header">
+          <span class="category-name">${c.name}</span>
+          <span class="category-count">${s.completed}/${s.planned}</span>
+        </div>
+        <div class="stepper">
+          <button onclick="adjust('${c.key}', 'completed', -1)">−</button>
+          <span class="stepper-label">Completed</span>
+          <button onclick="adjust('${c.key}', 'completed', 1)">+</button>
+        </div>
+        <div class="stepper">
+          <button onclick="adjust('${c.key}', 'planned', -1)">−</button>
+          <span class="stepper-label">Planned</span>
+          <button onclick="adjust('${c.key}', 'planned', 1)">+</button>
+        </div>
+        <div class="mini-progress-track">
+          <div class="mini-progress-fill" style="width:${percent}%"></div>
+        </div>
+      `;
+      container.appendChild(block);
+    });
+
+    updateOverall();
+  }
+
+  function adjust(key, field, delta) {
+    const newVal = state[key][field] + delta;
+    if (field === 'completed' && (newVal < 0 || newVal > state[key].planned)) return;
+    if (field === 'planned' && newVal < 0) return;
+    if (field === 'planned' && newVal < state[key].completed) return;
+    state[key][field] = newVal;
+    render();
+  }
+
+  function updateOverall() {
+    let totalCompleted = 0;
+    let totalPlanned = 0;
+    let categoryPercents = [];
+
+    categories.forEach(c => {
+      const s = state[c.key];
+      totalCompleted += s.completed;
+      totalPlanned += s.planned;
+      const percent = s.planned > 0 ? Math.round((s.completed / s.planned) * 100) : 0;
+      categoryPercents.push({ name: c.name, percent: percent });
+    });
+
+    const overallPercent = totalPlanned > 0 ? Math.round((totalCompleted / totalPlanned) * 100) : 0;
+    document.getElementById('overallPercent').textContent = overallPercent + '%';
+
+    // Find strongest and weakest category
+    const sorted = [...categoryPercents].sort((a, b) => b.percent - a.percent);
+    const strongest = sorted[0];
+    const weakest = sorted[sorted.length - 1];
+
+    const insightBox = document.getElementById('insightBox');
+    if (totalPlanned === 0 || totalCompleted === 0) {
+      insightBox.textContent = "Log your categories above to see where today is strongest and where it's slipping.";
+    } else if (strongest.percent === weakest.percent) {
+      insightBox.textContent = "Even consistency across every category today — that balance is rare and worth noticing.";
+    } else {
+      insightBox.textContent = strongest.name + " is leading today at " + strongest.percent + "%. " + weakest.name + " is lagging at " + weakest.percent + "% — worth a small nudge before the day ends.";
+    }
+
+    renderWeek(overallPercent);
+  }
+
+  function renderWeek(todayPercent) {
+    const grid = document.getElementById('weekGrid');
+    grid.innerHTML = '';
+    const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Today'];
+    const fullWeek = [...weekHistory, todayPercent];
+
+    fullWeek.forEach((val, i) => {
+      const dayDiv = document.createElement('div');
+      dayDiv.className = 'week-day';
+      dayDiv.innerHTML = '<div class="week-day-label">' + labels[i] + '</div>' +
+        '<div class="week-bar-track"><div class="week-bar-fill" style="height:' + val + '%"></div></div>';
+      grid.appendChild(dayDiv);
+    });
+  }
+
+  function resetAll() {
+    categories.forEach(c => { state[c.key] = { completed: 0, planned: 3 }; });
+    render();
+  }
+
+  render();
+</script>
+
+</body>
+</html>
