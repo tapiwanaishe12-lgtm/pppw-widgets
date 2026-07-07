@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plant-Based Protein Check</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 520px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+  input[type="number"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+  }
+  input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+
+  .food-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .food-btn {
+    padding: 10px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    color: #111827;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .food-btn:hover { border-color: #16a34a; }
+  .food-count {
+    background: #f0fdf4;
+    color: #16a34a;
+    border-radius: 999px;
+    min-width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  button.generate {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.generate:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    display: none;
+    text-align: center;
+  }
+  .result.visible { display: block; }
+  .protein-total {
+    font-size: 36px;
+    font-weight: 700;
+    color: #16a34a;
+    margin: 0;
+  }
+  .protein-sublabel {
+    font-size: 13px;
+    color: #4b5563;
+    margin: 2px 0 16px 0;
+  }
+  .progress-track {
+    width: 100%;
+    height: 10px;
+    background: #e5e7eb;
+    border-radius: 999px;
+    overflow: hidden;
+    text-align: left;
+  }
+  .progress-fill {
+    height: 100%;
+    background: #16a34a;
+    border-radius: 999px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+  .message {
+    font-size: 13px;
+    color: #374151;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-top: 16px;
+    line-height: 1.5;
+    text-align: left;
+  }
+  .disclaimer {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 12px;
+    line-height: 1.5;
+    text-align: left;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Plant-Based Protein Check</h1>
+  <p class="subtitle">Tap each protein source you've had today, then set your target to see a rough read on where you stand.</p>
+
+  <label for="targetGrams">Daily protein target (g)</label>
+  <input type="number" id="targetGrams" min="1" placeholder="e.g. 130">
+
+  <label>Today's protein sources (tap to add a serving)</label>
+  <div class="food-grid" id="foodGrid"></div>
+
+  <button class="generate" onclick="calculateProtein()">Check My Intake</button>
+
+  <div class="result" id="result">
+    <p class="protein-total" id="proteinTotal"></p>
+    <p class="protein-sublabel" id="proteinSublabel"></p>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="message" id="message"></div>
+    <p class="disclaimer">Gram estimates are rough averages per typical serving, not exact values — useful for a general daily read, not precise macro tracking.</p>
+  </div>
+</div>
+
+<script>
+  const foods = [
+    { name: 'Tofu (100g)', grams: 15 },
+    { name: 'Tempeh (100g)', grams: 19 },
+    { name: 'Lentils (1 cup)', grams: 18 },
+    { name: 'Chickpeas (1 cup)', grams: 15 },
+    { name: 'Black beans (1 cup)', grams: 15 },
+    { name: 'Edamame (1 cup)', grams: 17 },
+    { name: 'Seitan (100g)', grams: 25 },
+    { name: 'Plant protein shake', grams: 25 },
+    { name: 'Quinoa (1 cup)', grams: 8 },
+    { name: 'Peanut butter (2 tbsp)', grams: 8 },
+    { name: 'Greek-style soy yogurt', grams: 12 },
+    { name: 'Nutritional yeast (2 tbsp)', grams: 8 }
+  ];
+
+  let counts = {};
+  foods.forEach(f => { counts[f.name] = 0; });
+
+  function renderFoods() {
+    const grid = document.getElementById('foodGrid');
+    grid.innerHTML = '';
+    foods.forEach(f => {
+      const btn = document.createElement('div');
+      btn.className = 'food-btn';
+      btn.innerHTML = '<span>' + f.name + '</span><span class="food-count" id="count-' + f.name.replace(/[^a-zA-Z0-9]/g, '') + '">' + counts[f.name] + '</span>';
+      btn.onclick = () => {
+        counts[f.name]++;
+        document.getElementById('count-' + f.name.replace(/[^a-zA-Z0-9]/g, '')).textContent = counts[f.name];
+      };
+      grid.appendChild(btn);
+    });
+  }
+
+  function calculateProtein() {
+    const target = parseFloat(document.getElementById('targetGrams').value);
+    let totalGrams = 0;
+    foods.forEach(f => { totalGrams += counts[f.name] * f.grams; });
+
+    const result = document.getElementById('result');
+    const proteinTotal = document.getElementById('proteinTotal');
+    const proteinSublabel = document.getElementById('proteinSublabel');
+    const progressFill = document.getElementById('progressFill');
+    const message = document.getElementById('message');
+
+    proteinTotal.textContent = totalGrams + 'g';
+
+    if (!target || isNaN(target) || target <= 0) {
+      proteinSublabel.textContent = "logged so far today";
+      progressFill.style.width = '0%';
+      message.textContent = "Set a daily target above to see how today compares.";
+      result.classList.add('visible');
+      return;
+    }
+
+    const percent = Math.min(100, Math.round((totalGrams / target) * 100));
+    proteinSublabel.textContent = "of your " + target + "g target (" + percent + "%)";
+    progressFill.style.width = percent + '%';
+
+    if (totalGrams === 0) {
+      message.textContent = "Tap your protein sources above as you eat through the day to build up today's total.";
+    } else if (percent >= 100) {
+      message.textContent = "Target hit. On a plant-based approach, spreading protein across meals (rather than one large hit) tends to support recovery and satiety better.";
+    } else if (percent >= 70) {
+      message.textContent = "Close to target. A shake, extra serving of legumes, or handful of edamame would likely close the gap.";
+    } else {
+      message.textContent = "Worth adding another protein-dense source to today's remaining meals — tofu, tempeh, lentils, or a plant protein shake are efficient ways to close the gap.";
+    }
+
+    result.classList.add('visible');
+  }
+
+  renderFoods();
+</script>
+
+</body>
+</html>
