@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mental Load & Recovery Check</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 540px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  .section-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #16a34a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 22px 0 10px 0;
+  }
+  .section-label.first { margin-top: 0; }
+
+  .slider-block { margin-top: 16px; }
+  .slider-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 6px;
+  }
+  .slider-value { color: #16a34a; }
+  input[type="range"] {
+    width: 100%;
+    accent-color: #16a34a;
+  }
+  .slider-caption {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 2px;
+  }
+
+  .checkbox-list { margin-top: 8px; }
+  .checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 0;
+    font-size: 13px;
+    color: #374151;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .checkbox-item:last-child { border-bottom: none; }
+  .checkbox-item input { width: 16px; height: 16px; accent-color: #16a34a; }
+
+  button.generate {
+    width: 100%;
+    margin-top: 22px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.generate:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    display: none;
+  }
+  .result.visible { display: block; }
+  .load-header { text-align: center; }
+  .load-label {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0;
+  }
+  .load-sublabel {
+    font-size: 13px;
+    color: #4b5563;
+    margin: 2px 0 16px 0;
+  }
+  .progress-track {
+    width: 100%;
+    height: 10px;
+    background: #e5e7eb;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.4s ease, background 0.4s ease;
+    width: 0%;
+  }
+  .message {
+    font-size: 13px;
+    color: #374151;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-top: 16px;
+    line-height: 1.5;
+  }
+  .action-box {
+    font-size: 13px;
+    color: #374151;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-top: 12px;
+    line-height: 1.6;
+  }
+  .action-box strong { color: #111827; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Mental Load & Recovery Check</h1>
+  <p class="subtitle">A weekly check-in across the areas that quietly add up — so you can protect space before it catches up with you.</p>
+
+  <p class="section-label first">This Week's Demands</p>
+
+  <div class="slider-block">
+    <div class="slider-header"><span>Work / responsibilities</span><span class="slider-value" id="workVal">5</span></div>
+    <input type="range" id="workLoad" min="1" max="10" value="5" oninput="document.getElementById('workVal').textContent=this.value">
+    <div class="slider-caption"><span>Light</span><span>Overwhelming</span></div>
+  </div>
+
+  <div class="slider-block">
+    <div class="slider-header"><span>Relationships / social</span><span class="slider-value" id="socialVal">5</span></div>
+    <input type="range" id="socialLoad" min="1" max="10" value="5" oninput="document.getElementById('socialVal').textContent=this.value">
+    <div class="slider-caption"><span>Light</span><span>Overwhelming</span></div>
+  </div>
+
+  <div class="slider-block">
+    <div class="slider-header"><span>Decision fatigue</span><span class="slider-value" id="decisionVal">5</span></div>
+    <input type="range" id="decisionLoad" min="1" max="10" value="5" oninput="document.getElementById('decisionVal').textContent=this.value">
+    <div class="slider-caption"><span>Light</span><span>Overwhelming</span></div>
+  </div>
+
+  <div class="slider-block">
+    <div class="slider-header"><span>Sleep quality this week</span><span class="slider-value" id="sleepVal">5</span></div>
+    <input type="range" id="sleepQuality" min="1" max="10" value="5" oninput="document.getElementById('sleepVal').textContent=this.value">
+    <div class="slider-caption"><span>Poor</span><span>Excellent</span></div>
+  </div>
+
+  <p class="section-label">Noticing Any of These?</p>
+  <div class="checkbox-list">
+    <label class="checkbox-item"><input type="checkbox" id="signal1"> Irritability or a shorter fuse than usual</label>
+    <label class="checkbox-item"><input type="checkbox" id="signal2"> Trouble falling or staying asleep</label>
+    <label class="checkbox-item"><input type="checkbox" id="signal3"> Difficulty focusing or finishing tasks</label>
+    <label class="checkbox-item"><input type="checkbox" id="signal4"> Appetite noticeably up or down</label>
+    <label class="checkbox-item"><input type="checkbox" id="signal5"> Withdrawing from people you'd normally see</label>
+  </div>
+
+  <button class="generate" onclick="calculateLoad()">Check My Load</button>
+
+  <div class="result" id="result">
+    <div class="load-header">
+      <p class="load-label" id="loadLabel"></p>
+      <p class="load-sublabel" id="loadSublabel"></p>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="message" id="message"></div>
+    <div class="action-box" id="actionBox"></div>
+  </div>
+</div>
+
+<script>
+  function calculateLoad() {
+    const work = parseInt(document.getElementById('workLoad').value, 10);
+    const social = parseInt(document.getElementById('socialLoad').value, 10);
+    const decision = parseInt(document.getElementById('decisionLoad').value, 10);
+    const sleep = parseInt(document.getElementById('sleepQuality').value, 10);
+
+    const signals = [
+      document.getElementById('signal1').checked,
+      document.getElementById('signal2').checked,
+      document.getElementById('signal3').checked,
+      document.getElementById('signal4').checked,
+      document.getElementById('signal5').checked
+    ];
+    const signalCount = signals.filter(Boolean).length;
+
+    // Demand score (work + social + decision, out of 30) inverted sleep (poor sleep adds load)
+    const demandScore = work + social + decision;
+    const sleepPenalty = (10 - sleep); // poor sleep = higher penalty
+    const rawScore = demandScore + sleepPenalty + (signalCount * 3);
+    const maxScore = 30 + 9 + 15; // max possible
+    const loadPercent = Math.min(100, Math.round((rawScore / maxScore) * 100));
+
+    const loadLabel = document.getElementById('loadLabel');
+    const loadSublabel = document.getElementById('loadSublabel');
+    const progressFill = document.getElementById('progressFill');
+    const message = document.getElementById('message');
+    const actionBox = document.getElementById('actionBox');
+
+    progressFill.style.width = loadPercent + '%';
+
+    let highestArea = 'work';
+    let highestVal = work;
+    if (social > highestVal) { highestArea = 'relationships/social'; highestVal = social; }
+    if (decision > highestVal) { highestArea = 'decision fatigue'; highestVal = decision; }
+
+    if (signalCount >= 3 || loadPercent >= 75) {
+      loadLabel.textContent = "High Load";
+      loadLabel.style.color = '#dc2626';
+      loadSublabel.textContent = "Worth protecting space now";
+      progressFill.style.background = '#dc2626';
+      message.textContent = signalCount >= 3
+        ? "You've flagged " + signalCount + " signals this week — that's your body and mind asking for less input, not more output. This isn't the week to add anything new."
+        : "This week's demands are stacking up across multiple areas at once. High load isn't sustainable indefinitely — something needs to give before it's decided for you.";
+      actionBox.innerHTML = "<strong>This week, consider:</strong><br>• Cancel or postpone one non-essential commitment<br>• Protect your sleep window even if it means saying no to something<br>• Talk to someone about what's on your plate — carrying it alone adds its own weight";
+    } else if (loadPercent >= 45) {
+      loadLabel.textContent = "Moderate Load";
+      loadLabel.style.color = '#f59e0b';
+      loadSublabel.textContent = "Manageable, worth watching";
+      progressFill.style.background = '#f59e0b';
+      message.textContent = "Your " + highestArea + " load is the highest this week. Manageable for now, but worth keeping an eye on rather than assuming it'll ease on its own.";
+      actionBox.innerHTML = "<strong>This week, consider:</strong><br>• One small recovery habit — a walk, journaling, or unstructured time<br>• Naming out loud what's driving the " + highestArea + " load, even just to yourself";
+    } else {
+      loadLabel.textContent = "Light Load";
+      loadLabel.style.color = '#16a34a';
+      loadSublabel.textContent = "Good capacity this week";
+      progressFill.style.background = '#16a34a';
+      message.textContent = "This looks like a genuinely lighter week. Good capacity here — worth using it intentionally rather than just letting it fill up by default.";
+      actionBox.innerHTML = "<strong>This week, consider:</strong><br>• Using the extra capacity for something you've been putting off<br>• Banking some rest — light weeks don't need to be filled just because there's room";
+    }
+
+    document.getElementById('result').classList.add('visible');
+  }
+</script>
+
+</body>
+</html>
