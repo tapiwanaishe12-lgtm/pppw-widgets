@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Learning Log</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 520px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+  textarea, input[type="text"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+    font-family: inherit;
+  }
+  textarea { resize: vertical; min-height: 70px; }
+  input:focus, textarea:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+
+  .category-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .category-btn {
+    flex: 1;
+    padding: 10px 6px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    color: #111827;
+  }
+  .category-btn:hover { border-color: #16a34a; }
+  .category-btn.selected {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+
+  button.add-btn {
+    width: 100%;
+    margin-top: 18px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.add-btn:hover { background: #128a3e; }
+
+  .stats-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 22px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+  }
+  .stat-box {
+    flex: 1;
+    text-align: center;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 10px 6px;
+  }
+  .stat-number {
+    font-size: 20px;
+    font-weight: 700;
+    color: #16a34a;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: #6b7280;
+    margin-top: 2px;
+  }
+
+  .log-section { margin-top: 20px; }
+  .section-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #16a34a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 10px;
+  }
+  .log-entry {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+  }
+  .log-entry-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+  .log-entry-category {
+    font-size: 11px;
+    font-weight: 700;
+    color: #16a34a;
+    text-transform: uppercase;
+  }
+  .log-entry-remove {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .log-entry-remove:hover { color: #b91c1c; }
+  .log-entry-text {
+    font-size: 13px;
+    color: #374151;
+    line-height: 1.5;
+  }
+  .empty-note {
+    font-size: 13px;
+    color: #9ca3af;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Learning Log</h1>
+  <p class="subtitle">Capture what you read, practiced, or reflected on today before it fades.</p>
+
+  <label>Category</label>
+  <div class="category-row" id="categoryRow">
+    <div class="category-btn selected" data-category="Reading">📖 Reading</div>
+    <div class="category-btn" data-category="Skill">🛠️ Skill</div>
+    <div class="category-btn" data-category="Reflection">🪞 Reflection</div>
+  </div>
+
+  <label for="entryText">What did you learn or practice?</label>
+  <textarea id="entryText" placeholder="e.g. Finished chapter 3 of Atomic Habits — the idea of identity-based habits stuck with me."></textarea>
+
+  <button class="add-btn" onclick="addEntry()">Add to Log</button>
+
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-number" id="totalCount">0</div>
+      <div class="stat-label">Total Entries</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-number" id="readingCount">0</div>
+      <div class="stat-label">Reading</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-number" id="skillCount">0</div>
+      <div class="stat-label">Skill</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-number" id="reflectionCount">0</div>
+      <div class="stat-label">Reflection</div>
+    </div>
+  </div>
+
+  <div class="log-section">
+    <p class="section-label">This Session's Log</p>
+    <div id="logList"></div>
+  </div>
+</div>
+
+<script>
+  let selectedCategory = 'Reading';
+  let entries = [];
+
+  document.querySelectorAll('.category-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedCategory = btn.getAttribute('data-category');
+    });
+  });
+
+  function addEntry() {
+    const textArea = document.getElementById('entryText');
+    const text = textArea.value.trim();
+    if (!text) return;
+
+    entries.unshift({ category: selectedCategory, text: text, time: new Date() });
+    textArea.value = '';
+    renderLog();
+    updateStats();
+  }
+
+  function removeEntry(index) {
+    entries.splice(index, 1);
+    renderLog();
+    updateStats();
+  }
+
+  function renderLog() {
+    const logList = document.getElementById('logList');
+    logList.innerHTML = '';
+
+    if (entries.length === 0) {
+      logList.innerHTML = '<p class="empty-note">No entries yet. Add what you learned or practiced today above.</p>';
+      return;
+    }
+
+    entries.forEach((entry, i) => {
+      const div = document.createElement('div');
+      div.className = 'log-entry';
+      const categoryIcon = entry.category === 'Reading' ? '📖' : entry.category === 'Skill' ? '🛠️' : '🪞';
+      div.innerHTML = `
+        <div class="log-entry-header">
+          <span class="log-entry-category">${categoryIcon} ${entry.category}</span>
+          <button class="log-entry-remove" onclick="removeEntry(${i})">✕</button>
+        </div>
+        <div class="log-entry-text">${entry.text}</div>
+      `;
+      logList.appendChild(div);
+    });
+  }
+
+  function updateStats() {
+    document.getElementById('totalCount').textContent = entries.length;
+    document.getElementById('readingCount').textContent = entries.filter(e => e.category === 'Reading').length;
+    document.getElementById('skillCount').textContent = entries.filter(e => e.category === 'Skill').length;
+    document.getElementById('reflectionCount').textContent = entries.filter(e => e.category === 'Reflection').length;
+  }
+
+  renderLog();
+</script>
+
+</body>
+</html>
