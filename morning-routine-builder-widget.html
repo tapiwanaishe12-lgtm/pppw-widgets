@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Morning Routine Builder</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 520px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+  input[type="time"], input[type="text"], input[type="number"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+  }
+  input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+
+  .step-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    align-items: center;
+  }
+  .step-row input[type="text"] { flex: 2; }
+  .step-row input[type="number"] { flex: 1; }
+  .remove-step {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px 8px;
+  }
+  .remove-step:hover { color: #b91c1c; }
+
+  .add-step-btn {
+    margin-top: 12px;
+    padding: 9px 14px;
+    background: #ffffff;
+    color: #16a34a;
+    border: 1px solid #16a34a;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .add-step-btn:hover { background: #f0fdf4; }
+
+  button.generate {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.generate:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    display: none;
+  }
+  .result.visible { display: block; }
+  .schedule-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 14px;
+  }
+  .schedule-item:last-child { border-bottom: none; }
+  .schedule-time {
+    font-weight: 700;
+    color: #16a34a;
+    min-width: 70px;
+  }
+  .schedule-name {
+    flex: 1;
+    color: #111827;
+    padding-left: 12px;
+  }
+  .total-caption {
+    font-size: 13px;
+    color: #4b5563;
+    margin-top: 14px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Morning Routine Builder</h1>
+  <p class="subtitle">Enter your wake time and each step of your routine to get a schedule with exact timing.</p>
+
+  <label for="wakeTime">Wake time</label>
+  <input type="time" id="wakeTime" value="06:00">
+
+  <label>Routine steps</label>
+  <div id="stepsContainer"></div>
+  <button class="add-step-btn" onclick="addStep()">+ Add Step</button>
+
+  <button class="generate" onclick="buildSchedule()">Build My Schedule</button>
+
+  <div class="result" id="result">
+    <div id="scheduleList"></div>
+    <p class="total-caption" id="totalCaption"></p>
+  </div>
+</div>
+
+<script>
+  let stepCount = 0;
+
+  function addStep(name, minutes) {
+    stepCount++;
+    const container = document.getElementById('stepsContainer');
+    const row = document.createElement('div');
+    row.className = 'step-row';
+    row.setAttribute('data-step-id', stepCount);
+    row.innerHTML = `
+      <input type="text" placeholder="e.g. Drink water" value="${name || ''}">
+      <input type="number" placeholder="mins" min="1" value="${minutes || ''}">
+      <button class="remove-step" onclick="removeStep(${stepCount})">✕</button>
+    `;
+    container.appendChild(row);
+  }
+
+  function removeStep(id) {
+    const row = document.querySelector('[data-step-id="' + id + '"]');
+    if (row) row.remove();
+  }
+
+  function buildSchedule() {
+    const wakeTimeValue = document.getElementById('wakeTime').value;
+    if (!wakeTimeValue) return;
+
+    const [wakeHour, wakeMin] = wakeTimeValue.split(':').map(Number);
+    let currentMinutes = wakeHour * 60 + wakeMin;
+
+    const rows = document.querySelectorAll('.step-row');
+    const scheduleList = document.getElementById('scheduleList');
+    scheduleList.innerHTML = '';
+
+    let totalMinutes = 0;
+    let validSteps = 0;
+
+    // Wake up entry first
+    const wakeItem = document.createElement('div');
+    wakeItem.className = 'schedule-item';
+    wakeItem.innerHTML = '<span class="schedule-time">' + formatTime(currentMinutes) + '</span><span class="schedule-name">Wake up</span>';
+    scheduleList.appendChild(wakeItem);
+
+    rows.forEach(row => {
+      const inputs = row.querySelectorAll('input');
+      const name = inputs[0].value.trim();
+      const duration = parseInt(inputs[1].value, 10);
+
+      if (!name || isNaN(duration) || duration <= 0) return;
+
+      currentMinutes += duration;
+      totalMinutes += duration;
+      validSteps++;
+
+      const item = document.createElement('div');
+      item.className = 'schedule-item';
+      item.innerHTML = '<span class="schedule-time">' + formatTime(currentMinutes) + '</span><span class="schedule-name">' + name + ' (' + duration + ' min)</span>';
+      scheduleList.appendChild(item);
+    });
+
+    const totalCaption = document.getElementById('totalCaption');
+    if (validSteps === 0) {
+      totalCaption.textContent = "Add at least one step with a name and duration to build your schedule.";
+    } else {
+      const finishHour = Math.floor(currentMinutes / 60) % 24;
+      const finishMin = currentMinutes % 60;
+      totalCaption.textContent = "Routine complete by " + formatTime(currentMinutes) + " — total time: " + totalMinutes + " minutes.";
+    }
+
+    document.getElementById('result').classList.add('visible');
+  }
+
+  function formatTime(totalMins) {
+    const hours24 = Math.floor(totalMins / 60) % 24;
+    const mins = totalMins % 60;
+    const period = hours24 >= 12 ? 'PM' : 'AM';
+    let hours12 = hours24 % 12;
+    if (hours12 === 0) hours12 = 12;
+    const minsStr = mins < 10 ? '0' + mins : mins;
+    return hours12 + ':' + minsStr + ' ' + period;
+  }
+
+  // Pre-fill with example steps
+  addStep('Drink water', 5);
+  addStep('Morning run', 30);
+  addStep('Shower', 15);
+  addStep('Breakfast', 20);
+</script>
+
+</body>
+</html>
