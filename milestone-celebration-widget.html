@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Milestone Celebration</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 500px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+  input[type="text"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+  }
+  input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+
+  .tier-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .tier-btn {
+    flex: 1;
+    padding: 12px 6px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    color: #111827;
+  }
+  .tier-btn:hover { border-color: #16a34a; }
+  .tier-btn.selected {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+
+  button.celebrate-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.celebrate-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 24px;
+    padding: 20px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    display: none;
+    text-align: center;
+  }
+  .result.visible { display: block; }
+  .result-icon {
+    font-size: 36px;
+    margin-bottom: 8px;
+  }
+  .result-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .result-message {
+    font-size: 14px;
+    color: #374151;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Milestone Celebration</h1>
+  <p class="subtitle">Name what you just hit, pick its size, and take a moment to actually let it land.</p>
+
+  <label for="milestoneInput">What did you just achieve?</label>
+  <input type="text" id="milestoneInput" placeholder="e.g. 30-day meditation streak">
+
+  <label>How big is this one?</label>
+  <div class="tier-row" id="tierRow">
+    <div class="tier-btn" data-tier="small">🥉 Small Win</div>
+    <div class="tier-btn" data-tier="solid">🥈 Solid Progress</div>
+    <div class="tier-btn" data-tier="major">🥇 Major Milestone</div>
+  </div>
+
+  <button class="celebrate-btn" onclick="celebrate()">Celebrate This</button>
+
+  <div class="result" id="result">
+    <div class="result-icon" id="resultIcon"></div>
+    <p class="result-title" id="resultTitle"></p>
+    <p class="result-message" id="resultMessage"></p>
+  </div>
+</div>
+
+<script>
+  let selectedTier = null;
+
+  document.querySelectorAll('.tier-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tier-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedTier = btn.getAttribute('data-tier');
+    });
+  });
+
+  const tierContent = {
+    small: {
+      icon: '🥉',
+      title: 'Small win. Real progress.',
+      messages: [
+        "Small wins are the ones that add up when no one's watching. This counts.",
+        "This is exactly the kind of win that compounds. Don't undersell it.",
+        "Not every milestone needs a big reward. This one just needs to be noticed."
+      ]
+    },
+    solid: {
+      icon: '🥈',
+      title: 'Solid progress. Well earned.',
+      messages: [
+        "This is the kind of milestone that proves the system is working, not just the motivation.",
+        "You didn't get here by accident. This is weeks of consistent choices showing up as one result.",
+        "This is worth pausing on. Pull up your Reward Menu and actually claim something for this one."
+      ]
+    },
+    major: {
+      icon: '🥇',
+      title: 'Major milestone. Take it in.',
+      messages: [
+        "This is the kind of achievement that's easy to rush past onto the next goal. Don't. Sit with this one for a moment.",
+        "Months of showing up got you here. Whatever's next can wait a day while this one actually lands.",
+        "This is a genuinely big one. Go claim your reward from the top tier — you've earned the full celebration, not a token one."
+      ]
+    }
+  };
+
+  function celebrate() {
+    const milestone = document.getElementById('milestoneInput').value.trim();
+    const result = document.getElementById('result');
+
+    if (!milestone || !selectedTier) return;
+
+    const tier = tierContent[selectedTier];
+    const randomMessage = tier.messages[Math.floor(Math.random() * tier.messages.length)];
+
+    document.getElementById('resultIcon').textContent = tier.icon;
+    document.getElementById('resultTitle').textContent = milestone;
+    document.getElementById('resultMessage').textContent = randomMessage;
+
+    result.classList.add('visible');
+  }
+</script>
+
+</body>
+</html>
