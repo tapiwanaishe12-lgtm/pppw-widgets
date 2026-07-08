@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trigger Awareness Log</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 540px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+  input[type="text"], select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+    background: #ffffff;
+  }
+  input:focus, select:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+
+  .emotion-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .emotion-btn {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 999px;
+    background: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #111827;
+  }
+  .emotion-btn:hover { border-color: #16a34a; }
+  .emotion-btn.selected {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+
+  button.log-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.log-btn:hover { background: #128a3e; }
+
+  .insight-box {
+    font-size: 13px;
+    color: #374151;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-top: 20px;
+    line-height: 1.5;
+    display: none;
+  }
+  .insight-box.visible { display: block; }
+
+  .log-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+  }
+  .section-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #16a34a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 10px;
+  }
+  .log-entry {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: #374151;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .log-entry-remove {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .log-entry-remove:hover { color: #b91c1c; }
+  .empty-note {
+    font-size: 13px;
+    color: #9ca3af;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Trigger Awareness Log</h1>
+  <p class="subtitle">Log the moment an urge hits — the pattern behind it is usually clearer than the urge itself.</p>
+
+  <label for="habitInput">Which habit?</label>
+  <input type="text" id="habitInput" placeholder="e.g. Late-night phone scrolling">
+
+  <label for="timeOfDay">Time of day</label>
+  <select id="timeOfDay">
+    <option value="Early morning">Early morning</option>
+    <option value="Mid-morning">Mid-morning</option>
+    <option value="Afternoon">Afternoon</option>
+    <option value="Evening">Evening</option>
+    <option value="Late night">Late night</option>
+  </select>
+
+  <label for="locationInput">Where were you?</label>
+  <input type="text" id="locationInput" placeholder="e.g. In bed, at my desk, in the car">
+
+  <label>What were you feeling right before?</label>
+  <div class="emotion-row" id="emotionRow">
+    <div class="emotion-btn" data-emotion="Bored">Bored</div>
+    <div class="emotion-btn" data-emotion="Stressed">Stressed</div>
+    <div class="emotion-btn" data-emotion="Tired">Tired</div>
+    <div class="emotion-btn" data-emotion="Anxious">Anxious</div>
+    <div class="emotion-btn" data-emotion="Lonely">Lonely</div>
+    <div class="emotion-btn" data-emotion="Avoiding something">Avoiding something</div>
+  </div>
+
+  <button class="log-btn" onclick="logTrigger()">Log This Trigger</button>
+
+  <div class="insight-box" id="insightBox"></div>
+
+  <div class="log-section">
+    <p class="section-label">This Session's Log</p>
+    <div id="logList"></div>
+  </div>
+</div>
+
+<script>
+  let selectedEmotion = null;
+  let entries = [];
+
+  document.querySelectorAll('.emotion-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.emotion-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedEmotion = btn.getAttribute('data-emotion');
+    });
+  });
+
+  function logTrigger() {
+    const habit = document.getElementById('habitInput').value.trim();
+    const time = document.getElementById('timeOfDay').value;
+    const location = document.getElementById('locationInput').value.trim();
+
+    if (!habit || !selectedEmotion) return;
+
+    entries.unshift({ habit, time, location, emotion: selectedEmotion });
+
+    document.getElementById('habitInput').value = '';
+    document.getElementById('locationInput').value = '';
+    document.querySelectorAll('.emotion-btn').forEach(b => b.classList.remove('selected'));
+    selectedEmotion = null;
+
+    renderLog();
+    showInsight();
+  }
+
+  function removeEntry(index) {
+    entries.splice(index, 1);
+    renderLog();
+    showInsight();
+  }
+
+  function renderLog() {
+    const logList = document.getElementById('logList');
+    logList.innerHTML = '';
+
+    if (entries.length === 0) {
+      logList.innerHTML = '<p class="empty-note">No triggers logged yet this session. Log one above when an urge hits.</p>';
+      return;
+    }
+
+    entries.forEach((entry, i) => {
+      const div = document.createElement('div');
+      div.className = 'log-entry';
+      const locationText = entry.location ? ' at ' + entry.location : '';
+      div.innerHTML = '<span>' + entry.habit + ' — ' + entry.time + locationText + ', feeling ' + entry.emotion.toLowerCase() + '</span><button class="log-entry-remove" onclick="removeEntry(' + i + ')">✕</button>';
+      logList.appendChild(div);
+    });
+  }
+
+  function showInsight() {
+    const insightBox = document.getElementById('insightBox');
+
+    if (entries.length < 2) {
+      insightBox.classList.remove('visible');
+      return;
+    }
+
+    // Find most common time and emotion
+    const timeCounts = {};
+    const emotionCounts = {};
+    entries.forEach(e => {
+      timeCounts[e.time] = (timeCounts[e.time] || 0) + 1;
+      emotionCounts[e.emotion] = (emotionCounts[e.emotion] || 0) + 1;
+    });
+
+    const topTime = Object.keys(timeCounts).reduce((a, b) => timeCounts[a] > timeCounts[b] ? a : b);
+    const topEmotion = Object.keys(emotionCounts).reduce((a, b) => emotionCounts[a] > emotionCounts[b] ? a : b);
+
+    insightBox.textContent = "Pattern so far: " + timeCounts[topTime] + " of " + entries.length + " triggers logged during " + topTime.toLowerCase() + ", most often while feeling " + topEmotion.toLowerCase() + ". That combination is likely your real cue — not the habit itself.";
+    insightBox.classList.add('visible');
+  }
+
+  renderLog();
+</script>
+
+</body>
+</html>
