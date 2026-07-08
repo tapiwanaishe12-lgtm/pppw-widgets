@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Next Meal Countdown</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 460px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+  input[type="text"], input[type="time"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+  }
+  input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+
+  button.set-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.set-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 24px;
+    padding: 20px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    display: none;
+    text-align: center;
+  }
+  .result.visible { display: block; }
+  .countdown-time {
+    font-size: 32px;
+    font-weight: 700;
+    color: #16a34a;
+    margin: 0;
+  }
+  .countdown-label {
+    font-size: 13px;
+    color: #4b5563;
+    margin: 2px 0 0 0;
+  }
+  .meal-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Next Meal Countdown</h1>
+  <p class="subtitle">Set your next meal time and stay ahead of hunger, not behind it.</p>
+
+  <label for="mealName">What's next?</label>
+  <input type="text" id="mealName" placeholder="e.g. Lunch">
+
+  <label for="mealTime">What time?</label>
+  <input type="time" id="mealTime">
+
+  <button class="set-btn" onclick="startCountdown()">Set Countdown</button>
+
+  <div class="result" id="result">
+    <p class="countdown-time" id="countdownTime"></p>
+    <p class="countdown-label">until your next meal</p>
+    <p class="meal-name" id="mealNameDisplay"></p>
+  </div>
+</div>
+
+<script>
+  let targetTime = null;
+  let mealLabel = '';
+  let intervalId = null;
+
+  function startCountdown() {
+    const mealName = document.getElementById('mealName').value.trim() || 'your next meal';
+    const timeValue = document.getElementById('mealTime').value;
+
+    if (!timeValue) return;
+
+    const [hours, minutes] = timeValue.split(':').map(Number);
+    const now = new Date();
+    targetTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
+
+    // If the time has already passed today, assume tomorrow
+    if (targetTime <= now) {
+      targetTime.setDate(targetTime.getDate() + 1);
+    }
+
+    mealLabel = mealName;
+    document.getElementById('mealNameDisplay').textContent = mealName;
+    document.getElementById('result').classList.add('visible');
+
+    if (intervalId) clearInterval(intervalId);
+    updateCountdown();
+    intervalId = setInterval(updateCountdown, 1000);
+  }
+
+  function updateCountdown() {
+    const now = new Date();
+    const diffMs = targetTime - now;
+
+    if (diffMs <= 0) {
+      document.getElementById('countdownTime').textContent = "It's time";
+      clearInterval(intervalId);
+      return;
+    }
+
+    const totalSeconds = Math.floor(diffMs / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    const pad = n => n.toString().padStart(2, '0');
+    document.getElementById('countdownTime').textContent = pad(hours) + ':' + pad(minutes) + ':' + pad(seconds);
+  }
+</script>
+
+</body>
+</html>
