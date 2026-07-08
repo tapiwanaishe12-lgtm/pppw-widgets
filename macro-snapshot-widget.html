@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Today's Macro Snapshot</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 520px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  .section-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #16a34a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 20px 0 10px 0;
+  }
+  .section-label.first { margin-top: 0; }
+
+  .target-row {
+    display: flex;
+    gap: 10px;
+  }
+  .target-row > div { flex: 1; }
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 6px;
+  }
+  input[type="number"] {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #111827;
+  }
+  input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+
+  .log-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+    margin-top: 10px;
+  }
+  .log-row > div { flex: 1; }
+  .log-btn {
+    padding: 9px 14px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    height: 37px;
+    white-space: nowrap;
+  }
+  .log-btn:hover { background: #128a3e; }
+
+  .macro-bar-block { margin-top: 16px; }
+  .macro-bar-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 5px;
+  }
+  .macro-bar-track {
+    width: 100%;
+    height: 10px;
+    background: #e5e7eb;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .macro-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.4s ease;
+  }
+  .fill-protein { background: #16a34a; }
+  .fill-carbs { background: #3b82f6; }
+  .fill-fats { background: #f59e0b; }
+
+  .reset-btn {
+    width: 100%;
+    margin-top: 18px;
+    padding: 10px;
+    background: #ffffff;
+    color: #6b7280;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .reset-btn:hover { border-color: #b91c1c; color: #b91c1c; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Today's Macro Snapshot</h1>
+  <p class="subtitle">Set your daily targets, log as you eat, see where you stand at a glance.</p>
+
+  <p class="section-label first">Daily Targets (g)</p>
+  <div class="target-row">
+    <div>
+      <label>Protein</label>
+      <input type="number" id="proteinTarget" min="1" value="130" onchange="updateBars()">
+    </div>
+    <div>
+      <label>Carbs</label>
+      <input type="number" id="carbsTarget" min="1" value="250" onchange="updateBars()">
+    </div>
+    <div>
+      <label>Fats</label>
+      <input type="number" id="fatsTarget" min="1" value="70" onchange="updateBars()">
+    </div>
+  </div>
+
+  <p class="section-label">Log This Meal (g)</p>
+  <div class="log-row">
+    <div>
+      <label>Protein</label>
+      <input type="number" id="proteinAdd" min="0" placeholder="0">
+    </div>
+    <div>
+      <label>Carbs</label>
+      <input type="number" id="carbsAdd" min="0" placeholder="0">
+    </div>
+    <div>
+      <label>Fats</label>
+      <input type="number" id="fatsAdd" min="0" placeholder="0">
+    </div>
+    <button class="log-btn" onclick="addMeal()">Add</button>
+  </div>
+
+  <div class="macro-bar-block">
+    <div class="macro-bar-header"><span>Protein</span><span id="proteinLabel">0 / 130g</span></div>
+    <div class="macro-bar-track"><div class="macro-bar-fill fill-protein" id="proteinFill" style="width:0%"></div></div>
+  </div>
+
+  <div class="macro-bar-block">
+    <div class="macro-bar-header"><span>Carbs</span><span id="carbsLabel">0 / 250g</span></div>
+    <div class="macro-bar-track"><div class="macro-bar-fill fill-carbs" id="carbsFill" style="width:0%"></div></div>
+  </div>
+
+  <div class="macro-bar-block">
+    <div class="macro-bar-header"><span>Fats</span><span id="fatsLabel">0 / 70g</span></div>
+    <div class="macro-bar-track"><div class="macro-bar-fill fill-fats" id="fatsFill" style="width:0%"></div></div>
+  </div>
+
+  <button class="reset-btn" onclick="resetDay()">Reset Today</button>
+</div>
+
+<script>
+  let logged = { protein: 0, carbs: 0, fats: 0 };
+
+  function addMeal() {
+    const p = parseFloat(document.getElementById('proteinAdd').value) || 0;
+    const c = parseFloat(document.getElementById('carbsAdd').value) || 0;
+    const f = parseFloat(document.getElementById('fatsAdd').value) || 0;
+
+    logged.protein += p;
+    logged.carbs += c;
+    logged.fats += f;
+
+    document.getElementById('proteinAdd').value = '';
+    document.getElementById('carbsAdd').value = '';
+    document.getElementById('fatsAdd').value = '';
+
+    updateBars();
+  }
+
+  function updateBars() {
+    const proteinTarget = parseFloat(document.getElementById('proteinTarget').value) || 1;
+    const carbsTarget = parseFloat(document.getElementById('carbsTarget').value) || 1;
+    const fatsTarget = parseFloat(document.getElementById('fatsTarget').value) || 1;
+
+    const proteinPercent = Math.min(100, Math.round((logged.protein / proteinTarget) * 100));
+    const carbsPercent = Math.min(100, Math.round((logged.carbs / carbsTarget) * 100));
+    const fatsPercent = Math.min(100, Math.round((logged.fats / fatsTarget) * 100));
+
+    document.getElementById('proteinFill').style.width = proteinPercent + '%';
+    document.getElementById('carbsFill').style.width = carbsPercent + '%';
+    document.getElementById('fatsFill').style.width = fatsPercent + '%';
+
+    document.getElementById('proteinLabel').textContent = Math.round(logged.protein) + ' / ' + proteinTarget + 'g';
+    document.getElementById('carbsLabel').textContent = Math.round(logged.carbs) + ' / ' + carbsTarget + 'g';
+    document.getElementById('fatsLabel').textContent = Math.round(logged.fats) + ' / ' + fatsTarget + 'g';
+  }
+
+  function resetDay() {
+    logged = { protein: 0, carbs: 0, fats: 0 };
+    updateBars();
+  }
+
+  updateBars();
+</script>
+
+</body>
+</html>
