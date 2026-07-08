@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Today's Focus</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 480px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+
+  .mode-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .mode-btn {
+    padding: 14px 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    background: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    color: #111827;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .mode-btn:hover { border-color: #16a34a; }
+  .mode-btn.selected {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+  .mode-icon { font-size: 18px; }
+
+  .result {
+    margin-top: 20px;
+    padding: 18px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    display: none;
+  }
+  .result.visible { display: block; }
+  .result-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .result-message {
+    font-size: 13px;
+    color: #374151;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Today's Focus</h1>
+  <p class="subtitle">Pick today's mode to get a clear read on what it actually means for your next meal.</p>
+
+  <div class="mode-row" id="modeRow">
+    <div class="mode-btn" data-mode="fatloss"><span class="mode-icon">🔥</span> Fat Loss</div>
+    <div class="mode-btn" data-mode="musclegain"><span class="mode-icon">💪</span> Muscle Gain</div>
+    <div class="mode-btn" data-mode="maintenance"><span class="mode-icon">⚖️</span> Maintenance</div>
+  </div>
+
+  <div class="result" id="result">
+    <p class="result-title" id="resultTitle"></p>
+    <p class="result-message" id="resultMessage"></p>
+  </div>
+</div>
+
+<script>
+  const modeContent = {
+    fatloss: {
+      title: "🔥 Today: Fat Loss",
+      message: "Prioritise protein and fibre at every meal — they keep you fuller for longer and protect muscle while in a deficit. A moderate calorie gap beats an aggressive one; consistency over weeks matters more than any single 'perfect' day."
+    },
+    musclegain: {
+      title: "💪 Today: Muscle Gain",
+      message: "Make sure you're actually eating enough — under-eating is the most common reason plant-based lifters stall. Hit your protein target across multiple meals rather than one large hit, and don't skip carbs around training."
+    },
+    maintenance: {
+      title: "⚖️ Today: Maintenance",
+      message: "The goal today isn't perfection, it's sustainability. Eat to your hunger and fullness cues, keep protein consistent, and don't let 'maintenance' quietly become an excuse to stop paying attention entirely."
+    }
+  };
+
+  document.querySelectorAll('.mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+
+      const mode = btn.getAttribute('data-mode');
+      const content = modeContent[mode];
+
+      document.getElementById('resultTitle').textContent = content.title;
+      document.getElementById('resultMessage').textContent = content.message;
+      document.getElementById('result').classList.add('visible');
+    });
+  });
+</script>
+
+</body>
+</html>
