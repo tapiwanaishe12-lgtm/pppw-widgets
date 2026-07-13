@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Macro Target Calculator</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 500px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+  input[type="number"], select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+    background: #ffffff;
+  }
+  input:focus, select:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+
+  button.calc-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.calc-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    display: none;
+  }
+  .result.visible { display: block; }
+  .calorie-total {
+    text-align: center;
+    font-size: 32px;
+    font-weight: 700;
+    color: #16a34a;
+    margin: 0;
+  }
+  .calorie-label {
+    text-align: center;
+    font-size: 13px;
+    color: #4b5563;
+    margin: 2px 0 18px 0;
+  }
+  .macro-row {
+    display: flex;
+    gap: 10px;
+  }
+  .macro-box {
+    flex: 1;
+    text-align: center;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px 8px;
+  }
+  .macro-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+  }
+  .macro-name {
+    font-size: 11px;
+    color: #6b7280;
+    margin-top: 2px;
+  }
+  .disclaimer {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 16px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Macro Target Calculator</h1>
+  <p class="subtitle">Get a starting point for your daily targets — adjust from here based on how your body responds.</p>
+
+  <label for="weightInput">Body weight (kg)</label>
+  <input type="number" id="weightInput" min="30" placeholder="e.g. 75">
+
+  <label for="goalSelect">Goal</label>
+  <select id="goalSelect">
+    <option value="fatloss">Fat Loss</option>
+    <option value="musclegain">Muscle Gain</option>
+    <option value="maintenance">Maintenance</option>
+  </select>
+
+  <label for="activitySelect">Activity level</label>
+  <select id="activitySelect">
+    <option value="1.3">Low (mostly sedentary)</option>
+    <option value="1.5">Moderate (train 3-4x/week)</option>
+    <option value="1.7">High (train 5-6x/week, physical job)</option>
+  </select>
+
+  <button class="calc-btn" onclick="calculateTargets()">Calculate My Targets</button>
+
+  <div class="result" id="result">
+    <p class="calorie-total" id="calorieTotal"></p>
+    <p class="calorie-label">estimated daily calories</p>
+
+    <div class="macro-row">
+      <div class="macro-box">
+        <div class="macro-value" id="proteinValue"></div>
+        <div class="macro-name">Protein (g)</div>
+      </div>
+      <div class="macro-box">
+        <div class="macro-value" id="carbsValue"></div>
+        <div class="macro-name">Carbs (g)</div>
+      </div>
+      <div class="macro-box">
+        <div class="macro-value" id="fatsValue"></div>
+        <div class="macro-name">Fats (g)</div>
+      </div>
+    </div>
+
+    <p class="disclaimer">These are general estimates based on body weight and activity level, not a personalised medical or dietetic assessment. Adjust based on how your energy, training, and recovery actually respond over 2-3 weeks.</p>
+  </div>
+</div>
+
+<script>
+  function calculateTargets() {
+    const weight = parseFloat(document.getElementById('weightInput').value);
+    const goal = document.getElementById('goalSelect').value;
+    const activityMultiplier = parseFloat(document.getElementById('activitySelect').value);
+
+    if (isNaN(weight) || weight <= 0) return;
+
+    // Base maintenance estimate: 24 kcal per kg, adjusted by activity multiplier
+    let baseCalories = weight * 24 * activityMultiplier;
+
+    let calories, proteinPerKg, fatPercent;
+
+    if (goal === 'fatloss') {
+      calories = baseCalories * 0.82; // moderate deficit
+      proteinPerKg = 1.9; // higher protein to protect muscle in a deficit
+      fatPercent = 0.28;
+    } else if (goal === 'musclegain') {
+      calories = baseCalories * 1.1; // moderate surplus
+      proteinPerKg = 1.7;
+      fatPercent = 0.27;
+    } else {
+      calories = baseCalories;
+      proteinPerKg = 1.6;
+      fatPercent = 0.30;
+    }
+
+    const proteinGrams = Math.round(weight * proteinPerKg);
+    const proteinCalories = proteinGrams * 4;
+    const fatCalories = calories * fatPercent;
+    const fatGrams = Math.round(fatCalories / 9);
+    const carbCalories = calories - proteinCalories - fatCalories;
+    const carbGrams = Math.round(Math.max(0, carbCalories) / 4);
+
+    document.getElementById('calorieTotal').textContent = Math.round(calories);
+    document.getElementById('proteinValue').textContent = proteinGrams + 'g';
+    document.getElementById('carbsValue').textContent = carbGrams + 'g';
+    document.getElementById('fatsValue').textContent = fatGrams + 'g';
+
+    document.getElementById('result').classList.add('visible');
+  }
+</script>
+
+</body>
+</html>
