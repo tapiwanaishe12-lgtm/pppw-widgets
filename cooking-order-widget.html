@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cooking Order Planner</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 540px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+  input[type="text"], input[type="number"], select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+    background: #ffffff;
+  }
+  input:focus, select:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+
+  .item-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    align-items: center;
+  }
+  .item-row input[type="text"] { flex: 2; }
+  .item-row input[type="number"] { flex: 1; }
+  .item-row select { flex: 1.3; }
+  .remove-item {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px 6px;
+  }
+  .remove-item:hover { color: #b91c1c; }
+
+  .add-item-btn {
+    margin-top: 12px;
+    padding: 9px 14px;
+    background: #ffffff;
+    color: #16a34a;
+    border: 1px solid #16a34a;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .add-item-btn:hover { background: #f0fdf4; }
+
+  button.generate {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.generate:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    display: none;
+  }
+  .result.visible { display: block; }
+  .step-item {
+    display: flex;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 13px;
+  }
+  .step-item:last-child { border-bottom: none; }
+  .step-time {
+    font-weight: 700;
+    color: #16a34a;
+    min-width: 55px;
+  }
+  .step-detail { flex: 1; color: #111827; }
+  .step-method {
+    font-size: 11px;
+    color: #6b7280;
+    text-transform: uppercase;
+  }
+  .total-caption {
+    font-size: 13px;
+    color: #4b5563;
+    margin-top: 14px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Cooking Order Planner</h1>
+  <p class="subtitle">Enter what you're batch cooking — get a start order that overlaps oven and stovetop time.</p>
+
+  <label>Items to cook</label>
+  <div id="itemsContainer"></div>
+  <button class="add-item-btn" onclick="addItem()">+ Add Item</button>
+
+  <button class="generate" onclick="buildOrder()">Build My Cooking Order</button>
+
+  <div class="result" id="result">
+    <div id="orderList"></div>
+    <p class="total-caption" id="totalCaption"></p>
+  </div>
+</div>
+
+<script>
+  let itemCount = 0;
+
+  function addItem(name, minutes, method) {
+    itemCount++;
+    const container = document.getElementById('itemsContainer');
+    const row = document.createElement('div');
+    row.className = 'item-row';
+    row.setAttribute('data-item-id', itemCount);
+    row.innerHTML = `
+      <input type="text" placeholder="e.g. Brown rice" value="${name || ''}">
+      <input type="number" placeholder="mins" min="1" value="${minutes || ''}">
+      <select>
+        <option value="Oven"${method === 'Oven' ? ' selected' : ''}>Oven</option>
+        <option value="Stovetop"${method === 'Stovetop' ? ' selected' : ''}>Stovetop</option>
+        <option value="Prep"${method === 'Prep' ? ' selected' : ''}>Prep only</option>
+      </select>
+      <button class="remove-item" onclick="removeItem(${itemCount})">✕</button>
+    `;
+    container.appendChild(row);
+  }
+
+  function removeItem(id) {
+    const row = document.querySelector('[data-item-id="' + id + '"]');
+    if (row) row.remove();
+  }
+
+  function buildOrder() {
+    const rows = document.querySelectorAll('.item-row');
+    const items = [];
+
+    rows.forEach(row => {
+      const inputs = row.querySelectorAll('input');
+      const select = row.querySelector('select');
+      const name = inputs[0].value.trim();
+      const duration = parseInt(inputs[1].value, 10);
+      const method = select.value;
+
+      if (name && !isNaN(duration) && duration > 0) {
+        items.push({ name, duration, method });
+      }
+    });
+
+    const orderList = document.getElementById('orderList');
+    orderList.innerHTML = '';
+
+    if (items.length === 0) {
+      document.getElementById('totalCaption').textContent = "Add at least one item with a name and cook time.";
+      document.getElementById('result').classList.add('visible');
+      return;
+    }
+
+    // Sort: longest duration starts first (so it overlaps with shorter hands-on tasks)
+    const sorted = [...items].sort((a, b) => b.duration - a.duration);
+
+    // Total time = the longest single item, since others run in parallel where possible.
+    // Prep-only items are sequential (hands-on), oven/stovetop items overlap with each other.
+    const parallelItems = sorted.filter(i => i.method !== 'Prep');
+    const prepItems = sorted.filter(i => i.method === 'Prep');
+
+    const longestParallel = parallelItems.length > 0 ? Math.max(...parallelItems.map(i => i.duration)) : 0;
+    const totalPrepTime = prepItems.reduce((sum, i) => sum + i.duration, 0);
+    const estimatedTotal = longestParallel + totalPrepTime;
+
+    let startTime = 0;
+    sorted.forEach((item, i) => {
+      const div = document.createElement('div');
+      div.className = 'step-item';
+      const label = i === 0 ? "Start now" : "+" + startTime + " min";
+      div.innerHTML = '<span class="step-time">' + label + '</span><span class="step-detail">' + item.name + ' (' + item.duration + ' min)<br><span class="step-method">' + item.method + '</span></span>';
+      orderList.appendChild(div);
+
+      if (item.method === 'Prep') {
+        startTime += item.duration;
+      }
+    });
+
+    document.getElementById('totalCaption').textContent = "Estimated total session time: roughly " + estimatedTotal + " minutes, cooking the longest items first and prepping alongside.";
+    document.getElementById('result').classList.add('visible');
+  }
+
+  // Pre-fill with example items
+  addItem('Brown rice', 40, 'Stovetop');
+  addItem('Roasted chickpeas', 30, 'Oven');
+  addItem('Chop vegetables', 15, 'Prep');
+</script>
+
+</body>
+</html>
