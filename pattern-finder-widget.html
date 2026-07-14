@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pattern Finder</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 560px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  .column-labels {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .column-labels .food-col { flex: 2; font-size: 11px; color: #6b7280; font-weight: 600; }
+  .column-labels .num-col { flex: 1; font-size: 11px; color: #6b7280; font-weight: 600; text-align: center; }
+
+  .entry-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    align-items: center;
+  }
+  .entry-row input[type="text"] { flex: 2; }
+  .entry-row input[type="number"] { flex: 1; }
+  input[type="text"], input[type="number"] {
+    padding: 9px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #111827;
+  }
+  input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+  .remove-entry {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0 4px;
+  }
+  .remove-entry:hover { color: #b91c1c; }
+
+  .add-entry-btn {
+    margin-top: 12px;
+    padding: 9px 14px;
+    background: #ffffff;
+    color: #16a34a;
+    border: 1px solid #16a34a;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .add-entry-btn:hover { background: #f0fdf4; }
+
+  button.find-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.find-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    display: none;
+  }
+  .result.visible { display: block; }
+  .result-block {
+    padding: 14px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .result-positive {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #374151;
+  }
+  .result-negative {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #374151;
+  }
+  .result-title {
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Pattern Finder</h1>
+  <p class="subtitle">Add recent meals with how you felt afterward — see which ones cluster as clear positives or negatives.</p>
+
+  <div class="column-labels">
+    <span class="food-col">Food/Meal</span>
+    <span class="num-col">Energy (1-10)</span>
+    <span class="num-col">Mood (1-10)</span>
+  </div>
+
+  <div id="entriesContainer"></div>
+  <button class="add-entry-btn" onclick="addEntry()">+ Add Entry</button>
+
+  <button class="find-btn" onclick="findPattern()">Find My Pattern</button>
+
+  <div class="result" id="result"></div>
+</div>
+
+<script>
+  let entryCount = 0;
+
+  function addEntry(food, energy, mood) {
+    entryCount++;
+    const container = document.getElementById('entriesContainer');
+    const row = document.createElement('div');
+    row.className = 'entry-row';
+    row.setAttribute('data-entry-id', entryCount);
+    row.innerHTML = `
+      <input type="text" placeholder="e.g. Lentil soup" value="${food || ''}">
+      <input type="number" min="1" max="10" placeholder="1-10" value="${energy || ''}">
+      <input type="number" min="1" max="10" placeholder="1-10" value="${mood || ''}">
+      <button class="remove-entry" onclick="removeEntry(${entryCount})">✕</button>
+    `;
+    container.appendChild(row);
+  }
+
+  function removeEntry(id) {
+    const row = document.querySelector('[data-entry-id="' + id + '"]');
+    if (row) row.remove();
+  }
+
+  function findPattern() {
+    const rows = document.querySelectorAll('.entry-row');
+    const entries = [];
+
+    rows.forEach(row => {
+      const inputs = row.querySelectorAll('input');
+      const food = inputs[0].value.trim();
+      const energy = parseFloat(inputs[1].value);
+      const mood = parseFloat(inputs[2].value);
+
+      if (food && !isNaN(energy) && !isNaN(mood)) {
+        entries.push({ food, energy, mood, combined: energy + mood });
+      }
+    });
+
+    const result = document.getElementById('result');
+    result.innerHTML = '';
+
+    if (entries.length < 3) {
+      result.innerHTML = '<div class="result-block result-positive">Add at least 3 entries to start seeing a meaningful pattern. More entries over multiple weeks make this far more reliable than a single comparison.</div>';
+      result.classList.add('visible');
+      return;
+    }
+
+    const sorted = [...entries].sort((a, b) => b.combined - a.combined);
+    const topHalfCount = Math.max(1, Math.ceil(entries.length / 2));
+    const topEntries = sorted.slice(0, topHalfCount);
+    const bottomEntries = sorted.slice(-topHalfCount);
+
+    const positiveBlock = document.createElement('div');
+    positiveBlock.className = 'result-block result-positive';
+    positiveBlock.innerHTML = '<div class="result-title">✅ Clustering with higher energy & mood</div>' +
+      topEntries.map(e => e.food + ' (Energy ' + e.energy + ', Mood ' + e.mood + ')').join('<br>');
+    result.appendChild(positiveBlock);
+
+    const negativeBlock = document.createElement('div');
+    negativeBlock.className = 'result-block result-negative';
+    negativeBlock.innerHTML = '<div class="result-title">⚠️ Clustering with lower energy & mood</div>' +
+      bottomEntries.map(e => e.food + ' (Energy ' + e.energy + ', Mood ' + e.mood + ')').join('<br>');
+    result.appendChild(negativeBlock);
+
+    const note = document.createElement('div');
+    note.className = 'result-block result-positive';
+    note.style.background = '#f9fafb';
+    note.style.border = '1px solid #e5e7eb';
+    note.innerHTML = "This is a snapshot from a small sample — treat it as a lead worth testing with the Elimination Test below, not a firm conclusion.";
+    result.appendChild(note);
+
+    result.classList.add('visible');
+  }
+
+  // Pre-fill with example entries
+  addEntry('Oats with banana and peanut butter', 8, 8);
+  addEntry('Fried food takeaway', 4, 5);
+  addEntry('Lentil soup with greens', 7, 7);
+  addEntry('Sugary pastry', 5, 4);
+</script>
+
+</body>
+</html>
