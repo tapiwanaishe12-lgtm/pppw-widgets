@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mindful Eating Check-In</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 480px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  .phase-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #16a34a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 20px 0 10px 0;
+  }
+  .phase-label.first { margin-top: 0; }
+
+  .scale-row {
+    display: flex;
+    gap: 6px;
+  }
+  .scale-btn {
+    flex: 1;
+    padding: 10px 0;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    color: #111827;
+  }
+  .scale-btn:hover { border-color: #16a34a; }
+  .scale-btn.selected {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+  .scale-caption {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: #9ca3af;
+    margin-top: 4px;
+  }
+
+  button.checkin-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.checkin-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 22px;
+    padding: 16px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    display: none;
+  }
+  .result.visible { display: block; }
+  .result-message {
+    font-size: 13px;
+    color: #374151;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Mindful Eating Check-In</h1>
+  <p class="subtitle">Rate before you eat, then rate again after. Ten seconds each time.</p>
+
+  <p class="phase-label first">Before Eating: Hunger Level</p>
+  <div class="scale-row" id="hungerRow">
+    <div class="scale-btn" data-value="1">1</div>
+    <div class="scale-btn" data-value="2">2</div>
+    <div class="scale-btn" data-value="3">3</div>
+    <div class="scale-btn" data-value="4">4</div>
+    <div class="scale-btn" data-value="5">5</div>
+    <div class="scale-btn" data-value="6">6</div>
+    <div class="scale-btn" data-value="7">7</div>
+    <div class="scale-btn" data-value="8">8</div>
+    <div class="scale-btn" data-value="9">9</div>
+    <div class="scale-btn" data-value="10">10</div>
+  </div>
+  <div class="scale-caption"><span>Starving</span><span>Stuffed</span></div>
+
+  <p class="phase-label">After Eating: Fullness Level</p>
+  <div class="scale-row" id="fullnessRow">
+    <div class="scale-btn" data-value="1">1</div>
+    <div class="scale-btn" data-value="2">2</div>
+    <div class="scale-btn" data-value="3">3</div>
+    <div class="scale-btn" data-value="4">4</div>
+    <div class="scale-btn" data-value="5">5</div>
+    <div class="scale-btn" data-value="6">6</div>
+    <div class="scale-btn" data-value="7">7</div>
+    <div class="scale-btn" data-value="8">8</div>
+    <div class="scale-btn" data-value="9">9</div>
+    <div class="scale-btn" data-value="10">10</div>
+  </div>
+  <div class="scale-caption"><span>Starving</span><span>Stuffed</span></div>
+
+  <button class="checkin-btn" onclick="checkIn()">Check In</button>
+
+  <div class="result" id="result">
+    <p class="result-message" id="resultMessage"></p>
+  </div>
+</div>
+
+<script>
+  let hungerValue = null;
+  let fullnessValue = null;
+
+  document.querySelectorAll('#hungerRow .scale-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#hungerRow .scale-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      hungerValue = parseInt(btn.getAttribute('data-value'), 10);
+    });
+  });
+
+  document.querySelectorAll('#fullnessRow .scale-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#fullnessRow .scale-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      fullnessValue = parseInt(btn.getAttribute('data-value'), 10);
+    });
+  });
+
+  function checkIn() {
+    const result = document.getElementById('result');
+    const message = document.getElementById('resultMessage');
+
+    if (hungerValue === null && fullnessValue === null) {
+      message.textContent = "Rate at least one side above — hunger before, fullness after — to log this check-in.";
+      result.classList.add('visible');
+      return;
+    }
+
+    let msg = "";
+
+    if (hungerValue !== null) {
+      if (hungerValue <= 2) {
+        msg += "Starting quite low — eating here is catching up on a signal you may have missed earlier. ";
+      } else if (hungerValue >= 6) {
+        msg += "Starting this full is worth noticing — is this genuine hunger, or something else (habit, boredom, social)? ";
+      } else if (hungerValue === 3) {
+        msg += "Right in the ideal starting zone — hungry, not desperate. ";
+      }
+    }
+
+    if (fullnessValue !== null) {
+      if (fullnessValue >= 8) {
+        msg += "Finished quite full — worth noticing what made stopping at a comfortable 7 harder this time.";
+      } else if (fullnessValue <= 5) {
+        msg += "Finished on the lower side — check in again in 20 minutes, since fullness signals take time to catch up.";
+      } else if (fullnessValue === 7) {
+        msg += "Stopped right in the ideal zone — satisfied without being overfull.";
+      }
+    }
+
+    if (!msg) {
+      msg = "Logged. Over time, these check-ins reveal your own patterns better than any single one will.";
+    }
+
+    message.textContent = msg;
+    result.classList.add('visible');
+  }
+</script>
+
+</body>
+</html>
