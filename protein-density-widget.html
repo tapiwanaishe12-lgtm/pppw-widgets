@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Protein Density Ranking</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 540px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+
+  .food-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .food-btn {
+    padding: 10px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    color: #111827;
+  }
+  .food-btn:hover { border-color: #16a34a; }
+  .food-btn.selected {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+
+  button.compare-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.compare-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    display: none;
+  }
+  .result.visible { display: block; }
+  .rank-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .rank-item:last-child { border-bottom: none; }
+  .rank-number {
+    font-weight: 700;
+    color: #16a34a;
+    min-width: 20px;
+  }
+  .rank-name {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+  }
+  .rank-detail {
+    font-size: 12px;
+    color: #6b7280;
+    text-align: right;
+  }
+  .hint {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Protein Density Ranking</h1>
+  <p class="subtitle">Pick 2-4 foods to compare protein per 100 calories — see which gives you the most for the least.</p>
+
+  <div class="food-grid" id="foodGrid"></div>
+  <p class="hint">Tap to select — pick at least 2 to compare.</p>
+
+  <button class="compare-btn" onclick="compareFoods()">Compare Selected</button>
+
+  <div class="result" id="result"></div>
+</div>
+
+<script>
+  // Protein and calories per typical 100g/standard serving
+  const foods = [
+    { name: 'Tofu (100g)', protein: 15, calories: 145 },
+    { name: 'Tempeh (100g)', protein: 19, calories: 195 },
+    { name: 'Seitan (100g)', protein: 25, calories: 120 },
+    { name: 'Edamame (1 cup)', protein: 17, calories: 189 },
+    { name: 'Lentils, cooked (1 cup)', protein: 18, calories: 230 },
+    { name: 'Chickpeas, cooked (1 cup)', protein: 15, calories: 269 },
+    { name: 'Black beans, cooked (1 cup)', protein: 15, calories: 227 },
+    { name: 'Quinoa, cooked (1 cup)', protein: 8, calories: 222 },
+    { name: 'Peanut butter (2 tbsp)', protein: 8, calories: 190 },
+    { name: 'Almonds (30g)', protein: 6, calories: 174 },
+    { name: 'Soy milk (1 cup)', protein: 7, calories: 105 },
+    { name: 'Plant protein powder (1 scoop)', protein: 22, calories: 120 }
+  ];
+
+  let selected = new Set();
+
+  function renderGrid() {
+    const grid = document.getElementById('foodGrid');
+    grid.innerHTML = '';
+    foods.forEach((f, i) => {
+      const btn = document.createElement('div');
+      btn.className = 'food-btn' + (selected.has(i) ? ' selected' : '');
+      btn.textContent = f.name;
+      btn.onclick = () => {
+        if (selected.has(i)) {
+          selected.delete(i);
+        } else {
+          selected.add(i);
+        }
+        renderGrid();
+      };
+      grid.appendChild(btn);
+    });
+  }
+
+  function compareFoods() {
+    const result = document.getElementById('result');
+
+    if (selected.size < 2) {
+      result.innerHTML = '<p style="font-size:13px;color:#9ca3af;">Select at least 2 foods above to compare.</p>';
+      result.classList.add('visible');
+      return;
+    }
+
+    const chosen = [...selected].map(i => {
+      const f = foods[i];
+      const per100cal = (f.protein / f.calories) * 100;
+      return { ...f, per100cal };
+    });
+
+    chosen.sort((a, b) => b.per100cal - a.per100cal);
+
+    result.innerHTML = '';
+    chosen.forEach((f, i) => {
+      const item = document.createElement('div');
+      item.className = 'rank-item';
+      item.innerHTML = '<span class="rank-number">#' + (i + 1) + '</span>' +
+        '<span class="rank-name">' + f.name + '</span>' +
+        '<span class="rank-detail">' + f.per100cal.toFixed(1) + 'g protein / 100 cal<br>(' + f.protein + 'g protein, ' + f.calories + ' cal per serving)</span>';
+      result.appendChild(item);
+    });
+
+    result.classList.add('visible');
+  }
+
+  renderGrid();
+</script>
+
+</body>
+</html>
