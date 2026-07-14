@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Craving Trigger Log</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 540px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+  input[type="text"], select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+    background: #ffffff;
+  }
+  input:focus, select:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+
+  .emotion-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .emotion-btn {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 999px;
+    background: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #111827;
+  }
+  .emotion-btn:hover { border-color: #16a34a; }
+  .emotion-btn.selected {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+
+  .acted-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .acted-btn {
+    flex: 1;
+    padding: 10px 0;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    color: #111827;
+  }
+  .acted-btn:hover { border-color: #16a34a; }
+  .acted-btn.selected {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+
+  button.log-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.log-btn:hover { background: #128a3e; }
+
+  .insight-box {
+    font-size: 13px;
+    color: #374151;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-top: 20px;
+    line-height: 1.5;
+    display: none;
+  }
+  .insight-box.visible { display: block; }
+
+  .log-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+  }
+  .section-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #16a34a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 10px;
+  }
+  .log-entry {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: #374151;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .log-entry-remove {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .log-entry-remove:hover { color: #b91c1c; }
+  .empty-note {
+    font-size: 13px;
+    color: #9ca3af;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Craving Trigger Log</h1>
+  <p class="subtitle">Log the craving as it happens — the pattern behind it is usually clearer than the craving itself.</p>
+
+  <label for="cravingInput">What are you craving?</label>
+  <input type="text" id="cravingInput" placeholder="e.g. Chocolate">
+
+  <label for="timeOfDay">Time of day</label>
+  <select id="timeOfDay">
+    <option value="Morning">Morning</option>
+    <option value="Afternoon">Afternoon</option>
+    <option value="Evening">Evening</option>
+    <option value="Late night">Late night</option>
+  </select>
+
+  <label>What were you feeling right before?</label>
+  <div class="emotion-row" id="emotionRow">
+    <div class="emotion-btn" data-emotion="Stressed">Stressed</div>
+    <div class="emotion-btn" data-emotion="Bored">Bored</div>
+    <div class="emotion-btn" data-emotion="Tired">Tired</div>
+    <div class="emotion-btn" data-emotion="Sad">Sad</div>
+    <div class="emotion-btn" data-emotion="Happy/Celebrating">Happy/Celebrating</div>
+    <div class="emotion-btn" data-emotion="Genuinely hungry">Genuinely hungry</div>
+  </div>
+
+  <label>Did you act on it?</label>
+  <div class="acted-row" id="actedRow">
+    <div class="acted-btn" data-acted="Yes">Yes</div>
+    <div class="acted-btn" data-acted="No">No</div>
+  </div>
+
+  <button class="log-btn" onclick="logCraving()">Log This Craving</button>
+
+  <div class="insight-box" id="insightBox"></div>
+
+  <div class="log-section">
+    <p class="section-label">This Session's Log</p>
+    <div id="logList"></div>
+  </div>
+</div>
+
+<script>
+  let selectedEmotion = null;
+  let selectedActed = null;
+  let entries = [];
+
+  document.querySelectorAll('.emotion-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.emotion-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedEmotion = btn.getAttribute('data-emotion');
+    });
+  });
+
+  document.querySelectorAll('.acted-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.acted-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedActed = btn.getAttribute('data-acted');
+    });
+  });
+
+  function logCraving() {
+    const craving = document.getElementById('cravingInput').value.trim();
+    const time = document.getElementById('timeOfDay').value;
+
+    if (!craving || !selectedEmotion || !selectedActed) return;
+
+    entries.unshift({ craving, time, emotion: selectedEmotion, acted: selectedActed });
+
+    document.getElementById('cravingInput').value = '';
+    document.querySelectorAll('.emotion-btn').forEach(b => b.classList.remove('selected'));
+    document.querySelectorAll('.acted-btn').forEach(b => b.classList.remove('selected'));
+    selectedEmotion = null;
+    selectedActed = null;
+
+    renderLog();
+    showInsight();
+  }
+
+  function removeEntry(index) {
+    entries.splice(index, 1);
+    renderLog();
+    showInsight();
+  }
+
+  function renderLog() {
+    const logList = document.getElementById('logList');
+    logList.innerHTML = '';
+
+    if (entries.length === 0) {
+      logList.innerHTML = '<p class="empty-note">No cravings logged yet this session. Log one above when it hits.</p>';
+      return;
+    }
+
+    entries.forEach((entry, i) => {
+      const div = document.createElement('div');
+      div.className = 'log-entry';
+      div.innerHTML = '<span>' + entry.craving + ' — ' + entry.time + ', feeling ' + entry.emotion.toLowerCase() + ' (acted on: ' + entry.acted + ')</span><button class="log-entry-remove" onclick="removeEntry(' + i + ')">✕</button>';
+      logList.appendChild(div);
+    });
+  }
+
+  function showInsight() {
+    const insightBox = document.getElementById('insightBox');
+
+    if (entries.length < 2) {
+      insightBox.classList.remove('visible');
+      return;
+    }
+
+    const emotionCounts = {};
+    const timeCounts = {};
+    let actedYesCount = 0;
+
+    entries.forEach(e => {
+      emotionCounts[e.emotion] = (emotionCounts[e.emotion] || 0) + 1;
+      timeCounts[e.time] = (timeCounts[e.time] || 0) + 1;
+      if (e.acted === 'Yes') actedYesCount++;
+    });
+
+    const topEmotion = Object.keys(emotionCounts).reduce((a, b) => emotionCounts[a] > emotionCounts[b] ? a : b);
+    const topTime = Object.keys(timeCounts).reduce((a, b) => timeCounts[a] > timeCounts[b] ? a : b);
+    const actedRate = Math.round((actedYesCount / entries.length) * 100);
+
+    insightBox.textContent = "Pattern so far: " + emotionCounts[topEmotion] + " of " + entries.length + " cravings logged while feeling " + topEmotion.toLowerCase() + ", most often in the " + topTime.toLowerCase() + ". You acted on " + actedRate + "% of logged cravings. If " + topEmotion.toLowerCase() + " keeps showing up, that emotion — not the food itself — is likely the real trigger worth addressing.";
+    insightBox.classList.add('visible');
+  }
+
+  renderLog();
+</script>
+
+</body>
+</html>
