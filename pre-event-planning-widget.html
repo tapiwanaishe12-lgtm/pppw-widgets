@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pre-Event Planning</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 520px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+  input[type="text"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+  }
+  input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+
+  .type-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .type-btn {
+    flex: 1;
+    min-width: 100px;
+    padding: 10px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    color: #111827;
+  }
+  .type-btn:hover { border-color: #16a34a; }
+  .type-btn.selected {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+
+  button.plan-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.plan-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 24px;
+    padding: 18px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    display: none;
+  }
+  .result.visible { display: block; }
+  .result-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 10px 0;
+  }
+  .result-tips {
+    font-size: 13px;
+    color: #374151;
+    line-height: 1.7;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Pre-Event Planning</h1>
+  <p class="subtitle">Name the event and its type — get a quick, specific plan before you go.</p>
+
+  <label for="eventInput">What's the event?</label>
+  <input type="text" id="eventInput" placeholder="e.g. Sarah's birthday dinner">
+
+  <label>What kind of event?</label>
+  <div class="type-row" id="typeRow">
+    <div class="type-btn" data-type="restaurant">🍽️ Restaurant</div>
+    <div class="type-btn" data-type="party">🎉 Party</div>
+    <div class="type-btn" data-type="holiday">🎄 Holiday</div>
+    <div class="type-btn" data-type="travel">✈️ Travel</div>
+  </div>
+
+  <button class="plan-btn" onclick="buildPlan()">Build My Plan</button>
+
+  <div class="result" id="result">
+    <p class="result-title" id="resultTitle"></p>
+    <div class="result-tips" id="resultTips"></div>
+  </div>
+</div>
+
+<script>
+  const typeContent = {
+    restaurant: {
+      title: "🍽️ Restaurant Plan",
+      tips: [
+        "Check the menu online beforehand if possible — deciding calmly at home beats deciding hungry at the table.",
+        "Eat a small protein-forward snack if the reservation is late, so you're not arriving starving.",
+        "Scan for protein first when the menu arrives, then build the rest of the order around it.",
+        "One dish worth genuinely enjoying beats picking at three things you didn't actually want."
+      ]
+    },
+    party: {
+      title: "🎉 Party Plan",
+      tips: [
+        "Eat something substantial before you go — arriving hungry at a buffet table rarely ends well.",
+        "Do one lap of the food table before serving yourself, so you can choose intentionally instead of grabbing the first thing you see.",
+        "Hold a drink (water or otherwise) in your hand — it gives you something to do besides grazing.",
+        "This is a celebration, not a daily eating pattern — one flexible night doesn't undo weeks of consistency."
+      ]
+    },
+    holiday: {
+      title: "🎄 Holiday Plan",
+      tips: [
+        "Pick your genuine priorities in advance — which dishes actually matter to you, and which you can pass on without regret.",
+        "Don't try to be 'perfect' on a day built around food and connection — aim for present and enjoying it, not restrictive.",
+        "If it's multi-day, focus on getting back to your normal pattern the next day rather than trying to control every single meal in between.",
+        "Movement (a walk, a game outside) is a better use of holiday energy than guilt about what's already been eaten."
+      ]
+    },
+    travel: {
+      title: "✈️ Travel Plan",
+      tips: [
+        "Pack a few reliable snacks (nuts, protein bars) for transit days when options are limited or expensive.",
+        "Research one or two plant-based-friendly spots at your destination before you arrive, so you're not scrambling hungry in an unfamiliar place.",
+        "Hydration drops on travel days more than people expect — prioritise water even when routine feels harder to keep.",
+        "Expect this to look different from home, and let it — the goal is enjoying the trip, not replicating your exact routine somewhere new."
+      ]
+    }
+  };
+
+  let selectedType = null;
+
+  document.querySelectorAll('.type-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedType = btn.getAttribute('data-type');
+    });
+  });
+
+  function buildPlan() {
+    const eventName = document.getElementById('eventInput').value.trim();
+    const result = document.getElementById('result');
+
+    if (!selectedType) return;
+
+    const content = typeContent[selectedType];
+    const title = eventName ? content.title + ": " + eventName : content.title;
+
+    document.getElementById('resultTitle').textContent = title;
+    document.getElementById('resultTips').innerHTML = content.tips.map(t => '• ' + t).join('<br><br>');
+
+    result.classList.add('visible');
+  }
+</script>
+
+</body>
+</html>
