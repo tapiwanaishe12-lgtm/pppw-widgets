@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Supplement Check-In</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 480px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+  .add-row {
+    display: flex;
+    gap: 8px;
+  }
+  input[type="text"] {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+  }
+  input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+  .add-btn {
+    padding: 10px 16px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .add-btn:hover { background: #128a3e; }
+
+  .supp-list { margin-top: 18px; }
+  .supp-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 14px;
+    color: #111827;
+  }
+  .supp-item:last-child { border-bottom: none; }
+  .supp-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: #16a34a; }
+  .supp-item.checked span { text-decoration: line-through; color: #9ca3af; }
+  .supp-item span { flex: 1; }
+  .remove-supp {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .remove-supp:hover { color: #b91c1c; }
+  .empty-note {
+    font-size: 13px;
+    color: #9ca3af;
+  }
+
+  .streak-section {
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    gap: 12px;
+  }
+  .stat-box {
+    flex: 1;
+    text-align: center;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 14px 8px;
+  }
+  .stat-number {
+    font-size: 24px;
+    font-weight: 700;
+    color: #16a34a;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: #4b5563;
+    margin-top: 2px;
+  }
+
+  .day-complete-btn {
+    width: 100%;
+    margin-top: 16px;
+    padding: 12px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .day-complete-btn:hover { background: #128a3e; }
+  .day-complete-btn:disabled {
+    background: #d1d5db;
+    cursor: default;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Supplement Check-In</h1>
+  <p class="subtitle">Tick off today's supplements, then lock in the day to build your streak.</p>
+
+  <label for="suppInput">Add a supplement</label>
+  <div class="add-row">
+    <input type="text" id="suppInput" placeholder="e.g. B12" onkeypress="if(event.key==='Enter') addSupp()">
+    <button class="add-btn" onclick="addSupp()">Add</button>
+  </div>
+
+  <div class="supp-list" id="suppList"></div>
+
+  <button class="day-complete-btn" id="dayBtn" onclick="lockDay()">Lock In Today</button>
+
+  <div class="streak-section">
+    <div class="stat-box">
+      <div class="stat-number" id="currentStreak">0</div>
+      <div class="stat-label">Current Streak</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-number" id="bestStreak">0</div>
+      <div class="stat-label">Best Streak</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let supplements = [
+    { name: 'B12', checked: false },
+    { name: 'Omega-3', checked: false },
+    { name: 'Vitamin D3', checked: false }
+  ];
+  let currentStreak = 0;
+  let bestStreak = 0;
+  let dayLocked = false;
+
+  function addSupp() {
+    const input = document.getElementById('suppInput');
+    const name = input.value.trim();
+    if (!name) return;
+
+    supplements.push({ name, checked: false });
+    input.value = '';
+    renderSupps();
+  }
+
+  function toggleSupp(index) {
+    supplements[index].checked = !supplements[index].checked;
+    renderSupps();
+  }
+
+  function removeSupp(index) {
+    supplements.splice(index, 1);
+    renderSupps();
+  }
+
+  function renderSupps() {
+    const list = document.getElementById('suppList');
+    list.innerHTML = '';
+
+    if (supplements.length === 0) {
+      list.innerHTML = '<p class="empty-note">No supplements added yet. Add the ones you take regularly above.</p>';
+      return;
+    }
+
+    supplements.forEach((supp, i) => {
+      const div = document.createElement('div');
+      div.className = 'supp-item' + (supp.checked ? ' checked' : '');
+      div.innerHTML = `
+        <input type="checkbox" ${supp.checked ? 'checked' : ''} onchange="toggleSupp(${i})">
+        <span>${supp.name}</span>
+        <button class="remove-supp" onclick="removeSupp(${i})">✕</button>
+      `;
+      list.appendChild(div);
+    });
+  }
+
+  function lockDay() {
+    if (dayLocked) return;
+    const allChecked = supplements.length > 0 && supplements.every(s => s.checked);
+
+    if (!allChecked) {
+      alert("Check off all your supplements before locking in the day.");
+      return;
+    }
+
+    dayLocked = true;
+    currentStreak++;
+    if (currentStreak > bestStreak) bestStreak = currentStreak;
+
+    document.getElementById('currentStreak').textContent = currentStreak;
+    document.getElementById('bestStreak').textContent = bestStreak;
+    document.getElementById('dayBtn').disabled = true;
+    document.getElementById('dayBtn').textContent = "Today Locked In ✓";
+  }
+
+  renderSupps();
+</script>
+
+</body>
+</html>
