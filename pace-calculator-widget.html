@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pace Calculator</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 480px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+  input[type="number"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+  }
+  input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+
+  .time-row {
+    display: flex;
+    gap: 8px;
+  }
+  .time-row > div { flex: 1; }
+  .time-row label { font-size: 11px; color: #6b7280; margin-bottom: 4px; }
+
+  button.calc-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.calc-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    display: none;
+  }
+  .result.visible { display: block; }
+  .pace-row {
+    display: flex;
+    gap: 10px;
+  }
+  .pace-box {
+    flex: 1;
+    text-align: center;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 16px 8px;
+  }
+  .pace-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: #16a34a;
+  }
+  .pace-label {
+    font-size: 12px;
+    color: #4b5563;
+    margin-top: 2px;
+  }
+  .speed-caption {
+    text-align: center;
+    font-size: 13px;
+    color: #6b7280;
+    margin-top: 14px;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Pace Calculator</h1>
+  <p class="subtitle">Enter your distance and finish time to get your pace per km and per mile.</p>
+
+  <label for="distanceInput">Distance (km)</label>
+  <input type="number" id="distanceInput" min="0.1" step="0.01" placeholder="e.g. 10">
+
+  <label>Time</label>
+  <div class="time-row">
+    <div><label>Hours</label><input type="number" id="hoursInput" min="0" placeholder="0"></div>
+    <div><label>Minutes</label><input type="number" id="minutesInput" min="0" max="59" placeholder="0"></div>
+    <div><label>Seconds</label><input type="number" id="secondsInput" min="0" max="59" placeholder="0"></div>
+  </div>
+
+  <button class="calc-btn" onclick="calculatePace()">Calculate My Pace</button>
+
+  <div class="result" id="result">
+    <div class="pace-row">
+      <div class="pace-box">
+        <div class="pace-value" id="paceKm"></div>
+        <div class="pace-label">min/km</div>
+      </div>
+      <div class="pace-box">
+        <div class="pace-value" id="paceMile"></div>
+        <div class="pace-label">min/mile</div>
+      </div>
+    </div>
+    <p class="speed-caption" id="speedCaption"></p>
+  </div>
+</div>
+
+<script>
+  function calculatePace() {
+    const distanceKm = parseFloat(document.getElementById('distanceInput').value);
+    const hours = parseFloat(document.getElementById('hoursInput').value) || 0;
+    const minutes = parseFloat(document.getElementById('minutesInput').value) || 0;
+    const seconds = parseFloat(document.getElementById('secondsInput').value) || 0;
+
+    if (isNaN(distanceKm) || distanceKm <= 0) return;
+
+    const totalMinutes = (hours * 60) + minutes + (seconds / 60);
+    if (totalMinutes <= 0) return;
+
+    const paceKmMinutes = totalMinutes / distanceKm;
+    const distanceMiles = distanceKm * 0.621371;
+    const paceMileMinutes = totalMinutes / distanceMiles;
+
+    document.getElementById('paceKm').textContent = formatPace(paceKmMinutes);
+    document.getElementById('paceMile').textContent = formatPace(paceMileMinutes);
+
+    const speedKmh = (distanceKm / totalMinutes) * 60;
+    document.getElementById('speedCaption').textContent = "Average speed: " + speedKmh.toFixed(1) + " km/h";
+
+    document.getElementById('result').classList.add('visible');
+  }
+
+  function formatPace(paceMinutes) {
+    const mins = Math.floor(paceMinutes);
+    const secs = Math.round((paceMinutes - mins) * 60);
+    const secsStr = secs < 10 ? '0' + secs : secs;
+    return mins + ':' + secsStr;
+  }
+</script>
+
+</body>
+</html>
