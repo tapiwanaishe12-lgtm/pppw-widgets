@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weekly Mileage Progress</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 500px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+  input[type="number"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+  }
+  input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+
+  .add-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+  }
+  .add-row > div { flex: 1; }
+  .add-btn {
+    padding: 10px 16px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    height: 40px;
+    white-space: nowrap;
+  }
+  .add-btn:hover { background: #128a3e; }
+
+  .progress-section {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid #e5e7eb;
+  }
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .progress-total {
+    font-size: 28px;
+    font-weight: 700;
+    color: #16a34a;
+  }
+  .progress-target {
+    font-size: 14px;
+    color: #6b7280;
+  }
+  .progress-track {
+    width: 100%;
+    height: 12px;
+    background: #e5e7eb;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-top: 10px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: #16a34a;
+    border-radius: 999px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+  .progress-caption {
+    font-size: 13px;
+    color: #4b5563;
+    margin-top: 8px;
+  }
+
+  .runs-list { margin-top: 16px; }
+  .run-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: #374151;
+    padding: 7px 0;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .run-entry:last-child { border-bottom: none; }
+  .remove-run {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .remove-run:hover { color: #b91c1c; }
+
+  .reset-btn {
+    width: 100%;
+    margin-top: 16px;
+    padding: 10px;
+    background: #ffffff;
+    color: #6b7280;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .reset-btn:hover { border-color: #b91c1c; color: #b91c1c; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Weekly Mileage Progress</h1>
+  <p class="subtitle">Set your goal, log each run, watch the week fill in.</p>
+
+  <label for="goalInput">This week's goal (km)</label>
+  <input type="number" id="goalInput" min="1" value="40" onchange="updateProgress()">
+
+  <label>Log a run</label>
+  <div class="add-row">
+    <div><input type="number" id="distanceInput" min="0" step="0.1" placeholder="Distance (km)"></div>
+    <button class="add-btn" onclick="addRun()">Add</button>
+  </div>
+
+  <div class="progress-section">
+    <div class="progress-header">
+      <span class="progress-total" id="totalDistance">0</span>
+      <span class="progress-target" id="targetLabel">of 40 km</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <p class="progress-caption" id="progressCaption"></p>
+
+    <div class="runs-list" id="runsList"></div>
+  </div>
+
+  <button class="reset-btn" onclick="resetWeek()">Reset Week</button>
+</div>
+
+<script>
+  let runs = [];
+
+  function addRun() {
+    const input = document.getElementById('distanceInput');
+    const distance = parseFloat(input.value);
+    if (isNaN(distance) || distance <= 0) return;
+
+    runs.push(distance);
+    input.value = '';
+    updateProgress();
+  }
+
+  function removeRun(index) {
+    runs.splice(index, 1);
+    updateProgress();
+  }
+
+  function resetWeek() {
+    runs = [];
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const goal = parseFloat(document.getElementById('goalInput').value) || 1;
+    const total = runs.reduce((sum, r) => sum + r, 0);
+    const percent = Math.min(100, Math.round((total / goal) * 100));
+
+    document.getElementById('totalDistance').textContent = total.toFixed(1);
+    document.getElementById('targetLabel').textContent = 'of ' + goal + ' km';
+    document.getElementById('progressFill').style.width = percent + '%';
+
+    const caption = document.getElementById('progressCaption');
+    if (total >= goal) {
+      caption.textContent = "Goal hit for the week. Anything beyond this is a bonus.";
+    } else {
+      const remaining = (goal - total).toFixed(1);
+      caption.textContent = remaining + " km remaining to hit this week's goal.";
+    }
+
+    const runsList = document.getElementById('runsList');
+    runsList.innerHTML = '';
+    runs.forEach((r, i) => {
+      const div = document.createElement('div');
+      div.className = 'run-entry';
+      div.innerHTML = '<span>Run ' + (i + 1) + ': ' + r + ' km</span><button class="remove-run" onclick="removeRun(' + i + ')">✕</button>';
+      runsList.appendChild(div);
+    });
+  }
+
+  updateProgress();
+</script>
+
+</body>
+</html>
