@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stress & Trigger Tracker</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 540px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+  input[type="text"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+  }
+  input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+
+  .scale-row {
+    display: flex;
+    gap: 6px;
+  }
+  .scale-btn {
+    flex: 1;
+    padding: 9px 0;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    color: #111827;
+  }
+  .scale-btn:hover { border-color: #16a34a; }
+  .scale-btn.selected {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+
+  .chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .chip-btn {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 999px;
+    background: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #111827;
+  }
+  .chip-btn:hover { border-color: #16a34a; }
+  .chip-btn.selected {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+
+  button.log-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.log-btn:hover { background: #128a3e; }
+
+  .insight-box {
+    font-size: 13px;
+    color: #374151;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-top: 20px;
+    line-height: 1.5;
+    display: none;
+  }
+  .insight-box.visible { display: block; }
+
+  .log-section {
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid #e5e7eb;
+  }
+  .section-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #16a34a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 10px;
+  }
+  .log-entry {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: #374151;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .log-entry-remove {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .log-entry-remove:hover { color: #b91c1c; }
+  .empty-note {
+    font-size: 13px;
+    color: #9ca3af;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Stress & Trigger Tracker</h1>
+  <p class="subtitle">Log the moment stress hits — the source and what helped, not just that it happened.</p>
+
+  <label for="triggerInput">What triggered it?</label>
+  <input type="text" id="triggerInput" placeholder="e.g. Tight deadline at work">
+
+  <label>Stress intensity (1-5)</label>
+  <div class="scale-row" id="intensityRow">
+    <div class="scale-btn" data-value="1">1</div>
+    <div class="scale-btn" data-value="2">2</div>
+    <div class="scale-btn" data-value="3">3</div>
+    <div class="scale-btn" data-value="4">4</div>
+    <div class="scale-btn" data-value="5">5</div>
+  </div>
+
+  <label>What helped? (optional, select any)</label>
+  <div class="chip-row" id="copingRow">
+    <div class="chip-btn" data-coping="Breathing exercise">Breathing exercise</div>
+    <div class="chip-btn" data-coping="Walked away">Walked away</div>
+    <div class="chip-btn" data-coping="Talked to someone">Talked to someone</div>
+    <div class="chip-btn" data-coping="Nothing yet">Nothing yet</div>
+  </div>
+
+  <button class="log-btn" onclick="logStress()">Log This Moment</button>
+
+  <div class="insight-box" id="insightBox"></div>
+
+  <div class="log-section">
+    <p class="section-label">This Session's Log</p>
+    <div id="logList"></div>
+  </div>
+</div>
+
+<script>
+  let selectedIntensity = null;
+  let selectedCoping = new Set();
+  let entries = [];
+
+  document.querySelectorAll('#intensityRow .scale-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#intensityRow .scale-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedIntensity = parseInt(btn.getAttribute('data-value'), 10);
+    });
+  });
+
+  document.querySelectorAll('#copingRow .chip-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const coping = btn.getAttribute('data-coping');
+      if (selectedCoping.has(coping)) {
+        selectedCoping.delete(coping);
+        btn.classList.remove('selected');
+      } else {
+        selectedCoping.add(coping);
+        btn.classList.add('selected');
+      }
+    });
+  });
+
+  function logStress() {
+    const trigger = document.getElementById('triggerInput').value.trim();
+
+    if (!trigger || selectedIntensity === null) return;
+
+    entries.unshift({ trigger, intensity: selectedIntensity, coping: [...selectedCoping] });
+
+    document.getElementById('triggerInput').value = '';
+    document.querySelectorAll('#intensityRow .scale-btn').forEach(b => b.classList.remove('selected'));
+    document.querySelectorAll('#copingRow .chip-btn').forEach(b => b.classList.remove('selected'));
+    selectedIntensity = null;
+    selectedCoping = new Set();
+
+    renderLog();
+    showInsight();
+  }
+
+  function removeEntry(index) {
+    entries.splice(index, 1);
+    renderLog();
+    showInsight();
+  }
+
+  function renderLog() {
+    const logList = document.getElementById('logList');
+    logList.innerHTML = '';
+
+    if (entries.length === 0) {
+      logList.innerHTML = '<p class="empty-note">No stress moments logged yet this session.</p>';
+      return;
+    }
+
+    entries.forEach((entry, i) => {
+      const div = document.createElement('div');
+      div.className = 'log-entry';
+      const copingText = entry.coping.length > 0 ? ' — tried: ' + entry.coping.join(', ') : '';
+      div.innerHTML = '<span>' + entry.trigger + ' (intensity ' + entry.intensity + '/5)' + copingText + '</span><button class="log-entry-remove" onclick="removeEntry(' + i + ')">✕</button>';
+      logList.appendChild(div);
+    });
+  }
+
+  function showInsight() {
+    const insightBox = document.getElementById('insightBox');
+
+    if (entries.length < 2) {
+      insightBox.classList.remove('visible');
+      return;
+    }
+
+    const avgIntensity = entries.reduce((sum, e) => sum + e.intensity, 0) / entries.length;
+    const highIntensityCount = entries.filter(e => e.intensity >= 4).length;
+
+    insightBox.textContent = "Average intensity so far: " + avgIntensity.toFixed(1) + "/5, with " + highIntensityCount + " of " + entries.length + " moments rated 4 or higher. Look for repeated triggers across entries — that's usually the most actionable pattern.";
+    insightBox.classList.add('visible');
+  }
+
+  renderLog();
+</script>
+
+</body>
+</html>
