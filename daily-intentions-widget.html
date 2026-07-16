@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Intentions</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 500px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  .section-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #16a34a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 20px 0 10px 0;
+  }
+  .section-label.first { margin-top: 0; }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+  }
+  input[type="text"], textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+    font-family: inherit;
+  }
+  textarea { resize: vertical; min-height: 60px; }
+  input:focus, textarea:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+
+  .area-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .area-btn {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 999px;
+    background: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #111827;
+  }
+  .area-btn:hover { border-color: #16a34a; }
+  .area-btn.selected {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+
+  button.set-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.set-btn:hover { background: #128a3e; }
+
+  .intention-display {
+    margin-top: 20px;
+    padding: 16px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    display: none;
+  }
+  .intention-display.visible { display: block; }
+  .intention-tag {
+    font-size: 11px;
+    font-weight: 700;
+    color: #16a34a;
+    text-transform: uppercase;
+  }
+  .intention-text {
+    font-size: 15px;
+    font-weight: 600;
+    color: #111827;
+    margin-top: 4px;
+  }
+
+  .checkin-section {
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid #e5e7eb;
+    display: none;
+  }
+  .checkin-section.visible { display: block; }
+  .rating-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .rating-btn {
+    flex: 1;
+    padding: 9px 0;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    color: #111827;
+  }
+  .rating-btn:hover { border-color: #16a34a; }
+  .rating-btn.selected {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+  .checkin-btn {
+    width: 100%;
+    margin-top: 14px;
+    padding: 11px;
+    background: #ffffff;
+    color: #16a34a;
+    border: 1px solid #16a34a;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .checkin-btn:hover { background: #f0fdf4; }
+  .checkin-message {
+    font-size: 13px;
+    color: #374151;
+    margin-top: 12px;
+    line-height: 1.5;
+    display: none;
+  }
+  .checkin-message.visible { display: block; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Daily Intentions</h1>
+  <p class="subtitle">Set how you want to show up today. Check back on it tonight.</p>
+
+  <p class="section-label first">Morning: Set Your Intention</p>
+  <label for="intentionInput">Today, I intend to...</label>
+  <input type="text" id="intentionInput" placeholder="e.g. Stay present in conversations">
+
+  <label>Area</label>
+  <div class="area-row" id="areaRow">
+    <div class="area-btn selected" data-area="Presence">Presence</div>
+    <div class="area-btn" data-area="Patience">Patience</div>
+    <div class="area-btn" data-area="Self-Compassion">Self-Compassion</div>
+    <div class="area-btn" data-area="Connection">Connection</div>
+    <div class="area-btn" data-area="Focus">Focus</div>
+  </div>
+
+  <button class="set-btn" onclick="setIntention()">Set Today's Intention</button>
+
+  <div class="intention-display" id="intentionDisplay">
+    <p class="intention-tag" id="intentionTag"></p>
+    <p class="intention-text" id="intentionText"></p>
+  </div>
+
+  <div class="checkin-section" id="checkinSection">
+    <p class="section-label">Evening: Check In</p>
+    <label>How well did you hold this intention today?</label>
+    <div class="rating-row" id="ratingRow">
+      <div class="rating-btn" data-value="1">1</div>
+      <div class="rating-btn" data-value="2">2</div>
+      <div class="rating-btn" data-value="3">3</div>
+      <div class="rating-btn" data-value="4">4</div>
+      <div class="rating-btn" data-value="5">5</div>
+    </div>
+    <button class="checkin-btn" onclick="submitCheckin()">Log Evening Check-In</button>
+    <p class="checkin-message" id="checkinMessage"></p>
+  </div>
+</div>
+
+<script>
+  let selectedArea = 'Presence';
+  let currentIntention = null;
+  let selectedRating = null;
+
+  document.querySelectorAll('.area-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.area-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedArea = btn.getAttribute('data-area');
+    });
+  });
+
+  document.querySelectorAll('.rating-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedRating = parseInt(btn.getAttribute('data-value'), 10);
+    });
+  });
+
+  function setIntention() {
+    const text = document.getElementById('intentionInput').value.trim();
+    if (!text) return;
+
+    currentIntention = { text, area: selectedArea };
+
+    document.getElementById('intentionTag').textContent = selectedArea;
+    document.getElementById('intentionText').textContent = text;
+    document.getElementById('intentionDisplay').classList.add('visible');
+    document.getElementById('checkinSection').classList.add('visible');
+    document.getElementById('checkinMessage').classList.remove('visible');
+  }
+
+  function submitCheckin() {
+    if (selectedRating === null || !currentIntention) return;
+
+    const message = document.getElementById('checkinMessage');
+    let text;
+
+    if (selectedRating >= 4) {
+      text = "Strong day for holding this. Notice what made it easier today — that's worth repeating tomorrow.";
+    } else if (selectedRating === 3) {
+      text = "A mixed day, which is normal. Intentions are a practice, not a pass/fail test.";
+    } else {
+      text = "A tougher day for this one — that's genuinely useful information, not a failure. What got in the way today?";
+    }
+
+    message.textContent = text;
+    message.classList.add('visible');
+  }
+</script>
+
+</body>
+</html>
