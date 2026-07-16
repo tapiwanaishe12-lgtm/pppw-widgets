@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coping Toolkit</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 520px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  .section-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #16a34a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 20px 0 10px 0;
+  }
+  .section-label.first { margin-top: 0; }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+  }
+  input[type="text"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+  }
+  input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+
+  .tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .tag-btn {
+    padding: 7px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 999px;
+    background: #ffffff;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #111827;
+  }
+  .tag-btn:hover { border-color: #16a34a; }
+  .tag-btn.selected {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+
+  .add-btn {
+    width: 100%;
+    margin-top: 14px;
+    padding: 11px;
+    background: #ffffff;
+    color: #16a34a;
+    border: 1px solid #16a34a;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .add-btn:hover { background: #f0fdf4; }
+
+  .strategy-list { margin-top: 14px; }
+  .strategy-item {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .strategy-item-tags {
+    font-size: 10px;
+    color: #16a34a;
+    font-weight: 700;
+    text-transform: uppercase;
+    display: block;
+    margin-top: 2px;
+  }
+  .remove-strategy {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .remove-strategy:hover { color: #b91c1c; }
+  .empty-note {
+    font-size: 13px;
+    color: #9ca3af;
+  }
+
+  .finder-section {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+  }
+  .feeling-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .feeling-btn {
+    flex: 1;
+    min-width: 90px;
+    padding: 10px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    color: #111827;
+  }
+  .feeling-btn:hover { border-color: #16a34a; }
+  .feeling-btn.selected {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+
+  .find-btn {
+    width: 100%;
+    margin-top: 14px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .find-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 18px;
+    padding: 16px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    display: none;
+  }
+  .result.visible { display: block; }
+  .result-title { font-size: 13px; font-weight: 700; color: #111827; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Coping Toolkit</h1>
+  <p class="subtitle">Build your toolkit now, tagged by what it helps with — find the right one fast later.</p>
+
+  <p class="section-label first">Add a Strategy</p>
+  <label for="strategyInput">What helps you?</label>
+  <input type="text" id="strategyInput" placeholder="e.g. Call a friend">
+
+  <label>Tag it with what it helps with</label>
+  <div class="tag-row" id="tagRow">
+    <div class="tag-btn" data-tag="Overwhelmed">Overwhelmed</div>
+    <div class="tag-btn" data-tag="Anxious">Anxious</div>
+    <div class="tag-btn" data-tag="Angry">Angry</div>
+    <div class="tag-btn" data-tag="Sad">Sad</div>
+    <div class="tag-btn" data-tag="Can't focus">Can't focus</div>
+  </div>
+
+  <button class="add-btn" onclick="addStrategy()">Add to Toolkit</button>
+
+  <div class="strategy-list" id="strategyList"></div>
+
+  <div class="finder-section">
+    <p class="section-label">Find a Strategy Right Now</p>
+    <label>What are you feeling?</label>
+    <div class="feeling-row" id="feelingRow">
+      <div class="feeling-btn" data-feeling="Overwhelmed">Overwhelmed</div>
+      <div class="feeling-btn" data-feeling="Anxious">Anxious</div>
+      <div class="feeling-btn" data-feeling="Angry">Angry</div>
+      <div class="feeling-btn" data-feeling="Sad">Sad</div>
+      <div class="feeling-btn" data-feeling="Can't focus">Can't focus</div>
+    </div>
+    <button class="find-btn" onclick="findStrategy()">Show Me What Helps</button>
+
+    <div class="result" id="result">
+      <p class="result-title" id="resultTitle"></p>
+      <div id="resultList"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let strategies = [
+    { name: 'Breathing exercise', tags: ['Overwhelmed', 'Anxious'] },
+    { name: 'Go for a walk', tags: ['Overwhelmed', 'Angry', "Can't focus"] },
+    { name: 'Call a friend', tags: ['Sad', 'Overwhelmed'] },
+    { name: 'Write it down', tags: ['Anxious', 'Angry', 'Sad'] }
+  ];
+  let selectedAddTag = null;
+  let selectedFeeling = null;
+
+  document.querySelectorAll('#tagRow .tag-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#tagRow .tag-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedAddTag = btn.getAttribute('data-tag');
+    });
+  });
+
+  document.querySelectorAll('#feelingRow .feeling-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#feelingRow .feeling-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedFeeling = btn.getAttribute('data-feeling');
+    });
+  });
+
+  function addStrategy() {
+    const input = document.getElementById('strategyInput');
+    const name = input.value.trim();
+    if (!name || !selectedAddTag) return;
+
+    strategies.push({ name, tags: [selectedAddTag] });
+    input.value = '';
+    document.querySelectorAll('#tagRow .tag-btn').forEach(b => b.classList.remove('selected'));
+    selectedAddTag = null;
+
+    renderStrategies();
+  }
+
+  function removeStrategy(index) {
+    strategies.splice(index, 1);
+    renderStrategies();
+  }
+
+  function renderStrategies() {
+    const list = document.getElementById('strategyList');
+    list.innerHTML = '';
+
+    if (strategies.length === 0) {
+      list.innerHTML = '<p class="empty-note">No strategies added yet.</p>';
+      return;
+    }
+
+    strategies.forEach((s, i) => {
+      const div = document.createElement('div');
+      div.className = 'strategy-item';
+      div.innerHTML = '<span>' + s.name + '<span class="strategy-item-tags">' + s.tags.join(', ') + '</span></span><button class="remove-strategy" onclick="removeStrategy(' + i + ')">✕</button>';
+      list.appendChild(div);
+    });
+  }
+
+  function findStrategy() {
+    const result = document.getElementById('result');
+    if (!selectedFeeling) return;
+
+    const matches = strategies.filter(s => s.tags.includes(selectedFeeling));
+
+    document.getElementById('resultTitle').textContent = matches.length > 0
+      ? "From your toolkit, for feeling " + selectedFeeling.toLowerCase() + ":"
+      : "No strategies tagged for " + selectedFeeling.toLowerCase() + " yet — add one above.";
+
+    document.getElementById('resultList').innerHTML = matches.map(m => '• ' + m.name).join('<br>');
+    result.classList.add('visible');
+  }
+
+  renderStrategies();
+</script>
+
+</body>
+</html>
