@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sleep & Energy Log</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 520px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+  input[type="number"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+  }
+  input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+
+  .scale-row {
+    display: flex;
+    gap: 6px;
+  }
+  .scale-btn {
+    flex: 1;
+    padding: 9px 0;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    color: #111827;
+  }
+  .scale-btn:hover { border-color: #16a34a; }
+  .scale-btn.selected {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+
+  button.log-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.log-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid #e5e7eb;
+    display: none;
+  }
+  .result.visible { display: block; }
+
+  .stat-row {
+    display: flex;
+    gap: 10px;
+  }
+  .stat-box {
+    flex: 1;
+    text-align: center;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 10px 6px;
+  }
+  .stat-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #16a34a;
+  }
+  .stat-label {
+    font-size: 10px;
+    color: #6b7280;
+    margin-top: 2px;
+  }
+
+  .message {
+    font-size: 13px;
+    color: #374151;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-top: 16px;
+    line-height: 1.5;
+  }
+
+  .log-entry {
+    font-size: 12px;
+    color: #6b7280;
+    padding: 6px 0;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .log-entry:last-child { border-bottom: none; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Sleep & Energy Log</h1>
+  <p class="subtitle">Log last night's sleep and this morning's energy — see the connection build over time.</p>
+
+  <label for="hoursInput">Hours slept</label>
+  <input type="number" id="hoursInput" min="0" max="16" step="0.5" placeholder="e.g. 7.5">
+
+  <label>Sleep quality (1-5)</label>
+  <div class="scale-row" id="qualityRow">
+    <div class="scale-btn" data-value="1">1</div>
+    <div class="scale-btn" data-value="2">2</div>
+    <div class="scale-btn" data-value="3">3</div>
+    <div class="scale-btn" data-value="4">4</div>
+    <div class="scale-btn" data-value="5">5</div>
+  </div>
+
+  <label>Energy this morning (1-5)</label>
+  <div class="scale-row" id="energyRow">
+    <div class="scale-btn" data-value="1">1</div>
+    <div class="scale-btn" data-value="2">2</div>
+    <div class="scale-btn" data-value="3">3</div>
+    <div class="scale-btn" data-value="4">4</div>
+    <div class="scale-btn" data-value="5">5</div>
+  </div>
+
+  <button class="log-btn" onclick="logEntry()">Log This Morning</button>
+
+  <div class="result" id="result">
+    <div class="stat-row">
+      <div class="stat-box">
+        <div class="stat-value" id="avgHours">0</div>
+        <div class="stat-label">Avg Hours</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="avgQuality">0</div>
+        <div class="stat-label">Avg Quality</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="avgEnergy">0</div>
+        <div class="stat-label">Avg Energy</div>
+      </div>
+    </div>
+    <div class="message" id="message"></div>
+    <div id="logList" style="margin-top:12px;"></div>
+  </div>
+</div>
+
+<script>
+  let selectedQuality = null;
+  let selectedEnergy = null;
+  let entries = [];
+
+  document.querySelectorAll('#qualityRow .scale-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#qualityRow .scale-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedQuality = parseInt(btn.getAttribute('data-value'), 10);
+    });
+  });
+
+  document.querySelectorAll('#energyRow .scale-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#energyRow .scale-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedEnergy = parseInt(btn.getAttribute('data-value'), 10);
+    });
+  });
+
+  function logEntry() {
+    const hours = parseFloat(document.getElementById('hoursInput').value);
+
+    if (isNaN(hours) || selectedQuality === null || selectedEnergy === null) return;
+
+    entries.unshift({ hours, quality: selectedQuality, energy: selectedEnergy });
+
+    document.getElementById('hoursInput').value = '';
+    document.querySelectorAll('.scale-btn').forEach(b => b.classList.remove('selected'));
+    selectedQuality = null;
+    selectedEnergy = null;
+
+    updateStats();
+  }
+
+  function updateStats() {
+    const result = document.getElementById('result');
+    const avgHours = entries.reduce((sum, e) => sum + e.hours, 0) / entries.length;
+    const avgQuality = entries.reduce((sum, e) => sum + e.quality, 0) / entries.length;
+    const avgEnergy = entries.reduce((sum, e) => sum + e.energy, 0) / entries.length;
+
+    document.getElementById('avgHours').textContent = avgHours.toFixed(1);
+    document.getElementById('avgQuality').textContent = avgQuality.toFixed(1);
+    document.getElementById('avgEnergy').textContent = avgEnergy.toFixed(1);
+
+    const message = document.getElementById('message');
+    if (entries.length < 3) {
+      message.textContent = "Log a few more mornings to start seeing a real connection between sleep and energy.";
+    } else {
+      const lowSleepEntries = entries.filter(e => e.hours < 7);
+      const highSleepEntries = entries.filter(e => e.hours >= 7);
+
+      if (lowSleepEntries.length > 0 && highSleepEntries.length > 0) {
+        const lowAvgEnergy = lowSleepEntries.reduce((sum, e) => sum + e.energy, 0) / lowSleepEntries.length;
+        const highAvgEnergy = highSleepEntries.reduce((sum, e) => sum + e.energy, 0) / highSleepEntries.length;
+
+        if (highAvgEnergy - lowAvgEnergy >= 0.8) {
+          message.textContent = "Clear pattern: mornings after 7+ hours average " + highAvgEnergy.toFixed(1) + "/5 energy, versus " + lowAvgEnergy.toFixed(1) + "/5 after under 7 hours. This gap is worth taking seriously.";
+        } else {
+          message.textContent = "No strong gap yet between shorter and longer sleep nights — keep logging to see if a pattern emerges over more entries.";
+        }
+      } else {
+        message.textContent = "Keep logging across a mix of shorter and longer sleep nights to see how energy actually responds.";
+      }
+    }
+
+    const logList = document.getElementById('logList');
+    logList.innerHTML = entries.slice(0, 5).map(e =>
+      '<div class="log-entry">' + e.hours + 'h sleep, quality ' + e.quality + '/5 → energy ' + e.energy + '/5</div>'
+    ).join('');
+
+    result.classList.add('visible');
+  }
+</script>
+
+</body>
+</html>
