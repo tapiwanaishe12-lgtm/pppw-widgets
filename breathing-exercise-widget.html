@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Breathing Exercise</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 480px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+
+  .technique-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .technique-btn {
+    padding: 12px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    background: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    color: #111827;
+  }
+  .technique-btn:hover { border-color: #16a34a; }
+  .technique-btn.selected {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+  .technique-desc {
+    font-size: 11px;
+    font-weight: 400;
+    color: #6b7280;
+    display: block;
+    margin-top: 2px;
+  }
+  .technique-btn.selected .technique-desc { color: #16a34a; opacity: 0.8; }
+
+  .breathing-area {
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    display: none;
+  }
+  .breathing-area.visible { display: flex; }
+
+  .circle-wrap {
+    width: 200px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: #16a34a;
+    opacity: 0.85;
+    transition: transform 4s ease-in-out;
+  }
+  .phase-text {
+    position: absolute;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 14px;
+    text-align: center;
+  }
+
+  .cycle-count {
+    margin-top: 16px;
+    font-size: 13px;
+    color: #6b7280;
+  }
+
+  button.start-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.start-btn:hover { background: #128a3e; }
+  button.stop-btn {
+    width: 100%;
+    margin-top: 10px;
+    padding: 11px;
+    background: #ffffff;
+    color: #6b7280;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: none;
+  }
+  button.stop-btn.visible { display: block; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Breathing Exercise</h1>
+  <p class="subtitle">Pick a technique and follow the circle — expand as you breathe in, contract as you breathe out.</p>
+
+  <label>Choose a technique</label>
+  <div class="technique-row" id="techniqueRow">
+    <div class="technique-btn" data-technique="box">Box Breathing <span class="technique-desc">Inhale 4s, hold 4s, exhale 4s, hold 4s</span></div>
+    <div class="technique-btn" data-technique="478">4-7-8 Breathing <span class="technique-desc">Inhale 4s, hold 7s, exhale 8s</span></div>
+    <div class="technique-btn" data-technique="simple">Simple Deep Breathing <span class="technique-desc">Inhale 4s, exhale 6s</span></div>
+  </div>
+
+  <button class="start-btn" id="startBtn" onclick="startBreathing()" disabled>Start</button>
+  <button class="stop-btn" id="stopBtn" onclick="stopBreathing()">Stop</button>
+
+  <div class="breathing-area" id="breathingArea">
+    <div class="circle-wrap">
+      <div class="circle" id="circle"></div>
+      <div class="phase-text" id="phaseText">Ready</div>
+    </div>
+    <div class="cycle-count" id="cycleCount">Cycles completed: 0</div>
+  </div>
+</div>
+
+<script>
+  const techniques = {
+    box: { phases: [
+      { name: 'Inhale', duration: 4, scale: 1.6 },
+      { name: 'Hold', duration: 4, scale: 1.6 },
+      { name: 'Exhale', duration: 4, scale: 1.0 },
+      { name: 'Hold', duration: 4, scale: 1.0 }
+    ]},
+    '478': { phases: [
+      { name: 'Inhale', duration: 4, scale: 1.6 },
+      { name: 'Hold', duration: 7, scale: 1.6 },
+      { name: 'Exhale', duration: 8, scale: 1.0 }
+    ]},
+    simple: { phases: [
+      { name: 'Inhale', duration: 4, scale: 1.6 },
+      { name: 'Exhale', duration: 6, scale: 1.0 }
+    ]}
+  };
+
+  let selectedTechnique = null;
+  let running = false;
+  let phaseIndex = 0;
+  let cycleCount = 0;
+  let timeoutId = null;
+
+  document.querySelectorAll('.technique-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (running) return;
+      document.querySelectorAll('.technique-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedTechnique = btn.getAttribute('data-technique');
+      document.getElementById('startBtn').disabled = false;
+    });
+  });
+
+  function startBreathing() {
+    if (!selectedTechnique) return;
+    running = true;
+    phaseIndex = 0;
+    cycleCount = 0;
+
+    document.getElementById('breathingArea').classList.add('visible');
+    document.getElementById('startBtn').style.display = 'none';
+    document.getElementById('stopBtn').classList.add('visible');
+    document.getElementById('cycleCount').textContent = 'Cycles completed: 0';
+
+    runPhase();
+  }
+
+  function runPhase() {
+    if (!running) return;
+
+    const phases = techniques[selectedTechnique].phases;
+    const phase = phases[phaseIndex];
+
+    document.getElementById('phaseText').textContent = phase.name;
+    document.getElementById('circle').style.transitionDuration = phase.duration + 's';
+    document.getElementById('circle').style.transform = 'scale(' + phase.scale + ')';
+
+    timeoutId = setTimeout(() => {
+      phaseIndex++;
+      if (phaseIndex >= phases.length) {
+        phaseIndex = 0;
+        cycleCount++;
+        document.getElementById('cycleCount').textContent = 'Cycles completed: ' + cycleCount;
+      }
+      runPhase();
+    }, phase.duration * 1000);
+  }
+
+  function stopBreathing() {
+    running = false;
+    if (timeoutId) clearTimeout(timeoutId);
+
+    document.getElementById('breathingArea').classList.remove('visible');
+    document.getElementById('startBtn').style.display = 'block';
+    document.getElementById('stopBtn').classList.remove('visible');
+    document.getElementById('circle').style.transform = 'scale(1)';
+    document.getElementById('phaseText').textContent = 'Ready';
+  }
+</script>
+
+</body>
+</html>
