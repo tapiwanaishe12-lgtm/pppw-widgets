@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meditation Timer</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 500px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+
+  .type-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .type-btn {
+    flex: 1;
+    min-width: 100px;
+    padding: 9px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    color: #111827;
+  }
+  .type-btn:hover { border-color: #16a34a; }
+  .type-btn.selected {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+
+  .duration-row {
+    display: flex;
+    gap: 8px;
+  }
+  .duration-btn {
+    flex: 1;
+    padding: 9px 0;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    color: #111827;
+  }
+  .duration-btn:hover { border-color: #16a34a; }
+  .duration-btn.selected {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+
+  .timer-display {
+    text-align: center;
+    margin-top: 22px;
+    display: none;
+  }
+  .timer-display.visible { display: block; }
+  .timer-time {
+    font-size: 48px;
+    font-weight: 700;
+    color: #16a34a;
+  }
+  .timer-label {
+    font-size: 13px;
+    color: #6b7280;
+    margin-top: 4px;
+  }
+
+  button.start-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.start-btn:hover { background: #128a3e; }
+  button.start-btn:disabled { background: #d1d5db; cursor: default; }
+
+  button.stop-btn {
+    width: 100%;
+    margin-top: 10px;
+    padding: 11px;
+    background: #ffffff;
+    color: #6b7280;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: none;
+  }
+  button.stop-btn.visible { display: block; }
+
+  .log-section {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid #e5e7eb;
+  }
+  .section-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #16a34a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 10px;
+  }
+  .stat-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .stat-box {
+    flex: 1;
+    text-align: center;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 10px 6px;
+  }
+  .stat-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #16a34a;
+  }
+  .stat-label {
+    font-size: 10px;
+    color: #6b7280;
+    margin-top: 2px;
+  }
+  .log-entry {
+    font-size: 13px;
+    color: #374151;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+  }
+  .empty-note {
+    font-size: 13px;
+    color: #9ca3af;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Meditation Timer</h1>
+  <p class="subtitle">Pick a type and duration, then sit — the timer handles the clock so you don't have to.</p>
+
+  <label>Session type</label>
+  <div class="type-row" id="typeRow">
+    <div class="type-btn selected" data-type="Breath Focus">Breath Focus</div>
+    <div class="type-btn" data-type="Body Scan">Body Scan</div>
+    <div class="type-btn" data-type="Loving-Kindness">Loving-Kindness</div>
+    <div class="type-btn" data-type="Open Awareness">Open Awareness</div>
+  </div>
+
+  <label>Duration</label>
+  <div class="duration-row" id="durationRow">
+    <div class="duration-btn" data-mins="5">5 min</div>
+    <div class="duration-btn selected" data-mins="10">10 min</div>
+    <div class="duration-btn" data-mins="15">15 min</div>
+    <div class="duration-btn" data-mins="20">20 min</div>
+  </div>
+
+  <button class="start-btn" id="startBtn" onclick="startTimer()">Start Session</button>
+  <button class="stop-btn" id="stopBtn" onclick="stopTimer()">End Early</button>
+
+  <div class="timer-display" id="timerDisplay">
+    <div class="timer-time" id="timerTime">10:00</div>
+    <div class="timer-label" id="timerLabel">Breath Focus</div>
+  </div>
+
+  <div class="log-section">
+    <p class="section-label">This Session's Log</p>
+    <div class="stat-row">
+      <div class="stat-box">
+        <div class="stat-value" id="totalSessions">0</div>
+        <div class="stat-label">Sessions</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="totalMinutes">0</div>
+        <div class="stat-label">Total Minutes</div>
+      </div>
+    </div>
+    <div id="logList"></div>
+  </div>
+</div>
+
+<script>
+  let selectedType = 'Breath Focus';
+  let selectedMinutes = 10;
+  let remainingSeconds = 0;
+  let intervalId = null;
+  let sessions = [];
+
+  document.querySelectorAll('#typeRow .type-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#typeRow .type-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedType = btn.getAttribute('data-type');
+    });
+  });
+
+  document.querySelectorAll('#durationRow .duration-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#durationRow .duration-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedMinutes = parseInt(btn.getAttribute('data-mins'), 10);
+    });
+  });
+
+  function startTimer() {
+    remainingSeconds = selectedMinutes * 60;
+    document.getElementById('timerLabel').textContent = selectedType;
+    document.getElementById('timerDisplay').classList.add('visible');
+    document.getElementById('startBtn').style.display = 'none';
+    document.getElementById('stopBtn').classList.add('visible');
+
+    updateDisplay();
+    intervalId = setInterval(() => {
+      remainingSeconds--;
+      updateDisplay();
+      if (remainingSeconds <= 0) {
+        completeSession();
+      }
+    }, 1000);
+  }
+
+  function updateDisplay() {
+    const mins = Math.floor(remainingSeconds / 60);
+    const secs = remainingSeconds % 60;
+    document.getElementById('timerTime').textContent = mins + ':' + (secs < 10 ? '0' + secs : secs);
+  }
+
+  function completeSession() {
+    clearInterval(intervalId);
+    sessions.unshift({ type: selectedType, minutes: selectedMinutes });
+    resetUI();
+    renderLog();
+  }
+
+  function stopTimer() {
+    clearInterval(intervalId);
+    resetUI();
+  }
+
+  function resetUI() {
+    document.getElementById('timerDisplay').classList.remove('visible');
+    document.getElementById('startBtn').style.display = 'block';
+    document.getElementById('stopBtn').classList.remove('visible');
+  }
+
+  function renderLog() {
+    const logList = document.getElementById('logList');
+    logList.innerHTML = '';
+
+    if (sessions.length === 0) {
+      logList.innerHTML = '<p class="empty-note">No sessions completed yet this visit.</p>';
+    } else {
+      sessions.forEach(s => {
+        const div = document.createElement('div');
+        div.className = 'log-entry';
+        div.textContent = s.type + ' — ' + s.minutes + ' min';
+        logList.appendChild(div);
+      });
+    }
+
+    document.getElementById('totalSessions').textContent = sessions.length;
+    const totalMins = sessions.reduce((sum, s) => sum + s.minutes, 0);
+    document.getElementById('totalMinutes').textContent = totalMins;
+  }
+
+  renderLog();
+</script>
+
+</body>
+</html>
