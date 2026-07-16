@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Mantra</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 520px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  .theme-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .theme-btn {
+    flex: 1;
+    min-width: 100px;
+    padding: 10px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    color: #111827;
+  }
+  .theme-btn:hover { border-color: #16a34a; }
+  .theme-btn.selected {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+
+  button.generate {
+    width: 100%;
+    margin-top: 18px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.generate:hover { background: #128a3e; }
+
+  .mantra-box {
+    margin-top: 22px;
+    padding: 20px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    display: none;
+    text-align: center;
+  }
+  .mantra-box.visible { display: block; }
+  .mantra-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+    line-height: 1.5;
+    font-style: italic;
+  }
+  .mantra-theme-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #16a34a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+  .save-btn {
+    margin-top: 14px;
+    padding: 8px 16px;
+    background: #ffffff;
+    color: #16a34a;
+    border: 1px solid #16a34a;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .save-btn:hover { background: #16a34a; color: #ffffff; }
+  .save-btn.saved { background: #16a34a; color: #ffffff; cursor: default; }
+
+  .saved-section {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+  }
+  .section-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #16a34a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 10px;
+  }
+  .saved-item {
+    font-size: 13px;
+    color: #374151;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .saved-item-text { flex: 1; line-height: 1.4; }
+  .remove-btn {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+  }
+  .remove-btn:hover { color: #b91c1c; }
+  .empty-note {
+    font-size: 13px;
+    color: #9ca3af;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Daily Mantra</h1>
+  <p class="subtitle">Choose a theme, reveal a mantra, and save the ones worth carrying with you.</p>
+
+  <div class="theme-row" id="themeRow">
+    <div class="theme-btn selected" data-theme="calm">Calm</div>
+    <div class="theme-btn" data-theme="clarity">Clarity</div>
+    <div class="theme-btn" data-theme="resilience">Resilience</div>
+    <div class="theme-btn" data-theme="presence">Presence</div>
+  </div>
+
+  <button class="generate" onclick="generateMantra()">Reveal Today's Mantra</button>
+
+  <div class="mantra-box" id="mantraBox">
+    <p class="mantra-theme-label" id="mantraThemeLabel"></p>
+    <p class="mantra-text" id="mantraText"></p>
+    <button class="save-btn" id="saveBtn" onclick="saveCurrent()">Save This One</button>
+  </div>
+
+  <div class="saved-section">
+    <p class="section-label">Saved Mantras</p>
+    <div id="savedList"></div>
+  </div>
+</div>
+
+<script>
+  const mantras = {
+    calm: [
+      "This moment doesn't need to be fixed. It just needs to be felt.",
+      "I can be calm and still get it done.",
+      "My breath is the one thing always available to me.",
+      "Nothing that's happening right now requires me to panic."
+    ],
+    clarity: [
+      "I don't need every answer today. Just the next right step.",
+      "Clarity comes from stillness, not from thinking harder.",
+      "One thing at a time is still progress.",
+      "I can put this thought down without solving it right now."
+    ],
+    resilience: [
+      "I've gotten through every hard day so far. That's a perfect record.",
+      "This feeling is information, not a verdict.",
+      "I don't have to feel ready to keep going.",
+      "Difficult and temporary can be true at the same time."
+    ],
+    presence: [
+      "Right now, in this exact moment, I am okay.",
+      "The next five minutes are the only ones I actually have.",
+      "I can return to this breath any time I've drifted from it.",
+      "Where my attention goes, my experience follows."
+    ]
+  };
+
+  const themeLabels = {
+    calm: "Calm",
+    clarity: "Clarity",
+    resilience: "Resilience",
+    presence: "Presence"
+  };
+
+  let selectedTheme = 'calm';
+  let currentMantra = null;
+  let savedMantras = [];
+
+  document.querySelectorAll('.theme-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedTheme = btn.getAttribute('data-theme');
+    });
+  });
+
+  function generateMantra() {
+    const pool = mantras[selectedTheme];
+    const randomIndex = Math.floor(Math.random() * pool.length);
+    currentMantra = { text: pool[randomIndex], theme: selectedTheme };
+
+    document.getElementById('mantraThemeLabel').textContent = themeLabels[selectedTheme];
+    document.getElementById('mantraText').textContent = '"' + currentMantra.text + '"';
+    document.getElementById('mantraBox').classList.add('visible');
+
+    const saveBtn = document.getElementById('saveBtn');
+    saveBtn.textContent = 'Save This One';
+    saveBtn.classList.remove('saved');
+  }
+
+  function saveCurrent() {
+    if (!currentMantra) return;
+
+    const alreadySaved = savedMantras.some(m => m.text === currentMantra.text);
+    if (!alreadySaved) {
+      savedMantras.push(currentMantra);
+      renderSaved();
+    }
+
+    const saveBtn = document.getElementById('saveBtn');
+    saveBtn.textContent = 'Saved ✓';
+    saveBtn.classList.add('saved');
+  }
+
+  function removeSaved(index) {
+    savedMantras.splice(index, 1);
+    renderSaved();
+  }
+
+  function renderSaved() {
+    const list = document.getElementById('savedList');
+    list.innerHTML = '';
+
+    if (savedMantras.length === 0) {
+      list.innerHTML = '<p class="empty-note">No mantras saved yet. Reveal one above and save it to build your collection.</p>';
+      return;
+    }
+
+    savedMantras.forEach((m, i) => {
+      const item = document.createElement('div');
+      item.className = 'saved-item';
+      item.innerHTML = '<span class="saved-item-text">"' + m.text + '"</span><button class="remove-btn" onclick="removeSaved(' + i + ')">✕</button>';
+      list.appendChild(item);
+    });
+  }
+
+  renderSaved();
+</script>
+
+</body>
+</html>
