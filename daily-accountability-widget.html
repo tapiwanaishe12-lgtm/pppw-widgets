@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Accountability Score</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 480px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+
+  .checklist { margin-top: 10px; }
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 14px;
+    color: #111827;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-item input[type="checkbox"] { width: 20px; height: 20px; accent-color: #16a34a; flex-shrink: 0; }
+  .check-item.checked span { color: #9ca3af; text-decoration: line-through; }
+  .check-item span { flex: 1; }
+  .remove-item {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .remove-item:hover { color: #b91c1c; }
+
+  .add-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  input[type="text"] {
+    flex: 1;
+    padding: 9px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #111827;
+  }
+  input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+  .add-btn {
+    padding: 9px 14px;
+    background: #ffffff;
+    color: #16a34a;
+    border: 1px solid #16a34a;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .add-btn:hover { background: #f0fdf4; }
+
+  .score-section {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid #e5e7eb;
+    text-align: center;
+  }
+  .score-percent {
+    font-size: 40px;
+    font-weight: 700;
+    color: #16a34a;
+  }
+  .score-label {
+    font-size: 13px;
+    color: #4b5563;
+    margin: 2px 0 12px 0;
+  }
+  .progress-track {
+    width: 100%;
+    height: 10px;
+    background: #e5e7eb;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: #16a34a;
+    border-radius: 999px;
+    transition: width 0.3s ease;
+    width: 0%;
+  }
+
+  .reset-btn {
+    width: 100%;
+    margin-top: 16px;
+    padding: 10px;
+    background: #ffffff;
+    color: #6b7280;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .reset-btn:hover { border-color: #b91c1c; color: #b91c1c; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Daily Accountability Score</h1>
+  <p class="subtitle">Tick off today's non-negotiables and see how the day actually went.</p>
+
+  <div class="checklist" id="checklist"></div>
+
+  <div class="add-row">
+    <input type="text" id="itemInput" placeholder="Add a non-negotiable" onkeypress="if(event.key==='Enter') addItem()">
+    <button class="add-btn" onclick="addItem()">Add</button>
+  </div>
+
+  <div class="score-section">
+    <p class="score-percent" id="scorePercent">0%</p>
+    <p class="score-label" id="scoreLabel">of today's non-negotiables completed</p>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+  <button class="reset-btn" onclick="resetDay()">Reset for New Day</button>
+</div>
+
+<script>
+  let items = [
+    { name: 'Logged my macros', checked: false },
+    { name: 'Hit my step goal', checked: false },
+    { name: 'Drank enough water', checked: false },
+    { name: 'Got enough sleep', checked: false }
+  ];
+
+  function addItem() {
+    const input = document.getElementById('itemInput');
+    const name = input.value.trim();
+    if (!name) return;
+
+    items.push({ name, checked: false });
+    input.value = '';
+    render();
+  }
+
+  function toggleItem(index) {
+    items[index].checked = !items[index].checked;
+    render();
+  }
+
+  function removeItem(index) {
+    items.splice(index, 1);
+    render();
+  }
+
+  function resetDay() {
+    items.forEach(i => i.checked = false);
+    render();
+  }
+
+  function render() {
+    const checklist = document.getElementById('checklist');
+    checklist.innerHTML = '';
+
+    items.forEach((item, i) => {
+      const div = document.createElement('div');
+      div.className = 'check-item' + (item.checked ? ' checked' : '');
+      div.innerHTML = `
+        <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleItem(${i})">
+        <span>${item.name}</span>
+        <button class="remove-item" onclick="removeItem(${i})">✕</button>
+      `;
+      checklist.appendChild(div);
+    });
+
+    const total = items.length;
+    const checkedCount = items.filter(i => i.checked).length;
+    const percent = total > 0 ? Math.round((checkedCount / total) * 100) : 0;
+
+    document.getElementById('scorePercent').textContent = percent + '%';
+    document.getElementById('scoreLabel').textContent = checkedCount + ' of ' + total + ' non-negotiables completed';
+    document.getElementById('progressFill').style.width = percent + '%';
+  }
+
+  render();
+</script>
+
+</body>
+</html>
