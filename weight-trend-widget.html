@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weight Trend</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 540px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+  .add-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+  }
+  .add-row > div { flex: 1; }
+  input[type="number"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+  }
+  input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+  .add-btn {
+    padding: 10px 16px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    height: 40px;
+    white-space: nowrap;
+  }
+  .add-btn:hover { background: #128a3e; }
+
+  .stats-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 22px;
+  }
+  .stat-box {
+    flex: 1;
+    text-align: center;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px 8px;
+  }
+  .stat-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #16a34a;
+  }
+  .stat-label {
+    font-size: 10px;
+    color: #6b7280;
+    margin-top: 2px;
+  }
+
+  .chart-section {
+    margin-top: 20px;
+  }
+  .section-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #16a34a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 10px;
+  }
+  .chart-area {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 100px;
+  }
+  .chart-bar-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    justify-content: flex-end;
+  }
+  .chart-bar {
+    width: 100%;
+    background: #d1fae5;
+    border-radius: 3px 3px 0 0;
+    position: relative;
+  }
+  .chart-avg-dot {
+    width: 8px;
+    height: 8px;
+    background: #16a34a;
+    border-radius: 50%;
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .chart-bar-label {
+    font-size: 9px;
+    color: #9ca3af;
+    margin-top: 4px;
+  }
+
+  .message {
+    font-size: 13px;
+    color: #374151;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-top: 16px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Weight Trend</h1>
+  <p class="subtitle">Log today's weigh-in — the green dot shows your rolling average, not just today's number.</p>
+
+  <label for="weightInput">Today's weight (kg)</label>
+  <div class="add-row">
+    <div><input type="number" id="weightInput" min="1" step="0.1" placeholder="e.g. 78.4"></div>
+    <button class="add-btn" onclick="addWeight()">Log</button>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-value" id="latestWeight">—</div>
+      <div class="stat-label">Latest</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-value" id="avgWeight">—</div>
+      <div class="stat-label">7-Entry Avg</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-value" id="trendChange">—</div>
+      <div class="stat-label">Trend</div>
+    </div>
+  </div>
+
+  <div class="chart-section">
+    <p class="section-label">Recent Entries</p>
+    <div class="chart-area" id="chartArea"></div>
+  </div>
+
+  <div class="message" id="message"></div>
+</div>
+
+<script>
+  let entries = [];
+
+  function addWeight() {
+    const input = document.getElementById('weightInput');
+    const weight = parseFloat(input.value);
+    if (isNaN(weight) || weight <= 0) return;
+
+    entries.push(weight);
+    input.value = '';
+    updateDisplay();
+  }
+
+  function rollingAverage(arr, windowSize) {
+    return arr.map((_, i) => {
+      const start = Math.max(0, i - windowSize + 1);
+      const window = arr.slice(start, i + 1);
+      return window.reduce((sum, v) => sum + v, 0) / window.length;
+    });
+  }
+
+  function updateDisplay() {
+    if (entries.length === 0) return;
+
+    const averages = rollingAverage(entries, 7);
+    const latest = entries[entries.length - 1];
+    const latestAvg = averages[averages.length - 1];
+
+    document.getElementById('latestWeight').textContent = latest.toFixed(1);
+    document.getElementById('avgWeight').textContent = latestAvg.toFixed(1);
+
+    const trendLabel = document.getElementById('trendChange');
+    const message = document.getElementById('message');
+
+    if (entries.length < 4) {
+      trendLabel.textContent = '—';
+      message.textContent = "Log a few more entries to start seeing your trend, not just individual weigh-ins.";
+    } else {
+      const earlierAvg = averages[Math.max(0, averages.length - 8)];
+      const change = latestAvg - earlierAvg;
+      trendLabel.textContent = (change > 0 ? '+' : '') + change.toFixed(1) + 'kg';
+      trendLabel.style.color = change < 0 ? '#16a34a' : (change > 0 ? '#dc2626' : '#6b7280');
+
+      if (Math.abs(change) < 0.2) {
+        message.textContent = "Your rolling average has been essentially flat recently — normal for a plateau, or worth reviewing if you expected movement.";
+      } else if (change < 0) {
+        message.textContent = "Your trend is moving down — this is what actual progress looks like, even with daily numbers bouncing around.";
+      } else {
+        message.textContent = "Your trend has moved up recently. One data point isn't a verdict, but worth checking in on if it continues.";
+      }
+    }
+
+    const chartArea = document.getElementById('chartArea');
+    chartArea.innerHTML = '';
+    const recentEntries = entries.slice(-14);
+    const recentAverages = averages.slice(-14);
+    const minVal = Math.min(...recentEntries) - 0.5;
+    const maxVal = Math.max(...recentEntries) + 0.5;
+    const range = maxVal - minVal || 1;
+
+    recentEntries.forEach((w, i) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'chart-bar-wrap';
+      const heightPercent = ((w - minVal) / range) * 100;
+      const avgHeightPercent = ((recentAverages[i] - minVal) / range) * 100;
+
+      const bar = document.createElement('div');
+      bar.className = 'chart-bar';
+      bar.style.height = Math.max(4, heightPercent) + '%';
+
+      const dot = document.createElement('div');
+      dot.className = 'chart-avg-dot';
+      dot.style.bottom = avgHeightPercent + '%';
+      bar.appendChild(dot);
+
+      wrap.appendChild(bar);
+      const label = document.createElement('div');
+      label.className = 'chart-bar-label';
+      label.textContent = (i + 1);
+      wrap.appendChild(label);
+      chartArea.appendChild(wrap);
+    });
+  }
+</script>
+
+</body>
+</html>
