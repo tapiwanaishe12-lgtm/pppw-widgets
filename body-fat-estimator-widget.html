@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Body Fat % Estimator</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 500px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+  input[type="number"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+  }
+  input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+
+  .gender-row {
+    display: flex;
+    gap: 8px;
+  }
+  .gender-btn {
+    flex: 1;
+    padding: 10px 0;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    color: #111827;
+  }
+  .gender-btn:hover { border-color: #16a34a; }
+  .gender-btn.selected {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+
+  .hip-field { display: none; }
+  .hip-field.visible { display: block; }
+
+  button.calc-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.calc-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 24px;
+    padding: 18px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    display: none;
+    text-align: center;
+  }
+  .result.visible { display: block; }
+  .result-percent {
+    font-size: 36px;
+    font-weight: 700;
+    color: #16a34a;
+  }
+  .result-label {
+    font-size: 13px;
+    color: #4b5563;
+    margin: 2px 0 6px 0;
+  }
+  .result-category {
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+  }
+  .disclaimer {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 14px;
+    line-height: 1.5;
+    text-align: left;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Body Fat % Estimator</h1>
+  <p class="subtitle">Uses the U.S. Navy circumference method — just a tape measure, no special equipment.</p>
+
+  <label>Sex</label>
+  <div class="gender-row" id="genderRow">
+    <div class="gender-btn selected" data-gender="male">Male</div>
+    <div class="gender-btn" data-gender="female">Female</div>
+  </div>
+
+  <label for="heightInput">Height (cm)</label>
+  <input type="number" id="heightInput" min="1" placeholder="e.g. 178">
+
+  <label for="neckInput">Neck circumference (cm)</label>
+  <input type="number" id="neckInput" min="1" placeholder="e.g. 38">
+
+  <label for="waistInput">Waist circumference (cm, at navel)</label>
+  <input type="number" id="waistInput" min="1" placeholder="e.g. 85">
+
+  <div class="hip-field" id="hipField">
+    <label for="hipInput">Hip circumference (cm, at widest point)</label>
+    <input type="number" id="hipInput" min="1" placeholder="e.g. 98">
+  </div>
+
+  <button class="calc-btn" onclick="calculateBodyFat()">Estimate My Body Fat %</button>
+
+  <div class="result" id="result">
+    <p class="result-percent" id="resultPercent"></p>
+    <p class="result-label">estimated body fat</p>
+    <p class="result-category" id="resultCategory"></p>
+    <p class="disclaimer">This is an estimate based on circumference measurements, not a precise clinical measurement (like DEXA or hydrostatic weighing). Accuracy varies by individual — use it to track your own trend over time rather than as an exact figure.</p>
+  </div>
+</div>
+
+<script>
+  let selectedGender = 'male';
+
+  document.querySelectorAll('.gender-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedGender = btn.getAttribute('data-gender');
+      document.getElementById('hipField').classList.toggle('visible', selectedGender === 'female');
+    });
+  });
+
+  function calculateBodyFat() {
+    const height = parseFloat(document.getElementById('heightInput').value);
+    const neck = parseFloat(document.getElementById('neckInput').value);
+    const waist = parseFloat(document.getElementById('waistInput').value);
+    const hip = parseFloat(document.getElementById('hipInput').value);
+
+    if (isNaN(height) || isNaN(neck) || isNaN(waist)) return;
+    if (selectedGender === 'female' && isNaN(hip)) return;
+
+    let bodyFatPercent;
+
+    if (selectedGender === 'male') {
+      bodyFatPercent = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck) + 0.15456 * Math.log10(height)) - 450;
+    } else {
+      bodyFatPercent = 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck) + 0.22100 * Math.log10(height)) - 450;
+    }
+
+    bodyFatPercent = Math.max(2, Math.min(60, bodyFatPercent));
+
+    document.getElementById('resultPercent').textContent = bodyFatPercent.toFixed(1) + '%';
+
+    let category;
+    if (selectedGender === 'male') {
+      if (bodyFatPercent < 6) category = 'Essential fat';
+      else if (bodyFatPercent < 14) category = 'Athletic';
+      else if (bodyFatPercent < 18) category = 'Fit';
+      else if (bodyFatPercent < 25) category = 'Average';
+      else category = 'Above average';
+    } else {
+      if (bodyFatPercent < 14) category = 'Essential fat';
+      else if (bodyFatPercent < 21) category = 'Athletic';
+      else if (bodyFatPercent < 25) category = 'Fit';
+      else if (bodyFatPercent < 32) category = 'Average';
+      else category = 'Above average';
+    }
+
+    document.getElementById('resultCategory').textContent = category + ' range';
+    document.getElementById('result').classList.add('visible');
+  }
+</script>
+
+</body>
+</html>
