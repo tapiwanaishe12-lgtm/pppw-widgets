@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plateau Length Check</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 500px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+
+  .weeks-row {
+    display: flex;
+    gap: 8px;
+  }
+  .weeks-btn {
+    flex: 1;
+    padding: 10px 6px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    color: #111827;
+  }
+  .weeks-btn:hover { border-color: #16a34a; }
+  .weeks-btn.selected {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+
+  button.check-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.check-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 22px;
+    padding: 18px;
+    border-radius: 10px;
+    display: none;
+  }
+  .result.visible { display: block; }
+  .result-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .result-message {
+    font-size: 13px;
+    color: #374151;
+    line-height: 1.6;
+  }
+  .tier-normal { background: #f9fafb; border: 1px solid #e5e7eb; }
+  .tier-watch { background: #fffbeb; border: 1px solid #fde68a; }
+  .tier-act { background: #f0fdf4; border: 1px solid #bbf7d0; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Plateau Length Check</h1>
+  <p class="subtitle">How many weeks has your rolling average been essentially flat?</p>
+
+  <label>Weeks with no meaningful movement</label>
+  <div class="weeks-row" id="weeksRow">
+    <div class="weeks-btn" data-weeks="1">1 week</div>
+    <div class="weeks-btn" data-weeks="2">2 weeks</div>
+    <div class="weeks-btn" data-weeks="3">3 weeks</div>
+    <div class="weeks-btn" data-weeks="4">4+ weeks</div>
+  </div>
+
+  <button class="check-btn" onclick="checkPlateau()">Check My Situation</button>
+
+  <div class="result" id="result">
+    <p class="result-title" id="resultTitle"></p>
+    <p class="result-message" id="resultMessage"></p>
+  </div>
+</div>
+
+<script>
+  let selectedWeeks = null;
+
+  document.querySelectorAll('.weeks-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.weeks-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedWeeks = btn.getAttribute('data-weeks');
+    });
+  });
+
+  function checkPlateau() {
+    const result = document.getElementById('result');
+    const title = document.getElementById('resultTitle');
+    const message = document.getElementById('resultMessage');
+
+    if (!selectedWeeks) return;
+
+    result.className = 'result visible';
+
+    if (selectedWeeks === '1') {
+      result.classList.add('tier-normal');
+      title.textContent = "Not a plateau yet";
+      message.textContent = "One flat week is normal fluctuation, not a stall. Keep logging exactly as you have been — this doesn't warrant any changes yet.";
+    } else if (selectedWeeks === '2') {
+      result.classList.add('tier-watch');
+      title.textContent = "Worth watching";
+      message.textContent = "Two flat weeks is on the edge of normal variation. Start working through the Plateau Diagnostic Checklist above, but don't make major changes yet — one more week of data will tell you a lot more.";
+    } else if (selectedWeeks === '3') {
+      result.classList.add('tier-watch');
+      title.textContent = "Genuinely worth addressing";
+      message.textContent = "Three flat weeks is long enough to be a real plateau, not noise. Work through the full Diagnostic Checklist above and be honest about consistency, activity levels, and calorie creep before assuming it's purely metabolic.";
+    } else {
+      result.classList.add('tier-act');
+      title.textContent = "Time to act";
+      message.textContent = "Four or more weeks flat is a genuine plateau that won't resolve on its own. This is the point to consider a deliberate adjustment — a calorie reassessment, an activity increase, or a planned diet break — rather than waiting it out further.";
+    }
+  }
+</script>
+
+</body>
+</html>
