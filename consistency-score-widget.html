@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consistency Score Calculator</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 480px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+  input[type="number"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+  }
+  input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+
+  button.calc-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.calc-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    display: none;
+    text-align: center;
+  }
+  .result.visible { display: block; }
+  .percent {
+    font-size: 40px;
+    font-weight: 700;
+    color: #16a34a;
+  }
+  .percent-label {
+    font-size: 13px;
+    color: #4b5563;
+    margin: 2px 0 16px 0;
+  }
+  .progress-track {
+    width: 100%;
+    height: 10px;
+    background: #e5e7eb;
+    border-radius: 999px;
+    overflow: hidden;
+    text-align: left;
+  }
+  .progress-fill {
+    height: 100%;
+    background: #16a34a;
+    border-radius: 999px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+  .message {
+    font-size: 13px;
+    color: #374151;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-top: 16px;
+    line-height: 1.5;
+    text-align: left;
+  }
+  .error-text {
+    font-size: 13px;
+    color: #b91c1c;
+    margin-top: 10px;
+    display: none;
+  }
+  .error-text.visible { display: block; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Consistency Score Calculator</h1>
+  <p class="subtitle">Enter how many days you hit your non-negotiables this week, out of the total possible.</p>
+
+  <label for="daysHit">Days you hit your non-negotiables</label>
+  <input type="number" id="daysHit" min="0" placeholder="e.g. 6">
+
+  <label for="totalDays">Total days this week</label>
+  <input type="number" id="totalDays" min="1" value="7">
+
+  <button class="calc-btn" onclick="calculateScore()">Calculate My Score</button>
+  <p class="error-text" id="errorText">Days hit can't be more than total days — double check your numbers.</p>
+
+  <div class="result" id="result">
+    <p class="percent" id="percentValue"></p>
+    <p class="percent-label">consistency this week</p>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="message" id="message"></div>
+  </div>
+</div>
+
+<script>
+  function calculateScore() {
+    const daysHit = parseFloat(document.getElementById('daysHit').value);
+    const totalDays = parseFloat(document.getElementById('totalDays').value);
+    const result = document.getElementById('result');
+    const errorText = document.getElementById('errorText');
+
+    if (isNaN(daysHit) || isNaN(totalDays) || totalDays <= 0 || daysHit < 0) {
+      result.classList.remove('visible');
+      errorText.classList.remove('visible');
+      return;
+    }
+
+    if (daysHit > totalDays) {
+      result.classList.remove('visible');
+      errorText.classList.add('visible');
+      return;
+    }
+
+    errorText.classList.remove('visible');
+
+    const percent = Math.round((daysHit / totalDays) * 100);
+
+    document.getElementById('percentValue').textContent = percent + '%';
+    document.getElementById('progressFill').style.width = percent + '%';
+
+    let msg;
+    if (percent >= 80) {
+      msg = "Strong week. This is exactly the kind of consistency that compounds — log it in the table above.";
+    } else if (percent >= 60) {
+      msg = "A solid, imperfect week. This is normal and still moves you forward — worth noting what got in the way on the missed days.";
+    } else {
+      msg = "A tougher week. Worth a look at your Trigger & Excuse Log to spot what's repeating, rather than treating this as a one-off.";
+    }
+    document.getElementById('message').textContent = msg;
+
+    result.classList.add('visible');
+  }
+</script>
+
+</body>
+</html>
