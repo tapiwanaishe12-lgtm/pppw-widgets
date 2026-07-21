@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weekly Activity Summary</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 540px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+
+  .day-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+    align-items: center;
+  }
+  .day-label { width: 36px; font-size: 12px; font-weight: 600; color: #6b7280; flex-shrink: 0; }
+  .day-row input[type="number"] {
+    flex: 1;
+    padding: 8px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #111827;
+  }
+  input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+  .col-labels {
+    display: flex;
+    gap: 6px;
+    margin-top: 16px;
+  }
+  .col-labels .day-label { visibility: hidden; }
+  .col-labels span { flex: 1; font-size: 10px; color: #9ca3af; font-weight: 600; text-align: center; }
+
+  button.summarize-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.summarize-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid #e5e7eb;
+    display: none;
+  }
+  .result.visible { display: block; }
+  .stats-row {
+    display: flex;
+    gap: 10px;
+  }
+  .stat-box {
+    flex: 1;
+    text-align: center;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 12px 6px;
+  }
+  .stat-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #16a34a;
+  }
+  .stat-label {
+    font-size: 10px;
+    color: #4b5563;
+    margin-top: 2px;
+  }
+  .message {
+    font-size: 13px;
+    color: #374151;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-top: 14px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Weekly Activity Summary</h1>
+  <p class="subtitle">Enter each day's steps and active minutes from your Activity Log to see the week's real total.</p>
+
+  <div class="col-labels">
+    <div class="day-label"></div>
+    <span>Steps</span>
+    <span>Active min</span>
+  </div>
+  <div id="weekInputs"></div>
+
+  <button class="summarize-btn" onclick="summarizeWeek()">Summarize My Week</button>
+
+  <div class="result" id="result">
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="stat-value" id="totalSteps">0</div>
+        <div class="stat-label">Total Steps</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="avgSteps">0</div>
+        <div class="stat-label">Daily Avg Steps</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="totalMinutes">0</div>
+        <div class="stat-label">Active Minutes</div>
+      </div>
+    </div>
+    <div class="message" id="message"></div>
+  </div>
+</div>
+
+<script>
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+  function renderInputs() {
+    const container = document.getElementById('weekInputs');
+    container.innerHTML = '';
+    days.forEach(day => {
+      const row = document.createElement('div');
+      row.className = 'day-row';
+      row.innerHTML = `
+        <div class="day-label">${day}</div>
+        <input type="number" id="steps-${day}" min="0" placeholder="0">
+        <input type="number" id="minutes-${day}" min="0" placeholder="0">
+      `;
+      container.appendChild(row);
+    });
+  }
+
+  function summarizeWeek() {
+    let totalSteps = 0;
+    let totalMinutes = 0;
+    let daysWithData = 0;
+
+    days.forEach(day => {
+      const steps = parseFloat(document.getElementById('steps-' + day).value) || 0;
+      const minutes = parseFloat(document.getElementById('minutes-' + day).value) || 0;
+      if (steps > 0 || minutes > 0) daysWithData++;
+      totalSteps += steps;
+      totalMinutes += minutes;
+    });
+
+    const avgSteps = daysWithData > 0 ? Math.round(totalSteps / daysWithData) : 0;
+
+    document.getElementById('totalSteps').textContent = totalSteps.toLocaleString();
+    document.getElementById('avgSteps').textContent = avgSteps.toLocaleString();
+    document.getElementById('totalMinutes').textContent = totalMinutes;
+
+    const message = document.getElementById('message');
+    if (daysWithData === 0) {
+      message.textContent = "Enter at least one day's data above to see your weekly summary.";
+    } else if (avgSteps >= 8000 && totalMinutes >= 150) {
+      message.textContent = "Strong week for both daily movement and structured activity — this is a genuinely solid volume.";
+    } else if (avgSteps < 6000 && totalMinutes < 100) {
+      message.textContent = "Both daily steps and active minutes are on the lower side this week. If your Weight Trend has stalled, this is worth checking first.";
+    } else {
+      message.textContent = "A mixed week — one of daily movement or structured activity is carrying more of the load than the other. Worth balancing if that's a pattern across multiple weeks.";
+    }
+
+    document.getElementById('result').classList.add('visible');
+  }
+
+  renderInputs();
+</script>
+
+</body>
+</html>
