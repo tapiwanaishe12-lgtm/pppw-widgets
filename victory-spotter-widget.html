@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Victory Spotter</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 520px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  .section-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #16a34a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 18px 0 8px 0;
+  }
+  .section-label.first { margin-top: 0; }
+
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    font-size: 13px;
+    color: #111827;
+  }
+  .check-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: #16a34a; margin-top: 1px; flex-shrink: 0; }
+
+  button.count-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.count-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 20px;
+    padding: 16px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    display: none;
+    text-align: center;
+  }
+  .result.visible { display: block; }
+  .result-count {
+    font-size: 28px;
+    font-weight: 700;
+    color: #16a34a;
+  }
+  .result-message {
+    font-size: 13px;
+    color: #374151;
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Victory Spotter</h1>
+  <p class="subtitle">Check off anything that's been true for you lately — easy to overlook unless you're specifically looking.</p>
+
+  <p class="section-label first">⚡ Energy & Body</p>
+  <label class="check-item"><input type="checkbox"> More energy through the afternoon than a few weeks ago</label>
+  <label class="check-item"><input type="checkbox"> Sleeping better or waking up less groggy</label>
+  <label class="check-item"><input type="checkbox"> Less bloating or digestive discomfort</label>
+
+  <p class="section-label">👕 Clothing & Fit</p>
+  <label class="check-item"><input type="checkbox"> Clothes fitting differently, even without a big scale change</label>
+  <label class="check-item"><input type="checkbox"> Noticed a belt, watch, or ring fitting looser</label>
+
+  <p class="section-label">🏃 Performance</p>
+  <label class="check-item"><input type="checkbox"> Stairs, walking, or daily movement feels easier</label>
+  <label class="check-item"><input type="checkbox"> Lifting heavier or running further than a month ago</label>
+  <label class="check-item"><input type="checkbox"> Recovering faster after activity than before</label>
+
+  <p class="section-label">🧠 Habits & Mindset</p>
+  <label class="check-item"><input type="checkbox"> Turned down food you'd normally have grabbed, without much struggle</label>
+  <label class="check-item"><input type="checkbox"> Went a full week logging honestly, even on hard days</label>
+  <label class="check-item"><input type="checkbox"> Felt less anxious or guilty around food choices</label>
+  <label class="check-item"><input type="checkbox"> Got back on track quickly after a rough day, instead of spiraling</label>
+
+  <button class="count-btn" onclick="countVictories()">Count My Wins</button>
+
+  <div class="result" id="result">
+    <p class="result-count" id="resultCount"></p>
+    <p class="result-message" id="resultMessage"></p>
+  </div>
+</div>
+
+<script>
+  function countVictories() {
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+    const total = checkboxes.length;
+
+    document.getElementById('resultCount').textContent = checkedCount + ' of ' + total;
+
+    let message;
+    if (checkedCount === 0) {
+      message = "Nothing checked today — that's fine too. Come back and check again in a week or two.";
+    } else if (checkedCount <= 3) {
+      message = "A few real wins here, even if the scale hasn't moved much. Worth logging the specific ones above.";
+    } else if (checkedCount <= 7) {
+      message = "That's a genuinely solid list. This is progress happening across multiple areas at once — log a couple of these in your Victory Log above.";
+    } else {
+      message = "That's a lot of real change happening, whatever the scale says. This is exactly the kind of week worth remembering on a harder day.";
+    }
+
+    document.getElementById('resultMessage').textContent = message;
+    document.getElementById('result').classList.add('visible');
+  }
+</script>
+
+</body>
+</html>
