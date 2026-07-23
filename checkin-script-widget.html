@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Check-In Script</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 540px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 18px;
+  }
+  textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #111827;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 50px;
+  }
+  textarea:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+
+  button.generate-btn {
+    width: 100%;
+    margin-top: 22px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.generate-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 20px;
+    padding: 16px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    display: none;
+  }
+  .result.visible { display: block; }
+  .result-text {
+    font-size: 12px;
+    color: #374151;
+    white-space: pre-wrap;
+    line-height: 1.6;
+    font-family: monospace;
+  }
+  .copy-btn {
+    width: 100%;
+    margin-top: 12px;
+    padding: 10px;
+    background: #ffffff;
+    color: #16a34a;
+    border: 1px solid #16a34a;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .copy-btn:hover { background: #f0fdf4; }
+  .copy-btn.copied { background: #16a34a; color: #ffffff; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Check-In Script</h1>
+  <p class="subtitle">Answer honestly, then generate a summary to keep or send to your accountability partner.</p>
+
+  <label for="q1">1. What was my consistency % this week, and does that feel accurate to how the week actually went?</label>
+  <textarea id="q1" placeholder="Your answer..."></textarea>
+
+  <label for="q2">2. What's one win from this week I'm genuinely proud of?</label>
+  <textarea id="q2" placeholder="Your answer..."></textarea>
+
+  <label for="q3">3. What's one thing I didn't follow through on, and why honestly?</label>
+  <textarea id="q3" placeholder="Your answer..."></textarea>
+
+  <label for="q4">4. Is there a pattern from my Excuse Log I should name out loud?</label>
+  <textarea id="q4" placeholder="Your answer..."></textarea>
+
+  <label for="q5">5. What's one thing I need from myself (or my accountability partner) next week?</label>
+  <textarea id="q5" placeholder="Your answer..."></textarea>
+
+  <button class="generate-btn" onclick="generateSummary()">Generate Check-In Summary</button>
+
+  <div class="result" id="result">
+    <div class="result-text" id="resultText"></div>
+    <button class="copy-btn" id="copyBtn" onclick="copySummary()">Copy to Share</button>
+  </div>
+</div>
+
+<script>
+  function generateSummary() {
+    const q1 = document.getElementById('q1').value.trim();
+    const q2 = document.getElementById('q2').value.trim();
+    const q3 = document.getElementById('q3').value.trim();
+    const q4 = document.getElementById('q4').value.trim();
+    const q5 = document.getElementById('q5').value.trim();
+
+    if (!q1 && !q2 && !q3 && !q4 && !q5) return;
+
+    const summary = "WEEKLY CHECK-IN\n\n" +
+      "Consistency this week: " + (q1 || "—") + "\n\n" +
+      "Win I'm proud of: " + (q2 || "—") + "\n\n" +
+      "What I didn't follow through on: " + (q3 || "—") + "\n\n" +
+      "Pattern worth naming: " + (q4 || "—") + "\n\n" +
+      "What I need next week: " + (q5 || "—");
+
+    document.getElementById('resultText').textContent = summary;
+    document.getElementById('result').classList.add('visible');
+
+    const copyBtn = document.getElementById('copyBtn');
+    copyBtn.textContent = 'Copy to Share';
+    copyBtn.classList.remove('copied');
+  }
+
+  function copySummary() {
+    const text = document.getElementById('resultText').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const copyBtn = document.getElementById('copyBtn');
+      copyBtn.textContent = 'Copied ✓';
+      copyBtn.classList.add('copied');
+    }).catch(() => {
+      const copyBtn = document.getElementById('copyBtn');
+      copyBtn.textContent = 'Select the text above to copy';
+    });
+  }
+</script>
+
+</body>
+</html>
