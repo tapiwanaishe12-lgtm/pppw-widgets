@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comeback Protocol</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 520px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+
+  .step {
+    display: flex;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .step:last-child { border-bottom: none; }
+  .step-checkbox {
+    flex-shrink: 0;
+    padding-top: 2px;
+  }
+  .step-checkbox input[type="checkbox"] { width: 20px; height: 20px; accent-color: #16a34a; }
+  .step-content { flex: 1; }
+  .step-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111827;
+  }
+  .step-desc {
+    font-size: 13px;
+    color: #6b7280;
+    margin-top: 3px;
+    line-height: 1.5;
+  }
+  .step.completed .step-title { color: #9ca3af; text-decoration: line-through; }
+  .step.completed .step-desc { color: #d1d5db; }
+
+  .progress-track {
+    width: 100%;
+    height: 10px;
+    background: #e5e7eb;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-top: 18px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: #16a34a;
+    border-radius: 999px;
+    transition: width 0.3s ease;
+    width: 0%;
+  }
+  .progress-caption {
+    font-size: 13px;
+    color: #4b5563;
+    margin-top: 8px;
+    text-align: center;
+  }
+
+  .reset-btn {
+    width: 100%;
+    margin-top: 16px;
+    padding: 10px;
+    background: #ffffff;
+    color: #6b7280;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .reset-btn:hover { border-color: #16a34a; color: #16a34a; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Comeback Protocol</h1>
+  <p class="subtitle">Work through these in order. No need to decide anything else right now — just this.</p>
+
+  <div id="stepsList"></div>
+
+  <div class="progress-track">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+  <p class="progress-caption" id="progressCaption">0 of 6 steps complete</p>
+
+  <button class="reset-btn" onclick="resetProtocol()">Reset for Next Time</button>
+</div>
+
+<script>
+  const steps = [
+    { title: "Log the setback honestly", desc: "Add it to your Setback Log above — no need to explain or justify it, just record what happened." },
+    { title: "Skip the guilt audit", desc: "You don't need to figure out exactly why right now. That's what your Trigger & Excuse Log is for later, not today." },
+    { title: "Weigh in or don't — either is fine", desc: "If you're not ready to see the number, that's okay. It'll still be there tomorrow." },
+    { title: "Plan your very next meal, not the whole week", desc: "One decision. What are you eating next? That's the only decision that matters right now." },
+    { title: "Do one small movement today", desc: "A walk, stretching, anything. Not to 'earn back' anything — just to reconnect with the routine." },
+    { title: "Mark today as day one of the streak, not a restart", desc: "Your Accountability Streak widget resets, but your Consistency Score and history don't disappear. This is a continuation, not a reset to zero." }
+  ];
+
+  let completed = new Array(steps.length).fill(false);
+
+  function renderSteps() {
+    const list = document.getElementById('stepsList');
+    list.innerHTML = '';
+
+    steps.forEach((step, i) => {
+      const div = document.createElement('div');
+      div.className = 'step' + (completed[i] ? ' completed' : '');
+      div.innerHTML = `
+        <div class="step-checkbox">
+          <input type="checkbox" ${completed[i] ? 'checked' : ''} onchange="toggleStep(${i})">
+        </div>
+        <div class="step-content">
+          <div class="step-title">${i + 1}. ${step.title}</div>
+          <div class="step-desc">${step.desc}</div>
+        </div>
+      `;
+      list.appendChild(div);
+    });
+
+    updateProgress();
+  }
+
+  function toggleStep(index) {
+    completed[index] = !completed[index];
+    renderSteps();
+  }
+
+  function updateProgress() {
+    const completedCount = completed.filter(Boolean).length;
+    const percent = Math.round((completedCount / steps.length) * 100);
+    document.getElementById('progressFill').style.width = percent + '%';
+    document.getElementById('progressCaption').textContent = completedCount + ' of ' + steps.length + ' steps complete';
+  }
+
+  function resetProtocol() {
+    completed = new Array(steps.length).fill(false);
+    renderSteps();
+  }
+
+  renderSteps();
+</script>
+
+</body>
+</html>
