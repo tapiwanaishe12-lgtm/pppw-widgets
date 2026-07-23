@@ -111,6 +111,12 @@
     <div class="option-btn" data-item="Chickpeas">Chickpeas</div>
     <div class="option-btn" data-item="Seitan">Seitan</div>
     <div class="option-btn" data-item="Plant protein shake">Plant protein shake</div>
+    <div class="option-btn" data-item="Black beans">Black beans</div>
+    <div class="option-btn" data-item="Edamame">Edamame</div>
+    <div class="option-btn" data-item="Kidney beans">Kidney beans</div>
+    <div class="option-btn" data-item="Soy yogurt">Soy yogurt</div>
+    <div class="option-btn" data-item="TVP (soy mince)">TVP (soy mince)</div>
+    <div class="option-btn" data-item="Nutritional yeast">Nutritional yeast</div>
   </div>
 
   <p class="section-label">🍚 Carb (pick one)</p>
@@ -121,6 +127,12 @@
     <div class="option-btn" data-item="Bread">Bread</div>
     <div class="option-btn" data-item="Pasta">Pasta</div>
     <div class="option-btn" data-item="Quinoa">Quinoa</div>
+    <div class="option-btn" data-item="Couscous">Couscous</div>
+    <div class="option-btn" data-item="Wraps/tortilla">Wraps/tortilla</div>
+    <div class="option-btn" data-item="Corn">Corn</div>
+    <div class="option-btn" data-item="Barley">Barley</div>
+    <div class="option-btn" data-item="Buckwheat">Buckwheat</div>
+    <div class="option-btn" data-item="Rice noodles">Rice noodles</div>
   </div>
 
   <p class="section-label">🥦 Vegetables (pick one)</p>
@@ -129,6 +141,24 @@
     <div class="option-btn" data-item="Broccoli">Broccoli</div>
     <div class="option-btn" data-item="Mixed roasted veg">Mixed roasted veg</div>
     <div class="option-btn" data-item="Salad">Salad</div>
+    <div class="option-btn" data-item="Spinach">Spinach</div>
+    <div class="option-btn" data-item="Peppers">Peppers</div>
+    <div class="option-btn" data-item="Carrots">Carrots</div>
+    <div class="option-btn" data-item="Cauliflower">Cauliflower</div>
+    <div class="option-btn" data-item="Green beans">Green beans</div>
+    <div class="option-btn" data-item="Courgette/zucchini">Courgette/zucchini</div>
+    <div class="option-btn" data-item="Cucumber & tomato">Cucumber & tomato</div>
+    <div class="option-btn" data-item="Mushrooms">Mushrooms</div>
+  </div>
+
+  <p class="section-label">🥑 Healthy Fat (pick one)</p>
+  <div class="option-grid" id="fatRow">
+    <div class="option-btn" data-item="Avocado">Avocado</div>
+    <div class="option-btn" data-item="Olive oil">Olive oil</div>
+    <div class="option-btn" data-item="Mixed nuts">Mixed nuts</div>
+    <div class="option-btn" data-item="Peanut butter">Peanut butter</div>
+    <div class="option-btn" data-item="Seeds (chia/flax/hemp)">Seeds (chia/flax/hemp)</div>
+    <div class="option-btn" data-item="Tahini">Tahini</div>
   </div>
 
   <div class="plate-section" id="plateSection">
@@ -145,12 +175,16 @@
       <span class="plate-label" id="vegLabel">—</span>
       <span class="plate-portion">1-2 fist-sized portions</span>
     </div>
+    <div class="plate-item">
+      <span class="plate-label" id="fatLabel">—</span>
+      <span class="plate-portion">1 thumb-sized portion</span>
+    </div>
     <p class="plate-detail" style="margin-top:10px;">Hand-portion guides are rough estimates, not precise measurements — use your Macro Tracker for exact logging when it matters.</p>
   </div>
 </div>
 
 <script>
-  let selections = { protein: null, carb: null, veg: null };
+  let selections = { protein: null, carb: null, veg: null, fat: null };
 
   function setupCategory(rowId, key) {
     document.querySelectorAll('#' + rowId + ' .option-btn').forEach(btn => {
@@ -166,13 +200,15 @@
   setupCategory('proteinRow', 'protein');
   setupCategory('carbRow', 'carb');
   setupCategory('vegRow', 'veg');
+  setupCategory('fatRow', 'fat');
 
   function updatePlate() {
     if (selections.protein) document.getElementById('proteinLabel').textContent = selections.protein;
     if (selections.carb) document.getElementById('carbLabel').textContent = selections.carb;
     if (selections.veg) document.getElementById('vegLabel').textContent = selections.veg;
+    if (selections.fat) document.getElementById('fatLabel').textContent = selections.fat;
 
-    if (selections.protein || selections.carb || selections.veg) {
+    if (selections.protein || selections.carb || selections.veg || selections.fat) {
       document.getElementById('plateSection').classList.add('visible');
     }
   }
