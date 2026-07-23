@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Excuse Pattern Finder</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 520px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+  input[type="text"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+  }
+  input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+
+  .category-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .category-btn {
+    flex: 1;
+    min-width: 90px;
+    padding: 9px 6px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    color: #111827;
+  }
+  .category-btn:hover { border-color: #16a34a; }
+  .category-btn.selected {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+
+  button.log-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.log-btn:hover { background: #128a3e; }
+
+  .chart-section {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid #e5e7eb;
+    display: none;
+  }
+  .chart-section.visible { display: block; }
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .bar-label {
+    width: 70px;
+    font-size: 12px;
+    color: #374151;
+    flex-shrink: 0;
+  }
+  .bar-track {
+    flex: 1;
+    height: 20px;
+    background: #f3f4f6;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    background: #16a34a;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+  }
+  .bar-count {
+    width: 20px;
+    font-size: 12px;
+    color: #6b7280;
+    text-align: right;
+  }
+  .message {
+    font-size: 13px;
+    color: #374151;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-top: 14px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Excuse Pattern Finder</h1>
+  <p class="subtitle">Log each excuse as it happens — see which category you actually reach for most.</p>
+
+  <label for="excuseInput">What was the excuse?</label>
+  <input type="text" id="excuseInput" placeholder="e.g. Too tired to log tonight">
+
+  <label>Category</label>
+  <div class="category-row" id="categoryRow">
+    <div class="category-btn" data-category="Time">Time</div>
+    <div class="category-btn" data-category="Energy">Energy</div>
+    <div class="category-btn" data-category="Social">Social</div>
+    <div class="category-btn" data-category="Emotional">Emotional</div>
+    <div class="category-btn" data-category="Other">Other</div>
+  </div>
+
+  <button class="log-btn" onclick="logExcuse()">Log This Excuse</button>
+
+  <div class="chart-section" id="chartSection">
+    <div id="chartBars"></div>
+    <div class="message" id="message"></div>
+  </div>
+</div>
+
+<script>
+  const categories = ['Time', 'Energy', 'Social', 'Emotional', 'Other'];
+  let selectedCategory = null;
+  let counts = { Time: 0, Energy: 0, Social: 0, Emotional: 0, Other: 0 };
+  let total = 0;
+
+  document.querySelectorAll('.category-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedCategory = btn.getAttribute('data-category');
+    });
+  });
+
+  function logExcuse() {
+    const excuse = document.getElementById('excuseInput').value.trim();
+    if (!excuse || !selectedCategory) return;
+
+    counts[selectedCategory]++;
+    total++;
+
+    document.getElementById('excuseInput').value = '';
+    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('selected'));
+    selectedCategory = null;
+
+    renderChart();
+  }
+
+  function renderChart() {
+    const chartBars = document.getElementById('chartBars');
+    chartBars.innerHTML = '';
+
+    const maxCount = Math.max(...Object.values(counts), 1);
+
+    categories.forEach(cat => {
+      const row = document.createElement('div');
+      row.className = 'bar-row';
+      const widthPercent = (counts[cat] / maxCount) * 100;
+      row.innerHTML = '<span class="bar-label">' + cat + '</span>' +
+        '<div class="bar-track"><div class="bar-fill" style="width:' + widthPercent + '%"></div></div>' +
+        '<span class="bar-count">' + counts[cat] + '</span>';
+      chartBars.appendChild(row);
+    });
+
+    const message = document.getElementById('message');
+    if (total < 3) {
+      message.textContent = "Log a few more excuses to see a real pattern emerge.";
+    } else {
+      const topCategory = categories.reduce((a, b) => counts[a] > counts[b] ? a : b);
+      const topPercent = Math.round((counts[topCategory] / total) * 100);
+      message.textContent = topCategory + " excuses make up " + topPercent + "% of what you've logged. That's likely your real pattern — worth building a specific plan for that category on your Comeback Protocol.";
+    }
+
+    document.getElementById('chartSection').classList.add('visible');
+  }
+</script>
+
+</body>
+</html>
