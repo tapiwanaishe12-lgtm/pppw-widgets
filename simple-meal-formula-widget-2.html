@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simple Meal Formula</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 520px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  .section-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #16a34a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 18px 0 8px 0;
+  }
+  .section-label.first { margin-top: 0; }
+
+  .option-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .option-btn {
+    padding: 10px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    color: #111827;
+  }
+  .option-btn:hover { border-color: #16a34a; }
+  .option-btn.selected {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+
+  .plate-section {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid #e5e7eb;
+    display: none;
+  }
+  .plate-section.visible { display: block; }
+  .plate-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 13px;
+  }
+  .plate-item:last-child { border-bottom: none; }
+  .plate-label { font-weight: 600; color: #111827; }
+  .plate-portion { color: #16a34a; font-weight: 600; }
+  .plate-detail { font-size: 11px; color: #6b7280; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Simple Meal Formula</h1>
+  <p class="subtitle">Pick one from each category to build a balanced plate — no weighing or spreadsheets needed.</p>
+
+  <p class="section-label first">🌱 Protein (pick one)</p>
+  <div class="option-grid" id="proteinRow">
+    <div class="option-btn" data-item="Tofu">Tofu</div>
+    <div class="option-btn" data-item="Tempeh">Tempeh</div>
+    <div class="option-btn" data-item="Lentils">Lentils</div>
+    <div class="option-btn" data-item="Chickpeas">Chickpeas</div>
+    <div class="option-btn" data-item="Seitan">Seitan</div>
+    <div class="option-btn" data-item="Plant protein shake">Plant protein shake</div>
+  </div>
+
+  <p class="section-label">🍚 Carb (pick one)</p>
+  <div class="option-grid" id="carbRow">
+    <div class="option-btn" data-item="Rice">Rice</div>
+    <div class="option-btn" data-item="Potato/sweet potato">Potato/sweet potato</div>
+    <div class="option-btn" data-item="Oats">Oats</div>
+    <div class="option-btn" data-item="Bread">Bread</div>
+    <div class="option-btn" data-item="Pasta">Pasta</div>
+    <div class="option-btn" data-item="Quinoa">Quinoa</div>
+  </div>
+
+  <p class="section-label">🥦 Vegetables (pick one)</p>
+  <div class="option-grid" id="vegRow">
+    <div class="option-btn" data-item="Mixed greens">Mixed greens</div>
+    <div class="option-btn" data-item="Broccoli">Broccoli</div>
+    <div class="option-btn" data-item="Mixed roasted veg">Mixed roasted veg</div>
+    <div class="option-btn" data-item="Salad">Salad</div>
+  </div>
+
+  <div class="plate-section" id="plateSection">
+    <p class="section-label">Your Plate</p>
+    <div class="plate-item">
+      <span class="plate-label" id="proteinLabel">—</span>
+      <span class="plate-portion">1 palm-sized portion</span>
+    </div>
+    <div class="plate-item">
+      <span class="plate-label" id="carbLabel">—</span>
+      <span class="plate-portion">1 cupped-hand portion</span>
+    </div>
+    <div class="plate-item">
+      <span class="plate-label" id="vegLabel">—</span>
+      <span class="plate-portion">1-2 fist-sized portions</span>
+    </div>
+    <p class="plate-detail" style="margin-top:10px;">Hand-portion guides are rough estimates, not precise measurements — use your Macro Tracker for exact logging when it matters.</p>
+  </div>
+</div>
+
+<script>
+  let selections = { protein: null, carb: null, veg: null };
+
+  function setupCategory(rowId, key) {
+    document.querySelectorAll('#' + rowId + ' .option-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#' + rowId + ' .option-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selections[key] = btn.getAttribute('data-item');
+        updatePlate();
+      });
+    });
+  }
+
+  setupCategory('proteinRow', 'protein');
+  setupCategory('carbRow', 'carb');
+  setupCategory('vegRow', 'veg');
+
+  function updatePlate() {
+    if (selections.protein) document.getElementById('proteinLabel').textContent = selections.protein;
+    if (selections.carb) document.getElementById('carbLabel').textContent = selections.carb;
+    if (selections.veg) document.getElementById('vegLabel').textContent = selections.veg;
+
+    if (selections.protein || selections.carb || selections.veg) {
+      document.getElementById('plateSection').classList.add('visible');
+    }
+  }
+</script>
+
+</body>
+</html>
