@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fat Loss Mantra</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 520px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  .theme-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .theme-btn {
+    flex: 1;
+    min-width: 100px;
+    padding: 10px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    color: #111827;
+  }
+  .theme-btn:hover { border-color: #16a34a; }
+  .theme-btn.selected {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+
+  button.generate {
+    width: 100%;
+    margin-top: 18px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.generate:hover { background: #128a3e; }
+
+  .mantra-box {
+    margin-top: 22px;
+    padding: 20px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    display: none;
+    text-align: center;
+  }
+  .mantra-box.visible { display: block; }
+  .mantra-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+    line-height: 1.5;
+    font-style: italic;
+  }
+  .mantra-theme-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #16a34a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Fat Loss Mantra</h1>
+  <p class="subtitle">Choose a theme and reveal a mantra for exactly where you're at right now.</p>
+
+  <div class="theme-row" id="themeRow">
+    <div class="theme-btn selected" data-theme="discipline">Discipline</div>
+    <div class="theme-btn" data-theme="patience">Patience</div>
+    <div class="theme-btn" data-theme="resilience">Resilience</div>
+    <div class="theme-btn" data-theme="identity">Identity</div>
+  </div>
+
+  <button class="generate" onclick="generateMantra()">Reveal a Mantra</button>
+
+  <div class="mantra-box" id="mantraBox">
+    <p class="mantra-theme-label" id="mantraThemeLabel"></p>
+    <p class="mantra-text" id="mantraText"></p>
+  </div>
+</div>
+
+<script>
+  const mantras = {
+    discipline: [
+      "You don't need to feel like it. You just need to do it anyway.",
+      "Discipline is a decision made once, not a feeling found daily.",
+      "The plan doesn't need your motivation. It needs your action.",
+      "Show up especially on the day you don't want to."
+    ],
+    patience: [
+      "Slow progress is still progress. The scale is not the only clock that matters.",
+      "You didn't gain it in a week. It won't leave in one either.",
+      "The plateau is a pause, not a verdict.",
+      "Trust the trend, not the day."
+    ],
+    resilience: [
+      "One rough day is data, not a verdict on the whole plan.",
+      "You've come back from a setback before. You know how to do this.",
+      "Continuing is not the same as starting over.",
+      "The comeback is always faster than you think it will be."
+    ],
+    identity: [
+      "This isn't a diet you're on. It's who you're becoming.",
+      "Every logged day is a vote for the person you're building.",
+      "You're not someone trying to lose weight. You're someone who shows up.",
+      "The habits are the goal. The number is just proof."
+    ]
+  };
+
+  const themeLabels = {
+    discipline: "Discipline",
+    patience: "Patience",
+    resilience: "Resilience",
+    identity: "Identity"
+  };
+
+  let selectedTheme = 'discipline';
+
+  document.querySelectorAll('.theme-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedTheme = btn.getAttribute('data-theme');
+    });
+  });
+
+  function generateMantra() {
+    const pool = mantras[selectedTheme];
+    const randomIndex = Math.floor(Math.random() * pool.length);
+    const mantra = pool[randomIndex];
+
+    document.getElementById('mantraThemeLabel').textContent = themeLabels[selectedTheme];
+    document.getElementById('mantraText').textContent = '"' + mantra + '"';
+    document.getElementById('mantraBox').classList.add('visible');
+  }
+</script>
+
+</body>
+</html>
