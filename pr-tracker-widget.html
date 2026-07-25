@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PR Tracker</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 520px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+  input[type="text"], input[type="number"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+  }
+  input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+
+  .weight-row {
+    display: flex;
+    gap: 8px;
+  }
+  .weight-row > div { flex: 1; }
+
+  button.log-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.log-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 22px;
+    padding: 18px;
+    border-radius: 10px;
+    display: none;
+    text-align: center;
+  }
+  .result.visible { display: block; }
+  .result-pr { background: #f0fdf4; border: 1px solid #bbf7d0; }
+  .result-normal { background: #f9fafb; border: 1px solid #e5e7eb; }
+  .result-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0 0 6px 0;
+  }
+  .result-message {
+    font-size: 13px;
+    color: #374151;
+    line-height: 1.5;
+  }
+
+  .pr-list {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+  }
+  .section-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #16a34a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 10px;
+  }
+  .pr-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #374151;
+    padding: 7px 0;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .pr-item:last-child { border-bottom: none; }
+  .empty-note { font-size: 13px; color: #9ca3af; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>PR Tracker</h1>
+  <p class="subtitle">Log a lift and see instantly if it's a new personal best.</p>
+
+  <label for="exerciseInput">Exercise</label>
+  <input type="text" id="exerciseInput" placeholder="e.g. Deadlift">
+
+  <label>Today's lift</label>
+  <div class="weight-row">
+    <div><input type="number" id="weightInput" min="0" step="0.5" placeholder="Weight (kg)"></div>
+    <div><input type="number" id="repsInput" min="1" placeholder="Reps"></div>
+  </div>
+
+  <button class="log-btn" onclick="logLift()">Check My PR</button>
+
+  <div class="result" id="result">
+    <p class="result-title" id="resultTitle"></p>
+    <p class="result-message" id="resultMessage"></p>
+  </div>
+
+  <div class="pr-list">
+    <p class="section-label">This Session's PRs</p>
+    <div id="prList"></div>
+  </div>
+</div>
+
+<script>
+  let records = {}; // { exerciseName: { weight, reps } }
+
+  function logLift() {
+    const exercise = document.getElementById('exerciseInput').value.trim();
+    const weight = parseFloat(document.getElementById('weightInput').value);
+    const reps = parseInt(document.getElementById('repsInput').value, 10);
+
+    if (!exercise || isNaN(weight) || isNaN(reps)) return;
+
+    const key = exercise.toLowerCase();
+    const result = document.getElementById('result');
+    const resultTitle = document.getElementById('resultTitle');
+    const resultMessage = document.getElementById('resultMessage');
+
+    const existing = records[key];
+
+    if (!existing || weight > existing.weight) {
+      records[key] = { name: exercise, weight, reps };
+      result.className = 'result visible result-pr';
+      resultTitle.textContent = "🏆 New PR!";
+      resultTitle.style.color = '#16a34a';
+      resultMessage.textContent = exercise + ": " + weight + "kg x " + reps + (existing ? (" — up from " + existing.weight + "kg") : " — your first logged record for this lift.");
+    } else {
+      result.className = 'result visible result-normal';
+      resultTitle.textContent = "Logged";
+      resultTitle.style.color = '#111827';
+      resultMessage.textContent = "Your PR for " + exercise + " is still " + existing.weight + "kg x " + existing.reps + ". Today's lift: " + weight + "kg x " + reps + ".";
+    }
+
+    document.getElementById('exerciseInput').value = '';
+    document.getElementById('weightInput').value = '';
+    document.getElementById('repsInput').value = '';
+
+    renderPRList();
+  }
+
+  function renderPRList() {
+    const list = document.getElementById('prList');
+    const entries = Object.values(records);
+
+    if (entries.length === 0) {
+      list.innerHTML = '<p class="empty-note">No PRs logged yet this session.</p>';
+      return;
+    }
+
+    list.innerHTML = entries.map(r =>
+      '<div class="pr-item"><span>' + r.name + '</span><span>' + r.weight + 'kg x ' + r.reps + '</span></div>'
+    ).join('');
+  }
+
+  renderPRList();
+</script>
+
+</body>
+</html>
