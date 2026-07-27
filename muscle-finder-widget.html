@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Muscle Group Finder</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 520px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  .section-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #16a34a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 18px 0 8px 0;
+  }
+  .section-label.first { margin-top: 0; }
+
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+  }
+  input[type="text"] {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #111827;
+  }
+  input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+
+  .add-row {
+    display: flex;
+    gap: 8px;
+  }
+  .add-btn {
+    padding: 9px 14px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .add-btn:hover { background: #128a3e; }
+
+  .muscle-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .muscle-tag {
+    padding: 6px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 999px;
+    background: #ffffff;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #111827;
+  }
+  .muscle-tag:hover { border-color: #16a34a; }
+  .muscle-tag.selected {
+    border-color: #16a34a;
+    background: #16a34a;
+    color: #ffffff;
+  }
+
+  .exercise-list {
+    margin-top: 16px;
+  }
+  .exercise-item {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .exercise-item-tag {
+    font-size: 10px;
+    color: #16a34a;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .remove-exercise {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .remove-exercise:hover { color: #b91c1c; }
+
+  .finder-section {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid #e5e7eb;
+  }
+  .empty-note { font-size: 13px; color: #9ca3af; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Muscle Group Finder</h1>
+  <p class="subtitle">Build your library, tagged by muscle group. Then filter to find what hits the area you want.</p>
+
+  <p class="section-label first">Add an Exercise</p>
+  <label for="exerciseInput">Exercise name</label>
+  <div class="add-row">
+    <input type="text" id="exerciseInput" placeholder="e.g. Bench Press">
+  </div>
+
+  <label style="margin-top:14px;">Tag with muscle group</label>
+  <div class="muscle-tags" id="tagRow">
+    <div class="muscle-tag" data-muscle="Chest">Chest</div>
+    <div class="muscle-tag" data-muscle="Back">Back</div>
+    <div class="muscle-tag" data-muscle="Shoulders">Shoulders</div>
+    <div class="muscle-tag" data-muscle="Legs">Legs</div>
+    <div class="muscle-tag" data-muscle="Arms">Arms</div>
+    <div class="muscle-tag" data-muscle="Core">Core</div>
+  </div>
+  <button class="add-btn" style="margin-top:12px; width:100%;" onclick="addExercise()">Add to Library</button>
+
+  <div class="finder-section">
+    <p class="section-label">Find Exercises For a Muscle Group</p>
+    <div class="muscle-tags" id="findRow">
+      <div class="muscle-tag" data-muscle="Chest">Chest</div>
+      <div class="muscle-tag" data-muscle="Back">Back</div>
+      <div class="muscle-tag" data-muscle="Shoulders">Shoulders</div>
+      <div class="muscle-tag" data-muscle="Legs">Legs</div>
+      <div class="muscle-tag" data-muscle="Arms">Arms</div>
+      <div class="muscle-tag" data-muscle="Core">Core</div>
+    </div>
+    <div class="exercise-list" id="exerciseList"></div>
+  </div>
+</div>
+
+<script>
+  let exercises = [
+    { name: 'Bench Press', muscle: 'Chest' },
+    { name: 'Pull-Up', muscle: 'Back' },
+    { name: 'Squat', muscle: 'Legs' },
+    { name: 'Overhead Press', muscle: 'Shoulders' }
+  ];
+  let addTag = null;
+  let findTag = 'Chest';
+
+  document.querySelectorAll('#tagRow .muscle-tag').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#tagRow .muscle-tag').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      addTag = btn.getAttribute('data-muscle');
+    });
+  });
+
+  document.querySelectorAll('#findRow .muscle-tag').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#findRow .muscle-tag').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      findTag = btn.getAttribute('data-muscle');
+      renderExerciseList();
+    });
+  });
+
+  function addExercise() {
+    const input = document.getElementById('exerciseInput');
+    const name = input.value.trim();
+    if (!name || !addTag) return;
+
+    exercises.push({ name, muscle: addTag });
+    input.value = '';
+    renderExerciseList();
+  }
+
+  function removeExercise(index) {
+    exercises.splice(index, 1);
+    renderExerciseList();
+  }
+
+  function renderExerciseList() {
+    const list = document.getElementById('exerciseList');
+    const filtered = exercises.filter(e => e.muscle === findTag);
+
+    if (filtered.length === 0) {
+      list.innerHTML = '<p class="empty-note">No exercises tagged for ' + findTag + ' yet. Add some above.</p>';
+      return;
+    }
+
+    list.innerHTML = filtered.map((e) => {
+      const originalIndex = exercises.indexOf(e);
+      return '<div class="exercise-item"><span>' + e.name + '</span><button class="remove-exercise" onclick="removeExercise(' + originalIndex + ')">✕</button></div>';
+    }).join('');
+  }
+
+  // Default the first find-tag to selected
+  document.querySelector('#findRow .muscle-tag[data-muscle="Chest"]').classList.add('selected');
+  renderExerciseList();
+</script>
+
+</body>
+</html>
