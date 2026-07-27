@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Program Structure Builder</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 540px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+  input[type="number"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+  }
+  input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+
+  button.build-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.build-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    display: none;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  .result.visible { display: block; }
+  .week-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 9px 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 13px;
+  }
+  .week-row:last-child { border-bottom: none; }
+  .week-row.deload { background: #fffbeb; padding-left: 8px; padding-right: 8px; border-radius: 4px; }
+  .week-name { font-weight: 600; color: #111827; }
+  .week-detail { color: #6b7280; }
+  .deload-tag { color: #d97706; font-weight: 700; font-size: 11px; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Program Structure Builder</h1>
+  <p class="subtitle">Set your program length — get a week-by-week skeleton, with a suggested deload built in.</p>
+
+  <label for="weeksInput">Program length (weeks)</label>
+  <input type="number" id="weeksInput" min="1" max="24" placeholder="e.g. 8">
+
+  <label for="daysInput">Training days per week</label>
+  <input type="number" id="daysInput" min="1" max="7" placeholder="e.g. 4">
+
+  <button class="build-btn" onclick="buildStructure()">Build My Program Outline</button>
+
+  <div class="result" id="result"></div>
+</div>
+
+<script>
+  function buildStructure() {
+    const weeks = parseInt(document.getElementById('weeksInput').value, 10);
+    const days = parseInt(document.getElementById('daysInput').value, 10);
+    const result = document.getElementById('result');
+
+    if (isNaN(weeks) || isNaN(days) || weeks <= 0 || days <= 0) return;
+
+    let html = '';
+    for (let w = 1; w <= weeks; w++) {
+      const isDeload = (w % 4 === 0) && (w !== weeks);
+      const phase = w <= Math.ceil(weeks * 0.4) ? 'Base' : (w <= Math.ceil(weeks * 0.8) ? 'Build' : 'Peak');
+
+      html += '<div class="week-row' + (isDeload ? ' deload' : '') + '">' +
+        '<span class="week-name">Week ' + w + '</span>' +
+        '<span class="week-detail">' + (isDeload ? '<span class="deload-tag">DELOAD — reduce volume ~40-50%</span>' : phase + ' phase — ' + days + ' training days') + '</span>' +
+        '</div>';
+    }
+
+    result.innerHTML = html;
+    result.classList.add('visible');
+  }
+</script>
+
+</body>
+</html>
