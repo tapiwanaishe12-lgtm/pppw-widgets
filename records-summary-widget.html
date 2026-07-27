@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Records Summary</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 540px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  .column-labels {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .column-labels .name-col { flex: 1.5; font-size: 11px; color: #6b7280; font-weight: 600; }
+  .column-labels .date-col { flex: 1; font-size: 11px; color: #6b7280; font-weight: 600; }
+
+  .entry-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    align-items: center;
+  }
+  .entry-row input[type="text"] { flex: 1.5; }
+  .entry-row input[type="date"] { flex: 1; }
+  input[type="text"], input[type="date"] {
+    padding: 8px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #111827;
+  }
+  input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+  .remove-row {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0 4px;
+  }
+  .remove-row:hover { color: #b91c1c; }
+
+  .add-row-btn {
+    margin-top: 12px;
+    padding: 9px 14px;
+    background: #ffffff;
+    color: #16a34a;
+    border: 1px solid #16a34a;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .add-row-btn:hover { background: #f0fdf4; }
+
+  button.calc-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.calc-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    display: none;
+  }
+  .result.visible { display: block; }
+  .stat-row {
+    display: flex;
+    gap: 10px;
+  }
+  .stat-box {
+    flex: 1;
+    text-align: center;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 14px 8px;
+  }
+  .stat-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: #16a34a;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: #4b5563;
+    margin-top: 4px;
+  }
+  .oldest-note {
+    font-size: 12px;
+    color: #4b5563;
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Records Summary</h1>
+  <p class="subtitle">Enter your records from the table above to see a quick overview.</p>
+
+  <div class="column-labels">
+    <span class="name-col">Exercise</span>
+    <span class="date-col">Date Achieved</span>
+  </div>
+
+  <div id="entriesContainer"></div>
+  <button class="add-row-btn" onclick="addEntry()">+ Add Record</button>
+
+  <button class="calc-btn" onclick="calculateSummary()">Show My Summary</button>
+
+  <div class="result" id="result">
+    <div class="stat-row">
+      <div class="stat-box">
+        <div class="stat-value" id="totalRecords">0</div>
+        <div class="stat-label">Total Records</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="thisMonthCount">0</div>
+        <div class="stat-label">PRs This Month</div>
+      </div>
+    </div>
+    <p class="oldest-note" id="oldestNote"></p>
+  </div>
+</div>
+
+<script>
+  let rowCount = 0;
+
+  function addEntry(name, date) {
+    rowCount++;
+    const container = document.getElementById('entriesContainer');
+    const row = document.createElement('div');
+    row.className = 'entry-row';
+    row.setAttribute('data-row-id', rowCount);
+    row.innerHTML = `
+      <input type="text" placeholder="e.g. Bench Press" value="${name || ''}">
+      <input type="date" value="${date || ''}">
+      <button class="remove-row" onclick="removeEntry(${rowCount})">✕</button>
+    `;
+    container.appendChild(row);
+  }
+
+  function removeEntry(id) {
+    const row = document.querySelector('[data-row-id="' + id + '"]');
+    if (row) row.remove();
+  }
+
+  function calculateSummary() {
+    const rows = document.querySelectorAll('.entry-row');
+    const entries = [];
+
+    rows.forEach(row => {
+      const inputs = row.querySelectorAll('input');
+      const name = inputs[0].value.trim();
+      const dateStr = inputs[1].value;
+
+      if (name && dateStr) {
+        entries.push({ name, date: new Date(dateStr) });
+      }
+    });
+
+    document.getElementById('totalRecords').textContent = entries.length;
+
+    const now = new Date();
+    const thisMonthCount = entries.filter(e =>
+      e.date.getMonth() === now.getMonth() && e.date.getFullYear() === now.getFullYear()
+    ).length;
+    document.getElementById('thisMonthCount').textContent = thisMonthCount;
+
+    const oldestNote = document.getElementById('oldestNote');
+    if (entries.length === 0) {
+      oldestNote.textContent = "Add records above to see your summary.";
+    } else {
+      const oldest = entries.reduce((a, b) => a.date < b.date ? a : b);
+      const daysSince = Math.round((now - oldest.date) / (1000 * 60 * 60 * 24));
+      oldestNote.textContent = "Longest-standing record: " + oldest.name + " (" + daysSince + " days unbroken) — a good candidate to target next.";
+    }
+
+    document.getElementById('result').classList.add('visible');
+  }
+
+  // Pre-fill with example
+  addEntry('Bench Press', '2026-07-20');
+  addEntry('Pull-Ups', '2026-07-06');
+  addEntry('Deadlift', '2026-06-28');
+</script>
+
+</body>
+</html>
