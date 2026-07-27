@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Split Recommender</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 540px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+
+  .option-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .option-btn {
+    flex: 1;
+    min-width: 70px;
+    padding: 10px 6px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    color: #111827;
+  }
+  .option-btn:hover { border-color: #16a34a; }
+  .option-btn.selected {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+
+  button.suggest-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.suggest-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 22px;
+    padding: 18px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    display: none;
+  }
+  .result.visible { display: block; }
+  .result-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 10px 0;
+  }
+  .day-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid #d1fae5;
+    font-size: 13px;
+  }
+  .day-row:last-child { border-bottom: none; }
+  .day-name { font-weight: 600; color: #111827; }
+  .day-focus { color: #374151; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Split Recommender</h1>
+  <p class="subtitle">Answer two questions to get a suggested weekly split as a starting point.</p>
+
+  <label>Training days per week</label>
+  <div class="option-row" id="daysRow">
+    <div class="option-btn" data-days="3">3</div>
+    <div class="option-btn" data-days="4">4</div>
+    <div class="option-btn" data-days="5">5</div>
+    <div class="option-btn" data-days="6">6</div>
+  </div>
+
+  <label>Primary goal</label>
+  <div class="option-row" id="goalRow">
+    <div class="option-btn" data-goal="strength">Strength</div>
+    <div class="option-btn" data-goal="calisthenics">Calisthenics/Skill</div>
+    <div class="option-btn" data-goal="general">General Fitness</div>
+  </div>
+
+  <button class="suggest-btn" onclick="suggestSplit()">Suggest My Split</button>
+
+  <div class="result" id="result">
+    <p class="result-title" id="resultTitle"></p>
+    <div id="splitDays"></div>
+  </div>
+</div>
+
+<script>
+  let selectedDays = null;
+  let selectedGoal = null;
+
+  document.querySelectorAll('#daysRow .option-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#daysRow .option-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedDays = btn.getAttribute('data-days');
+    });
+  });
+
+  document.querySelectorAll('#goalRow .option-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#goalRow .option-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedGoal = btn.getAttribute('data-goal');
+    });
+  });
+
+  const splits = {
+    '3-strength': { title: "3-Day Full Body (Strength Focus)", days: ["Full Body A (heavy)", "Rest", "Full Body B (moderate)", "Rest", "Full Body C (heavy)", "Rest", "Rest"] },
+    '3-calisthenics': { title: "3-Day Skill & Strength Split", days: ["Push + Skill Practice", "Rest", "Pull + Skill Practice", "Rest", "Legs + Core", "Rest", "Rest"] },
+    '3-general': { title: "3-Day Full Body (General Fitness)", days: ["Full Body A", "Rest", "Cardio/Conditioning", "Rest", "Full Body B", "Rest", "Rest"] },
+    '4-strength': { title: "4-Day Upper/Lower Split", days: ["Upper (heavy)", "Lower (heavy)", "Rest", "Upper (moderate)", "Lower (moderate)", "Rest", "Rest"] },
+    '4-calisthenics': { title: "4-Day Push/Pull/Legs/Skill", days: ["Push", "Pull", "Rest", "Legs", "Skill Practice", "Rest", "Rest"] },
+    '4-general': { title: "4-Day Balanced Split", days: ["Upper", "Cardio", "Lower", "Rest", "Full Body", "Rest", "Rest"] },
+    '5-strength': { title: "5-Day Push/Pull/Legs/Upper/Lower", days: ["Push", "Pull", "Legs", "Rest", "Upper", "Lower", "Rest"] },
+    '5-calisthenics': { title: "5-Day Skill-Focused Split", days: ["Push + Skill", "Pull + Skill", "Legs", "Rest", "Skill Practice", "Full Body", "Rest"] },
+    '5-general': { title: "5-Day Balanced Split", days: ["Upper", "Lower", "Cardio", "Rest", "Full Body", "Active Recovery", "Rest"] },
+    '6-strength': { title: "6-Day Push/Pull/Legs (Twice)", days: ["Push", "Pull", "Legs", "Push", "Pull", "Legs", "Rest"] },
+    '6-calisthenics': { title: "6-Day Skill & Strength Split", days: ["Push + Skill", "Pull + Skill", "Legs", "Push + Skill", "Pull + Skill", "Legs", "Rest"] },
+    '6-general': { title: "6-Day Balanced Split", days: ["Upper", "Lower", "Cardio", "Upper", "Lower", "Active Recovery", "Rest"] }
+  };
+
+  const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+  function suggestSplit() {
+    if (!selectedDays || !selectedGoal) return;
+
+    const key = selectedDays + '-' + selectedGoal;
+    const split = splits[key];
+
+    document.getElementById('resultTitle').textContent = split.title;
+
+    const splitDays = document.getElementById('splitDays');
+    splitDays.innerHTML = split.days.map((focus, i) =>
+      '<div class="day-row"><span class="day-name">' + dayLabels[i] + '</span><span class="day-focus">' + focus + '</span></div>'
+    ).join('');
+
+    document.getElementById('result').classList.add('visible');
+  }
+</script>
+
+</body>
+</html>
