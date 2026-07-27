@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Strength Progress Chart</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 560px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+  input[type="text"], input[type="number"] {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #111827;
+  }
+  input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+
+  .entry-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    align-items: center;
+  }
+  .entry-row input[type="text"] { flex: 1.5; }
+  .entry-row input[type="number"] { flex: 1; }
+  .remove-entry {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0 4px;
+  }
+  .remove-entry:hover { color: #b91c1c; }
+
+  .column-labels {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .column-labels .label-date { flex: 1.5; font-size: 11px; color: #6b7280; font-weight: 600; }
+  .column-labels .label-weight { flex: 1; font-size: 11px; color: #6b7280; font-weight: 600; text-align: center; }
+
+  .add-entry-btn {
+    margin-top: 12px;
+    padding: 9px 14px;
+    background: #ffffff;
+    color: #16a34a;
+    border: 1px solid #16a34a;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .add-entry-btn:hover { background: #f0fdf4; }
+
+  button.plot-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.plot-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    display: none;
+  }
+  .result.visible { display: block; }
+  .chart-area {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    height: 140px;
+    padding-top: 10px;
+  }
+  .chart-bar-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    justify-content: flex-end;
+  }
+  .chart-bar {
+    width: 100%;
+    background: #16a34a;
+    border-radius: 4px 4px 0 0;
+    position: relative;
+    min-height: 4px;
+  }
+  .chart-bar-value {
+    font-size: 10px;
+    color: #16a34a;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+  .chart-bar-label {
+    font-size: 9px;
+    color: #9ca3af;
+    margin-top: 4px;
+    text-align: center;
+  }
+  .message {
+    font-size: 13px;
+    color: #374151;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-top: 16px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Strength Progress Chart</h1>
+  <p class="subtitle">Add entries for one lift over time to see the trend, not just today's number.</p>
+
+  <div class="column-labels">
+    <span class="label-date">Date/Label</span>
+    <span class="label-weight">Weight (kg)</span>
+  </div>
+
+  <div id="entriesContainer"></div>
+  <button class="add-entry-btn" onclick="addEntry()">+ Add Entry</button>
+
+  <button class="plot-btn" onclick="plotProgress()">Plot My Progress</button>
+
+  <div class="result" id="result">
+    <div class="chart-area" id="chartArea"></div>
+    <div class="message" id="message"></div>
+  </div>
+</div>
+
+<script>
+  let entryCount = 0;
+
+  function addEntry(label, weight) {
+    entryCount++;
+    const container = document.getElementById('entriesContainer');
+    const row = document.createElement('div');
+    row.className = 'entry-row';
+    row.setAttribute('data-entry-id', entryCount);
+    row.innerHTML = `
+      <input type="text" placeholder="e.g. Jun 15" value="${label || ''}">
+      <input type="number" min="0" step="0.5" placeholder="Weight" value="${weight || ''}">
+      <button class="remove-entry" onclick="removeEntry(${entryCount})">✕</button>
+    `;
+    container.appendChild(row);
+  }
+
+  function removeEntry(id) {
+    const row = document.querySelector('[data-entry-id="' + id + '"]');
+    if (row) row.remove();
+  }
+
+  function plotProgress() {
+    const rows = document.querySelectorAll('.entry-row');
+    const entries = [];
+
+    rows.forEach(row => {
+      const inputs = row.querySelectorAll('input');
+      const label = inputs[0].value.trim();
+      const weight = parseFloat(inputs[1].value);
+
+      if (label && !isNaN(weight)) {
+        entries.push({ label, weight });
+      }
+    });
+
+    const chartArea = document.getElementById('chartArea');
+    chartArea.innerHTML = '';
+
+    if (entries.length === 0) {
+      document.getElementById('message').textContent = "Add at least one entry with a label and weight.";
+      document.getElementById('result').classList.add('visible');
+      return;
+    }
+
+    const maxWeight = Math.max(...entries.map(e => e.weight));
+
+    entries.forEach(e => {
+      const wrap = document.createElement('div');
+      wrap.className = 'chart-bar-wrap';
+      const heightPercent = Math.max(4, (e.weight / maxWeight) * 100);
+      wrap.innerHTML = '<span class="chart-bar-value">' + e.weight + '</span>' +
+        '<div class="chart-bar" style="height:' + heightPercent + '%"></div>' +
+        '<div class="chart-bar-label">' + e.label + '</div>';
+      chartArea.appendChild(wrap);
+    });
+
+    const message = document.getElementById('message');
+    if (entries.length < 2) {
+      message.textContent = "Add a few more entries over time to see a real trend, not just a single data point.";
+    } else {
+      const first = entries[0].weight;
+      const last = entries[entries.length - 1].weight;
+      const change = last - first;
+      const percentChange = ((change / first) * 100).toFixed(1);
+
+      if (change > 0) {
+        message.textContent = "Up " + change.toFixed(1) + "kg (" + percentChange + "%) from your first logged entry to your most recent — this is what real progress looks like over time.";
+      } else if (change < 0) {
+        message.textContent = "Down " + Math.abs(change).toFixed(1) + "kg from your first entry. Worth checking your Training Plateau Troubleshooter if this reflects a genuine multi-week trend, not just one off session.";
+      } else {
+        message.textContent = "No change between your first and most recent entry. If this has held for several weeks, your Plateau Troubleshooter is worth a look.";
+      }
+    }
+
+    document.getElementById('result').classList.add('visible');
+  }
+
+  // Pre-fill with example
+  addEntry('Jun 15', 75);
+  addEntry('Jul 6', 80);
+  addEntry('Jul 20', 82.5);
+</script>
+
+</body>
+</html>
