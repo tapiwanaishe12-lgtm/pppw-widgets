@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Warm-Up Builder</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 520px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+
+  .type-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .type-btn {
+    flex: 1;
+    min-width: 100px;
+    padding: 10px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    color: #111827;
+  }
+  .type-btn:hover { border-color: #16a34a; }
+  .type-btn.selected {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+
+  button.build-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.build-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid #e5e7eb;
+    display: none;
+  }
+  .result.visible { display: block; }
+  .step-item {
+    display: flex;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 13px;
+  }
+  .step-item:last-child { border-bottom: none; }
+  .step-time {
+    font-weight: 700;
+    color: #16a34a;
+    min-width: 40px;
+    flex-shrink: 0;
+  }
+  .step-detail { color: #111827; }
+  .total-caption {
+    font-size: 13px;
+    color: #4b5563;
+    margin-top: 12px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Warm-Up Builder</h1>
+  <p class="subtitle">Pick what you're training — get a suggested warm-up sequence to follow or save.</p>
+
+  <label>Training type</label>
+  <div class="type-row" id="typeRow">
+    <div class="type-btn" data-type="upper">Upper Body</div>
+    <div class="type-btn" data-type="lower">Lower Body</div>
+    <div class="type-btn" data-type="fullbody">Full Body</div>
+    <div class="type-btn" data-type="calisthenics">Calisthenics</div>
+  </div>
+
+  <button class="build-btn" onclick="buildWarmup()">Build My Warm-Up</button>
+
+  <div class="result" id="result">
+    <div id="stepsList"></div>
+    <p class="total-caption" id="totalCaption"></p>
+  </div>
+</div>
+
+<script>
+  const warmups = {
+    upper: [
+      { name: 'Arm circles + shoulder rolls', mins: 2 },
+      { name: 'Band pull-aparts', mins: 2 },
+      { name: 'Light push-ups (bodyweight)', mins: 2 },
+      { name: 'First set at 50% working weight', mins: 2 }
+    ],
+    lower: [
+      { name: 'Leg swings (front/back, side/side)', mins: 2 },
+      { name: 'Bodyweight squats', mins: 2 },
+      { name: 'Walking lunges', mins: 2 },
+      { name: 'First set at 50% working weight', mins: 2 }
+    ],
+    fullbody: [
+      { name: 'Jumping jacks or light jog in place', mins: 3 },
+      { name: 'Arm circles + leg swings', mins: 3 },
+      { name: 'Bodyweight squats + push-ups', mins: 3 },
+      { name: 'First set at 50% working weight', mins: 2 }
+    ],
+    calisthenics: [
+      { name: 'Wrist circles + wrist stretches', mins: 2 },
+      { name: 'Scapular pull-ups', mins: 2 },
+      { name: 'Dead hangs', mins: 2 },
+      { name: 'Hollow body holds', mins: 2 },
+      { name: 'Easy variation of today\'s skill work', mins: 3 }
+    ]
+  };
+
+  const typeLabels = {
+    upper: 'Upper Body',
+    lower: 'Lower Body',
+    fullbody: 'Full Body',
+    calisthenics: 'Calisthenics'
+  };
+
+  let selectedType = null;
+
+  document.querySelectorAll('.type-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedType = btn.getAttribute('data-type');
+    });
+  });
+
+  function buildWarmup() {
+    if (!selectedType) return;
+
+    const steps = warmups[selectedType];
+    const stepsList = document.getElementById('stepsList');
+    stepsList.innerHTML = steps.map(s =>
+      '<div class="step-item"><span class="step-time">' + s.mins + ' min</span><span class="step-detail">' + s.name + '</span></div>'
+    ).join('');
+
+    const totalMins = steps.reduce((sum, s) => sum + s.mins, 0);
+    document.getElementById('totalCaption').textContent = typeLabels[selectedType] + ' warm-up — roughly ' + totalMins + ' minutes total. Adjust and save your own version to your Warm-Up Routines above.';
+
+    document.getElementById('result').classList.add('visible');
+  }
+</script>
+
+</body>
+</html>
