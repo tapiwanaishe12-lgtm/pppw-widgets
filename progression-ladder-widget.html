@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Progression Ladder</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 520px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+
+  .skill-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .skill-btn {
+    flex: 1;
+    min-width: 100px;
+    padding: 9px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    color: #111827;
+  }
+  .skill-btn:hover { border-color: #16a34a; }
+  .skill-btn.selected {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+
+  .ladder-section {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid #e5e7eb;
+    display: none;
+  }
+  .ladder-section.visible { display: block; }
+
+  .stage-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    cursor: pointer;
+  }
+  .stage-number {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .stage-item.completed .stage-number {
+    background: #16a34a;
+    color: #ffffff;
+  }
+  .stage-item.current .stage-number {
+    background: #f0fdf4;
+    color: #16a34a;
+    border: 2px solid #16a34a;
+  }
+  .stage-name {
+    font-size: 13px;
+    color: #374151;
+  }
+  .stage-item.completed .stage-name { color: #16a34a; font-weight: 600; }
+  .stage-item.current .stage-name { color: #111827; font-weight: 700; }
+
+  .progress-track {
+    width: 100%;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-top: 16px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: #16a34a;
+    border-radius: 999px;
+    transition: width 0.3s ease;
+    width: 0%;
+  }
+  .progress-caption {
+    font-size: 13px;
+    color: #4b5563;
+    margin-top: 8px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Progression Ladder</h1>
+  <p class="subtitle">Pick a skill, tap your current stage, see how far there is to go.</p>
+
+  <label>Choose a skill</label>
+  <div class="skill-row" id="skillRow">
+    <div class="skill-btn" data-skill="muscleup">Muscle-Up</div>
+    <div class="skill-btn" data-skill="handstand">Handstand</div>
+    <div class="skill-btn" data-skill="frontlever">Front Lever</div>
+    <div class="skill-btn" data-skill="pistol">Pistol Squat</div>
+  </div>
+
+  <div class="ladder-section" id="ladderSection">
+    <div id="stageList"></div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <p class="progress-caption" id="progressCaption"></p>
+  </div>
+</div>
+
+<script>
+  const skillLadders = {
+    muscleup: [
+      "Pull-ups (10+ clean reps)",
+      "Dips (10+ clean reps)",
+      "High pull-ups (chest to bar)",
+      "Explosive/kipping pull-ups",
+      "Negative muscle-ups (slow descent)",
+      "Assisted muscle-ups (band or jump)",
+      "Full strict muscle-up"
+    ],
+    handstand: [
+      "Wall-supported handstand hold (30s+)",
+      "Chest-to-wall handstand hold (30s+)",
+      "Wall walks",
+      "Back-to-wall handstand hold",
+      "Freestanding handstand kick-up attempts",
+      "Freestanding handstand hold (5-10s)",
+      "Freestanding handstand hold (30s+)"
+    ],
+    frontlever: [
+      "Hollow body hold (30s+)",
+      "Tuck front lever",
+      "Advanced tuck front lever",
+      "Single-leg front lever",
+      "Straddle front lever",
+      "Full front lever hold (5s+)",
+      "Full front lever hold (15s+)"
+    ],
+    pistol: [
+      "Assisted squats (holding support)",
+      "Box pistol squats (sitting to a box)",
+      "Negative pistol squats (slow descent)",
+      "Pistol squat with counterweight",
+      "Full unassisted pistol squat",
+      "Multiple reps each leg",
+      "Weighted pistol squat"
+    ]
+  };
+
+  const skillLabels = {
+    muscleup: "Muscle-Up",
+    handstand: "Freestanding Handstand",
+    frontlever: "Front Lever",
+    pistol: "Pistol Squat"
+  };
+
+  let selectedSkill = null;
+  let currentStage = 0;
+
+  document.querySelectorAll('.skill-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.skill-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedSkill = btn.getAttribute('data-skill');
+      currentStage = 0;
+      renderLadder();
+    });
+  });
+
+  function renderLadder() {
+    const stages = skillLadders[selectedSkill];
+    const stageList = document.getElementById('stageList');
+    stageList.innerHTML = '';
+
+    stages.forEach((stage, i) => {
+      const div = document.createElement('div');
+      let cls = 'stage-item';
+      if (i < currentStage) cls += ' completed';
+      if (i === currentStage) cls += ' current';
+      div.className = cls;
+      div.onclick = () => setStage(i);
+
+      const symbol = i < currentStage ? '✓' : (i + 1);
+      div.innerHTML = '<div class="stage-number">' + symbol + '</div><div class="stage-name">' + stage + '</div>';
+      stageList.appendChild(div);
+    });
+
+    const percent = Math.round((currentStage / (stages.length - 1)) * 100);
+    document.getElementById('progressFill').style.width = percent + '%';
+
+    if (currentStage >= stages.length - 1) {
+      document.getElementById('progressCaption').textContent = "You've reached the top of this ladder — " + skillLabels[selectedSkill] + " achieved. Time to add reps, hold time, or a new skill.";
+    } else {
+      document.getElementById('progressCaption').textContent = "Currently on stage " + (currentStage + 1) + " of " + stages.length + ". Next: " + stages[currentStage + 1];
+    }
+
+    document.getElementById('ladderSection').classList.add('visible');
+  }
+
+  function setStage(index) {
+    currentStage = index;
+    renderLadder();
+  }
+</script>
+
+</body>
+</html>
