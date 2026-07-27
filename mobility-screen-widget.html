@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mobility Screen Checklist</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 520px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+
+  .area-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .area-row:last-child { border-bottom: none; }
+  .area-label {
+    flex: 1.3;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+  }
+  .area-desc {
+    font-size: 10px;
+    color: #9ca3af;
+    display: block;
+    margin-top: 2px;
+    font-weight: 400;
+  }
+  .scale-row {
+    display: flex;
+    gap: 4px;
+    flex: 1.5;
+  }
+  .scale-btn {
+    flex: 1;
+    padding: 7px 0;
+    border: 1px solid #d1d5db;
+    border-radius: 5px;
+    background: #ffffff;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    color: #111827;
+  }
+  .scale-btn:hover { border-color: #16a34a; }
+  .scale-btn.selected {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+
+  button.check-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.check-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 20px;
+    padding: 16px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    display: none;
+  }
+  .result.visible { display: block; }
+  .result-message {
+    font-size: 13px;
+    color: #374151;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Mobility Screen Checklist</h1>
+  <p class="subtitle">Rate each area honestly (1 = very tight, 5 = full comfortable range). Use as a baseline to track improvement.</p>
+
+  <div id="areaList"></div>
+
+  <button class="check-btn" onclick="checkMobility()">Check My Screen</button>
+
+  <div class="result" id="result">
+    <div class="result-message" id="resultMessage"></div>
+  </div>
+</div>
+
+<script>
+  const areas = [
+    { key: 'Ankles', desc: 'Deep squat, knee travels past toes' },
+    { key: 'Hips', desc: 'Deep squat depth, hip flexor stretch' },
+    { key: 'Thoracic Spine', desc: 'Overhead reach, rotation' },
+    { key: 'Shoulders', desc: 'Overhead lockout, behind-back reach' },
+    { key: 'Hamstrings', desc: 'Toe touch, straight-leg raise' }
+  ];
+
+  let scores = {};
+  areas.forEach(a => scores[a.key] = null);
+
+  function renderAreas() {
+    const list = document.getElementById('areaList');
+    list.innerHTML = '';
+
+    areas.forEach(area => {
+      const row = document.createElement('div');
+      row.className = 'area-row';
+      row.innerHTML = `
+        <span class="area-label">${area.key}<span class="area-desc">${area.desc}</span></span>
+        <div class="scale-row" id="scale-${area.key.replace(/\s/g, '')}">
+          <div class="scale-btn" data-value="1">1</div>
+          <div class="scale-btn" data-value="2">2</div>
+          <div class="scale-btn" data-value="3">3</div>
+          <div class="scale-btn" data-value="4">4</div>
+          <div class="scale-btn" data-value="5">5</div>
+        </div>
+      `;
+      list.appendChild(row);
+    });
+
+    areas.forEach(area => {
+      const rowId = 'scale-' + area.key.replace(/\s/g, '');
+      document.querySelectorAll('#' + rowId + ' .scale-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('#' + rowId + ' .scale-btn').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          scores[area.key] = parseInt(btn.getAttribute('data-value'), 10);
+        });
+      });
+    });
+  }
+
+  function checkMobility() {
+    const rated = areas.filter(a => scores[a.key] !== null);
+    const result = document.getElementById('result');
+    const message = document.getElementById('resultMessage');
+
+    if (rated.length === 0) {
+      message.textContent = "Rate at least one area above to see your screen results.";
+      result.classList.add('visible');
+      return;
+    }
+
+    const weakAreas = rated.filter(a => scores[a.key] <= 2).map(a => a.key);
+    const strongAreas = rated.filter(a => scores[a.key] >= 4).map(a => a.key);
+
+    let msg = '';
+    if (weakAreas.length > 0) {
+      msg += weakAreas.join(', ') + " scored lowest — these are worth dedicated mobility work this week, and worth watching on your Injury & Niggles Log if they stay tight.";
+    } else {
+      msg += "No area scored particularly low — a solid baseline across the board.";
+    }
+
+    if (strongAreas.length > 0) {
+      msg += " " + strongAreas.join(', ') + " scored well — maintenance work is enough here, no need to prioritize.";
+    }
+
+    message.textContent = msg;
+    result.classList.add('visible');
+  }
+
+  renderAreas();
+</script>
+
+</body>
+</html>
