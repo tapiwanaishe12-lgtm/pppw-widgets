@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zone Training Guide</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 520px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+  input[type="number"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+  }
+  input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+
+  button.calc-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.calc-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    display: none;
+  }
+  .result.visible { display: block; }
+  .max-hr {
+    text-align: center;
+    font-size: 13px;
+    color: #4b5563;
+    margin-bottom: 16px;
+  }
+  .max-hr-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #16a34a;
+  }
+
+  .zone-row {
+    padding: 10px 0;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .zone-row:last-child { border-bottom: none; }
+  .zone-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .zone-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #111827;
+  }
+  .zone-range {
+    font-size: 13px;
+    font-weight: 700;
+    color: #16a34a;
+  }
+  .zone-desc {
+    font-size: 11px;
+    color: #6b7280;
+    margin-top: 2px;
+  }
+
+  .disclaimer {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 14px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Zone Training Guide</h1>
+  <p class="subtitle">Enter your age to see estimated heart rate zones for conditioning work.</p>
+
+  <label for="ageInput">Age</label>
+  <input type="number" id="ageInput" min="10" max="100" placeholder="e.g. 32">
+
+  <button class="calc-btn" onclick="calculateZones()">Show My Zones</button>
+
+  <div class="result" id="result">
+    <div class="max-hr">
+      Estimated Max Heart Rate: <span class="max-hr-value" id="maxHrValue"></span> bpm
+    </div>
+
+    <div id="zonesList"></div>
+
+    <p class="disclaimer">Estimated using the standard 220-minus-age formula, which has known individual variation of ±10-15 bpm. For more precise zones, a lab test or field test (like a max effort time trial) gives more accurate results.</p>
+  </div>
+</div>
+
+<script>
+  const zones = [
+    { name: 'Zone 1 — Recovery', low: 0.50, high: 0.60, desc: 'Very easy, conversational pace. Active recovery days.' },
+    { name: 'Zone 2 — Easy/Base', low: 0.60, high: 0.70, desc: 'Comfortable, sustainable for a long time. Builds aerobic base.' },
+    { name: 'Zone 3 — Moderate', low: 0.70, high: 0.80, desc: 'Steady effort, breathing noticeably harder. Tempo work.' },
+    { name: 'Zone 4 — Hard', low: 0.80, high: 0.90, desc: 'Challenging, sustainable for shorter periods. Threshold work.' },
+    { name: 'Zone 5 — Max Effort', low: 0.90, high: 1.00, desc: 'All-out effort, unsustainable for long. Sprints and intervals.' }
+  ];
+
+  function calculateZones() {
+    const age = parseInt(document.getElementById('ageInput').value, 10);
+    if (isNaN(age) || age <= 0) return;
+
+    const maxHr = 220 - age;
+    document.getElementById('maxHrValue').textContent = maxHr;
+
+    const zonesList = document.getElementById('zonesList');
+    zonesList.innerHTML = zones.map(z => {
+      const lowBpm = Math.round(maxHr * z.low);
+      const highBpm = Math.round(maxHr * z.high);
+      return '<div class="zone-row">' +
+        '<div class="zone-header"><span class="zone-name">' + z.name + '</span><span class="zone-range">' + lowBpm + '-' + highBpm + ' bpm</span></div>' +
+        '<div class="zone-desc">' + z.desc + '</div>' +
+        '</div>';
+    }).join('');
+
+    document.getElementById('result').classList.add('visible');
+  }
+</script>
+
+</body>
+</html>
