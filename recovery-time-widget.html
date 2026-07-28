@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recovery Time Tracker</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 520px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+  select, input[type="number"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+    background: #ffffff;
+  }
+  select:focus, input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+
+  button.log-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.log-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid #e5e7eb;
+    display: none;
+  }
+  .result.visible { display: block; }
+  .section-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #16a34a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 10px;
+  }
+  .muscle-avg {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 13px;
+  }
+  .muscle-avg:last-child { border-bottom: none; }
+  .muscle-name { font-weight: 600; color: #111827; }
+  .muscle-days { color: #16a34a; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Recovery Time Tracker</h1>
+  <p class="subtitle">Log when soreness genuinely fades for a muscle group — learn your own recovery windows over time.</p>
+
+  <label for="muscleSelect">Muscle group</label>
+  <select id="muscleSelect">
+    <option value="Chest">Chest</option>
+    <option value="Back">Back</option>
+    <option value="Shoulders">Shoulders</option>
+    <option value="Legs">Legs</option>
+    <option value="Arms">Arms</option>
+    <option value="Core">Core</option>
+  </select>
+
+  <label for="daysInput">Days until soreness fully resolved</label>
+  <input type="number" id="daysInput" min="0" max="14" placeholder="e.g. 3">
+
+  <button class="log-btn" onclick="logRecovery()">Log This Recovery</button>
+
+  <div class="result" id="result">
+    <p class="section-label">Your Average Recovery Time</p>
+    <div id="averagesList"></div>
+  </div>
+</div>
+
+<script>
+  let records = {}; // { muscle: [days, days, ...] }
+
+  function logRecovery() {
+    const muscle = document.getElementById('muscleSelect').value;
+    const days = parseInt(document.getElementById('daysInput').value, 10);
+
+    if (isNaN(days)) return;
+
+    if (!records[muscle]) records[muscle] = [];
+    records[muscle].push(days);
+
+    document.getElementById('daysInput').value = '';
+
+    renderAverages();
+  }
+
+  function renderAverages() {
+    const list = document.getElementById('averagesList');
+    const muscles = Object.keys(records);
+
+    if (muscles.length === 0) {
+      list.innerHTML = '<p style="font-size:13px;color:#9ca3af;">No recovery data logged yet.</p>';
+      document.getElementById('result').classList.add('visible');
+      return;
+    }
+
+    list.innerHTML = muscles.map(m => {
+      const values = records[m];
+      const avg = (values.reduce((sum, v) => sum + v, 0) / values.length).toFixed(1);
+      return '<div class="muscle-avg"><span class="muscle-name">' + m + '</span><span class="muscle-days">' + avg + ' days avg (' + values.length + ' logged)</span></div>';
+    }).join('');
+
+    document.getElementById('result').classList.add('visible');
+  }
+</script>
+
+</body>
+</html>
