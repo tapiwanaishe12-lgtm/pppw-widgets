@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Injury Risk Factors</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 520px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 9px 0;
+    font-size: 13px;
+    color: #111827;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: #16a34a; margin-top: 1px; flex-shrink: 0; }
+
+  button.check-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.check-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 20px;
+    padding: 16px;
+    border-radius: 10px;
+    display: none;
+  }
+  .result.visible { display: block; }
+  .result-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+  }
+  .result-message {
+    font-size: 13px;
+    color: #374151;
+    line-height: 1.6;
+  }
+  .tier-low { background: #f0fdf4; border: 1px solid #bbf7d0; }
+  .tier-moderate { background: #fffbeb; border: 1px solid #fde68a; }
+  .tier-high { background: #fef2f2; border: 1px solid #fecaca; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Injury Risk Factors</h1>
+  <p class="subtitle">Check anything true for you right now — not to worry, just to catch a compounding risk early.</p>
+
+  <label class="check-item"><input type="checkbox" id="f1"> Training volume increased significantly in the last 2 weeks</label>
+  <label class="check-item"><input type="checkbox" id="f2"> Sleep has been consistently poor recently (see your Sleep & Training Impact page)</label>
+  <label class="check-item"><input type="checkbox" id="f3"> Skipping warm-ups more often than usual</label>
+  <label class="check-item"><input type="checkbox" id="f4"> A previous injury or niggle in the same area</label>
+  <label class="check-item"><input type="checkbox" id="f5"> High stress levels outside of training lately</label>
+  <label class="check-item"><input type="checkbox" id="f6"> Mobility screen (on your Mobility Tracker) flagged a low score recently</label>
+  <label class="check-item"><input type="checkbox" id="f7"> Pushing through fatigue rather than adjusting intensity</label>
+  <label class="check-item"><input type="checkbox" id="f8"> No deload or lighter week in the last 4-6 weeks</label>
+
+  <button class="check-btn" onclick="checkRisk()">Check My Risk Level</button>
+
+  <div class="result" id="result">
+    <p class="result-title" id="resultTitle"></p>
+    <p class="result-message" id="resultMessage"></p>
+  </div>
+</div>
+
+<script>
+  function checkRisk() {
+    const factors = ['f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8'];
+    const checkedCount = factors.filter(id => document.getElementById(id).checked).length;
+
+    const result = document.getElementById('result');
+    const title = document.getElementById('resultTitle');
+    const message = document.getElementById('resultMessage');
+
+    if (checkedCount <= 1) {
+      result.className = 'result visible tier-low';
+      title.textContent = "🟢 Low Risk";
+      title.style.color = '#16a34a';
+      message.textContent = "Few or no compounding risk factors present. Keep training as planned, and revisit this check periodically as things change.";
+    } else if (checkedCount <= 3) {
+      result.className = 'result visible tier-moderate';
+      title.textContent = "🟡 Moderate Risk";
+      title.style.color = '#d97706';
+      message.textContent = "A few factors are stacking up. Worth addressing at least one this week — often sleep or a missed deload are the easiest to fix without changing your whole program.";
+    } else {
+      result.className = 'result visible tier-high';
+      title.textContent = "🔴 Elevated Risk";
+      title.style.color = '#dc2626';
+      message.textContent = "Several risk factors are compounding at once — this is exactly the situation where niggles tend to turn into real injuries. Consider a lighter week or genuine deload before pushing further, and check your Recovery Readiness widget before your next session.";
+    }
+  }
+</script>
+
+</body>
+</html>
