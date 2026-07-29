@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Discipline Balance Checker</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 520px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+
+  .discipline-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .discipline-row:last-child { border-bottom: none; }
+  .discipline-label {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+  }
+  .stepper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .stepper-btn {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    color: #111827;
+  }
+  .stepper-btn:hover { border-color: #16a34a; }
+  .stepper-count {
+    min-width: 18px;
+    text-align: center;
+    font-weight: 700;
+    color: #16a34a;
+    font-size: 13px;
+  }
+
+  button.check-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.check-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 20px;
+    padding: 16px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    display: none;
+  }
+  .result.visible { display: block; }
+  .result-message {
+    font-size: 13px;
+    color: #374151;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Discipline Balance Checker</h1>
+  <p class="subtitle">How many sessions this week for each discipline?</p>
+
+  <div id="disciplineList"></div>
+
+  <button class="check-btn" onclick="checkBalance()">Check My Balance</button>
+
+  <div class="result" id="result">
+    <div class="result-message" id="resultMessage"></div>
+  </div>
+</div>
+
+<script>
+  const disciplines = ['Running', 'Lifting', 'Cycling', 'Swimming', 'Cross-Training'];
+  let counts = {};
+  disciplines.forEach(d => counts[d] = 0);
+
+  function renderList() {
+    const list = document.getElementById('disciplineList');
+    list.innerHTML = '';
+
+    disciplines.forEach(discipline => {
+      const row = document.createElement('div');
+      row.className = 'discipline-row';
+      row.innerHTML = `
+        <span class="discipline-label">${discipline}</span>
+        <div class="stepper">
+          <button class="stepper-btn" onclick="adjust('${discipline}', -1)">−</button>
+          <span class="stepper-count" id="count-${discipline.replace(/[^a-zA-Z]/g, '')}">0</span>
+          <button class="stepper-btn" onclick="adjust('${discipline}', 1)">+</button>
+        </div>
+      `;
+      list.appendChild(row);
+    });
+  }
+
+  function adjust(discipline, delta) {
+    const newVal = counts[discipline] + delta;
+    if (newVal < 0 || newVal > 7) return;
+    counts[discipline] = newVal;
+    document.getElementById('count-' + discipline.replace(/[^a-zA-Z]/g, '')).textContent = newVal;
+  }
+
+  function checkBalance() {
+    const values = Object.values(counts);
+    const total = values.reduce((sum, v) => sum + v, 0);
+
+    const result = document.getElementById('result');
+    const message = document.getElementById('resultMessage');
+
+    if (total === 0) {
+      message.textContent = "Log at least one session above to check your balance.";
+      result.classList.add('visible');
+      return;
+    }
+
+    const zeroDisciplines = disciplines.filter(d => counts[d] === 0);
+    const highest = disciplines.reduce((a, b) => counts[a] > counts[b] ? a : b);
+    const lowest = disciplines.reduce((a, b) => counts[a] < counts[b] ? a : b);
+    const spread = counts[highest] - counts[lowest];
+
+    if (zeroDisciplines.length >= 3) {
+      message.textContent = "You're heavily focused on just " + (disciplines.length - zeroDisciplines.length) + " discipline(s) this week. If that's intentional (a focused training block), fine — if you're aiming for genuine hybrid fitness, the neglected disciplines will show it eventually.";
+    } else if (spread >= 4) {
+      message.textContent = counts[highest] + "x " + highest + " vs " + counts[lowest] + "x " + lowest + " — a real imbalance this week. This isn't necessarily wrong, but worth being intentional about rather than accidental.";
+    } else {
+      message.textContent = "Reasonably balanced week across your disciplines. This is what sustainable hybrid training looks like — no single discipline dominating or getting neglected.";
+    }
+
+    result.classList.add('visible');
+  }
+
+  renderList();
+</script>
+
+</body>
+</html>
