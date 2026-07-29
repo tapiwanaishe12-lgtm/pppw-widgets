@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weekly Training Load Summary</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 540px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  .column-labels {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .column-labels .name-col { flex: 1.5; font-size: 11px; color: #6b7280; font-weight: 600; }
+  .column-labels .num-col { flex: 1; font-size: 11px; color: #6b7280; font-weight: 600; text-align: center; }
+
+  .discipline-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    align-items: center;
+  }
+  .discipline-row .fixed-label { flex: 1.5; font-size: 13px; font-weight: 600; color: #111827; }
+  .discipline-row input[type="number"] { flex: 1; }
+  input[type="number"] {
+    padding: 8px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #111827;
+  }
+  input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+
+  button.calc-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.calc-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    display: none;
+  }
+  .result.visible { display: block; }
+
+  .stat-row {
+    display: flex;
+    gap: 10px;
+  }
+  .stat-box {
+    flex: 1;
+    text-align: center;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 14px 8px;
+  }
+  .stat-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #16a34a;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: #4b5563;
+    margin-top: 4px;
+  }
+
+  .breakdown-section {
+    margin-top: 16px;
+  }
+  .breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 12px;
+  }
+  .breakdown-bar-track {
+    flex: 1;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 999px;
+    overflow: hidden;
+    margin: 0 10px;
+  }
+  .breakdown-bar-fill {
+    height: 100%;
+    background: #16a34a;
+    border-radius: 999px;
+  }
+
+  .message {
+    font-size: 13px;
+    color: #374151;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-top: 14px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Weekly Training Load Summary</h1>
+  <p class="subtitle">Enter hours trained per discipline this week — see your total load and how it's distributed.</p>
+
+  <div class="column-labels">
+    <span class="name-col">Discipline</span>
+    <span class="num-col">Hours</span>
+  </div>
+
+  <div class="discipline-row"><span class="fixed-label">Running</span><input type="number" id="hoursRun" min="0" step="0.25" placeholder="0"></div>
+  <div class="discipline-row"><span class="fixed-label">Lifting</span><input type="number" id="hoursLift" min="0" step="0.25" placeholder="0"></div>
+  <div class="discipline-row"><span class="fixed-label">Cycling</span><input type="number" id="hoursBike" min="0" step="0.25" placeholder="0"></div>
+  <div class="discipline-row"><span class="fixed-label">Swimming</span><input type="number" id="hoursSwim" min="0" step="0.25" placeholder="0"></div>
+  <div class="discipline-row"><span class="fixed-label">Cross-Training</span><input type="number" id="hoursCross" min="0" step="0.25" placeholder="0"></div>
+
+  <button class="calc-btn" onclick="calculateLoad()">Calculate My Weekly Load</button>
+
+  <div class="result" id="result">
+    <div class="stat-row">
+      <div class="stat-box">
+        <div class="stat-value" id="totalHours">0</div>
+        <div class="stat-label">Total Hours</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="dailyAvg">0</div>
+        <div class="stat-label">Daily Avg (7 days)</div>
+      </div>
+    </div>
+
+    <div class="breakdown-section" id="breakdownSection"></div>
+    <div class="message" id="message"></div>
+  </div>
+</div>
+
+<script>
+  function calculateLoad() {
+    const disciplines = [
+      { name: 'Running', id: 'hoursRun' },
+      { name: 'Lifting', id: 'hoursLift' },
+      { name: 'Cycling', id: 'hoursBike' },
+      { name: 'Swimming', id: 'hoursSwim' },
+      { name: 'Cross-Training', id: 'hoursCross' }
+    ];
+
+    let total = 0;
+    const values = disciplines.map(d => {
+      const val = parseFloat(document.getElementById(d.id).value) || 0;
+      total += val;
+      return { name: d.name, hours: val };
+    });
+
+    document.getElementById('totalHours').textContent = total.toFixed(1) + 'h';
+    document.getElementById('dailyAvg').textContent = (total / 7).toFixed(1) + 'h';
+
+    const breakdownSection = document.getElementById('breakdownSection');
+    const maxVal = Math.max(...values.map(v => v.hours), 0.1);
+
+    breakdownSection.innerHTML = values.map(v => {
+      const percent = total > 0 ? Math.round((v.hours / total) * 100) : 0;
+      const barWidth = (v.hours / maxVal) * 100;
+      return '<div class="breakdown-row"><span style="width:90px;">' + v.name + '</span>' +
+        '<div class="breakdown-bar-track"><div class="breakdown-bar-fill" style="width:' + barWidth + '%"></div></div>' +
+        '<span>' + percent + '%</span></div>';
+    }).join('');
+
+    const message = document.getElementById('message');
+    if (total === 0) {
+      message.textContent = "Enter hours for at least one discipline to see your weekly load.";
+    } else if (total >= 15) {
+      message.textContent = "A high-volume week (" + total.toFixed(1) + "h total). Make sure your Recovery Readiness and Sleep tracking are keeping pace with this load.";
+    } else if (total >= 8) {
+      message.textContent = "A solid, sustainable training week for most hybrid athletes.";
+    } else {
+      message.textContent = "A lighter week. If this is planned recovery, good — if not, worth checking what got in the way.";
+    }
+
+    document.getElementById('result').classList.add('visible');
+  }
+</script>
+
+</body>
+</html>
