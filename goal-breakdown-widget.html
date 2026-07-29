@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multi-Discipline Goal Breakdown</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 540px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  .column-labels {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .column-labels .name-col { flex: 2; font-size: 11px; color: #6b7280; font-weight: 600; }
+  .column-labels .num-col { flex: 1; font-size: 11px; color: #6b7280; font-weight: 600; text-align: center; }
+
+  .segment-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    align-items: center;
+  }
+  .segment-row input[type="text"] { flex: 2; }
+  .segment-row input[type="number"] { flex: 1; }
+  input[type="text"], input[type="number"] {
+    padding: 8px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #111827;
+  }
+  input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+  .remove-row {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0 4px;
+  }
+  .remove-row:hover { color: #b91c1c; }
+
+  .add-row-btn {
+    margin-top: 12px;
+    padding: 9px 14px;
+    background: #ffffff;
+    color: #16a34a;
+    border: 1px solid #16a34a;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .add-row-btn:hover { background: #f0fdf4; }
+
+  button.calc-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.calc-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    display: none;
+  }
+  .result.visible { display: block; }
+  .segment-result {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 13px;
+  }
+  .segment-result:last-child { border-bottom: none; }
+  .total-box {
+    margin-top: 14px;
+    padding: 14px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    text-align: center;
+  }
+  .total-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #16a34a;
+  }
+  .total-label {
+    font-size: 12px;
+    color: #4b5563;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Multi-Discipline Goal Breakdown</h1>
+  <p class="subtitle">Enter your target time per segment or discipline — see how they add up to your overall goal.</p>
+
+  <div class="column-labels">
+    <span class="name-col">Segment/Discipline</span>
+    <span class="num-col">Target (min)</span>
+  </div>
+
+  <div id="segmentsContainer"></div>
+  <button class="add-row-btn" onclick="addSegment()">+ Add Segment</button>
+
+  <button class="calc-btn" onclick="calculateTotal()">Calculate My Target</button>
+
+  <div class="result" id="result">
+    <div id="segmentResults"></div>
+    <div class="total-box">
+      <div class="total-value" id="totalTime"></div>
+      <div class="total-label">total target time</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let rowCount = 0;
+
+  function addSegment(name, minutes) {
+    rowCount++;
+    const container = document.getElementById('segmentsContainer');
+    const row = document.createElement('div');
+    row.className = 'segment-row';
+    row.setAttribute('data-row-id', rowCount);
+    row.innerHTML = `
+      <input type="text" placeholder="e.g. 1km run" value="${name || ''}">
+      <input type="number" min="0" step="0.5" placeholder="min" value="${minutes || ''}">
+      <button class="remove-row" onclick="removeSegment(${rowCount})">✕</button>
+    `;
+    container.appendChild(row);
+  }
+
+  function removeSegment(id) {
+    const row = document.querySelector('[data-row-id="' + id + '"]');
+    if (row) row.remove();
+  }
+
+  function calculateTotal() {
+    const rows = document.querySelectorAll('.segment-row');
+    const results = [];
+    let totalMinutes = 0;
+
+    rows.forEach(row => {
+      const inputs = row.querySelectorAll('input');
+      const name = inputs[0].value.trim();
+      const minutes = parseFloat(inputs[1].value);
+
+      if (name && !isNaN(minutes) && minutes > 0) {
+        results.push({ name, minutes });
+        totalMinutes += minutes;
+      }
+    });
+
+    const segmentResults = document.getElementById('segmentResults');
+    segmentResults.innerHTML = results.map(r => {
+      const min = Math.floor(r.minutes);
+      const sec = Math.round((r.minutes - min) * 60);
+      const secStr = sec < 10 ? '0' + sec : sec;
+      return '<div class="segment-result"><span>' + r.name + '</span><span>' + min + ':' + secStr + '</span></div>';
+    }).join('');
+
+    const totalMin = Math.floor(totalMinutes);
+    const totalSec = Math.round((totalMinutes - totalMin) * 60);
+    const totalSecStr = totalSec < 10 ? '0' + totalSec : totalSec;
+    document.getElementById('totalTime').textContent = totalMin + ':' + totalSecStr;
+
+    document.getElementById('result').classList.add('visible');
+  }
+
+  // Pre-fill with a HYROX-style example
+  addSegment('1km run', 4.5);
+  addSegment('Sled push', 2);
+  addSegment('1km run', 4.5);
+  addSegment('Sled pull', 2.5);
+  addSegment('1km run', 4.5);
+  addSegment('Burpee broad jumps', 4);
+</script>
+
+</body>
+</html>
