@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cycling Power Zones</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 520px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+  input[type="number"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+  }
+  input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+
+  button.calc-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.calc-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    display: none;
+  }
+  .result.visible { display: block; }
+
+  .zone-row {
+    padding: 10px 0;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .zone-row:last-child { border-bottom: none; }
+  .zone-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .zone-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #111827;
+  }
+  .zone-range {
+    font-size: 13px;
+    font-weight: 700;
+    color: #16a34a;
+  }
+  .zone-desc {
+    font-size: 11px;
+    color: #6b7280;
+    margin-top: 2px;
+  }
+
+  .disclaimer {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 14px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Cycling Power Zones</h1>
+  <p class="subtitle">Enter your FTP (Functional Threshold Power) to see your training zones.</p>
+
+  <label for="ftpInput">FTP (watts)</label>
+  <input type="number" id="ftpInput" min="50" placeholder="e.g. 220">
+
+  <button class="calc-btn" onclick="calculateZones()">Show My Power Zones</button>
+
+  <div class="result" id="result">
+    <div id="zonesList"></div>
+
+    <p class="disclaimer">FTP is best measured through a 20-minute or ramp test. If you're estimating, these zones will only be as accurate as your FTP estimate — retest every 6-8 weeks as fitness changes.</p>
+  </div>
+</div>
+
+<script>
+  const zones = [
+    { name: 'Zone 1 — Active Recovery', low: 0, high: 0.55, desc: 'Very easy spinning, barely any effort. Recovery rides.' },
+    { name: 'Zone 2 — Endurance', low: 0.56, high: 0.75, desc: 'All-day sustainable pace, builds aerobic base.' },
+    { name: 'Zone 3 — Tempo', low: 0.76, high: 0.90, desc: 'Moderately hard, sustainable for an hour or more.' },
+    { name: 'Zone 4 — Threshold', low: 0.91, high: 1.05, desc: 'Right around FTP, sustainable for 20-60 minutes.' },
+    { name: 'Zone 5 — VO2 Max', low: 1.06, high: 1.20, desc: 'Hard intervals, sustainable for 3-8 minutes.' },
+    { name: 'Zone 6 — Anaerobic', low: 1.21, high: 1.50, desc: 'Very hard, short efforts of 30 seconds to 3 minutes.' },
+    { name: 'Zone 7 — Neuromuscular', low: 1.51, high: 2.5, desc: 'All-out sprints, a few seconds only.' }
+  ];
+
+  function calculateZones() {
+    const ftp = parseFloat(document.getElementById('ftpInput').value);
+    if (isNaN(ftp) || ftp <= 0) return;
+
+    const zonesList = document.getElementById('zonesList');
+    zonesList.innerHTML = zones.map(z => {
+      const lowWatts = Math.round(ftp * z.low);
+      const highWatts = Math.round(ftp * z.high);
+      return '<div class="zone-row">' +
+        '<div class="zone-header"><span class="zone-name">' + z.name + '</span><span class="zone-range">' + lowWatts + '-' + highWatts + 'W</span></div>' +
+        '<div class="zone-desc">' + z.desc + '</div>' +
+        '</div>';
+    }).join('');
+
+    document.getElementById('result').classList.add('visible');
+  }
+</script>
+
+</body>
+</html>
