@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swimming Pace Calculator</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 480px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+  input[type="number"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+  }
+  input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+
+  .time-row {
+    display: flex;
+    gap: 8px;
+  }
+  .time-row > div { flex: 1; }
+  .time-row label { font-size: 11px; color: #6b7280; margin-bottom: 4px; }
+
+  .pool-row {
+    display: flex;
+    gap: 8px;
+  }
+  .pool-btn {
+    flex: 1;
+    padding: 9px 6px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    color: #111827;
+  }
+  .pool-btn:hover { border-color: #16a34a; }
+  .pool-btn.selected {
+    border-color: #16a34a;
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+
+  button.calc-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.calc-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 24px;
+    padding: 18px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    display: none;
+    text-align: center;
+  }
+  .result.visible { display: block; }
+  .result-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: #16a34a;
+  }
+  .result-label {
+    font-size: 13px;
+    color: #4b5563;
+    margin: 2px 0 10px 0;
+  }
+  .split-table {
+    margin-top: 12px;
+    text-align: left;
+  }
+  .split-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #374151;
+    padding: 6px 0;
+    border-bottom: 1px solid #d1fae5;
+  }
+  .split-row:last-child { border-bottom: none; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Swimming Pace Calculator</h1>
+  <p class="subtitle">Enter your distance and time to get your pace per 100m, plus useful split targets.</p>
+
+  <label>Pool length</label>
+  <div class="pool-row" id="poolRow">
+    <div class="pool-btn selected" data-length="25">25m</div>
+    <div class="pool-btn" data-length="50">50m</div>
+    <div class="pool-btn" data-length="0">Open Water</div>
+  </div>
+
+  <label for="distanceInput">Distance (m)</label>
+  <input type="number" id="distanceInput" min="25" step="25" placeholder="e.g. 1000">
+
+  <label>Time</label>
+  <div class="time-row">
+    <div><label>Minutes</label><input type="number" id="minutesInput" min="0" placeholder="0"></div>
+    <div><label>Seconds</label><input type="number" id="secondsInput" min="0" max="59" placeholder="0"></div>
+  </div>
+
+  <button class="calc-btn" onclick="calculatePace()">Calculate My Pace</button>
+
+  <div class="result" id="result">
+    <p class="result-value" id="pace100"></p>
+    <p class="result-label">min/sec per 100m</p>
+
+    <div class="split-table" id="splitTable"></div>
+  </div>
+</div>
+
+<script>
+  function calculatePace() {
+    const distance = parseFloat(document.getElementById('distanceInput').value);
+    const minutes = parseFloat(document.getElementById('minutesInput').value) || 0;
+    const seconds = parseFloat(document.getElementById('secondsInput').value) || 0;
+
+    if (isNaN(distance) || distance <= 0) return;
+
+    const totalSeconds = (minutes * 60) + seconds;
+    if (totalSeconds <= 0) return;
+
+    const secondsPer100 = (totalSeconds / distance) * 100;
+    const paceMin = Math.floor(secondsPer100 / 60);
+    const paceSec = Math.round(secondsPer100 % 60);
+    const paceSecStr = paceSec < 10 ? '0' + paceSec : paceSec;
+
+    document.getElementById('pace100').textContent = paceMin + ':' + paceSecStr;
+
+    const splitDistances = [50, 100, 200, 400, 1500];
+    const splitTable = document.getElementById('splitTable');
+    splitTable.innerHTML = splitDistances.map(d => {
+      const splitSeconds = (secondsPer100 / 100) * d;
+      const splitMin = Math.floor(splitSeconds / 60);
+      const splitSec = Math.round(splitSeconds % 60);
+      const splitSecStr = splitSec < 10 ? '0' + splitSec : splitSec;
+      return '<div class="split-row"><span>' + d + 'm split</span><span>' + splitMin + ':' + splitSecStr + '</span></div>';
+    }).join('');
+
+    document.getElementById('result').classList.add('visible');
+  }
+</script>
+
+</body>
+</html>
