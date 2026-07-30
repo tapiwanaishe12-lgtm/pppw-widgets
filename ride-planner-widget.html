@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ride Planner</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 540px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+  input[type="number"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+  }
+  input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+
+  .row-3 {
+    display: flex;
+    gap: 8px;
+  }
+  .row-3 > div { flex: 1; }
+  .row-3 label { font-size: 11px; color: #6b7280; margin-bottom: 4px; }
+
+  button.build-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.build-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    display: none;
+  }
+  .result.visible { display: block; }
+  .step-item {
+    display: flex;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 13px;
+  }
+  .step-item:last-child { border-bottom: none; }
+  .step-time {
+    font-weight: 700;
+    color: #16a34a;
+    min-width: 60px;
+    flex-shrink: 0;
+  }
+  .step-detail { color: #111827; }
+  .total-caption {
+    font-size: 13px;
+    color: #4b5563;
+    margin-top: 12px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Ride Planner</h1>
+  <p class="subtitle">Build a structured session with warm-up, intervals, and cool-down, all timed out.</p>
+
+  <label for="warmupInput">Warm-up (minutes)</label>
+  <input type="number" id="warmupInput" min="0" value="10">
+
+  <label>Intervals</label>
+  <div class="row-3">
+    <div><label>Number of reps</label><input type="number" id="repsInput" min="1" value="5"></div>
+    <div><label>Work (min)</label><input type="number" id="workInput" min="0.5" step="0.5" value="4"></div>
+    <div><label>Recovery (min)</label><input type="number" id="recoveryInput" min="0" step="0.5" value="3"></div>
+  </div>
+
+  <label for="cooldownInput">Cool-down (minutes)</label>
+  <input type="number" id="cooldownInput" min="0" value="10">
+
+  <button class="build-btn" onclick="buildRide()">Build My Session</button>
+
+  <div class="result" id="result">
+    <div id="stepsList"></div>
+    <p class="total-caption" id="totalCaption"></p>
+  </div>
+</div>
+
+<script>
+  function buildRide() {
+    const warmup = parseFloat(document.getElementById('warmupInput').value) || 0;
+    const reps = parseInt(document.getElementById('repsInput').value, 10) || 0;
+    const work = parseFloat(document.getElementById('workInput').value) || 0;
+    const recovery = parseFloat(document.getElementById('recoveryInput').value) || 0;
+    const cooldown = parseFloat(document.getElementById('cooldownInput').value) || 0;
+
+    if (reps === 0 || work === 0) return;
+
+    const stepsList = document.getElementById('stepsList');
+    let html = '';
+    let runningTime = 0;
+
+    if (warmup > 0) {
+      html += '<div class="step-item"><span class="step-time">0:00</span><span class="step-detail">Warm-up — easy spin (' + warmup + ' min)</span></div>';
+      runningTime += warmup;
+    }
+
+    for (let i = 1; i <= reps; i++) {
+      const startMin = Math.floor(runningTime);
+      const startSec = Math.round((runningTime - startMin) * 60);
+      const startStr = startMin + ':' + (startSec < 10 ? '0' + startSec : startSec);
+      html += '<div class="step-item"><span class="step-time">' + startStr + '</span><span class="step-detail">Interval ' + i + ' — hard effort (' + work + ' min)</span></div>';
+      runningTime += work;
+
+      if (i < reps || recovery > 0) {
+        const recStartMin = Math.floor(runningTime);
+        const recStartSec = Math.round((runningTime - recStartMin) * 60);
+        const recStartStr = recStartMin + ':' + (recStartSec < 10 ? '0' + recStartSec : recStartSec);
+        html += '<div class="step-item"><span class="step-time">' + recStartStr + '</span><span class="step-detail">Recovery — easy spin (' + recovery + ' min)</span></div>';
+        runningTime += recovery;
+      }
+    }
+
+    if (cooldown > 0) {
+      const cdStartMin = Math.floor(runningTime);
+      const cdStartSec = Math.round((runningTime - cdStartMin) * 60);
+      const cdStartStr = cdStartMin + ':' + (cdStartSec < 10 ? '0' + cdStartSec : cdStartSec);
+      html += '<div class="step-item"><span class="step-time">' + cdStartStr + '</span><span class="step-detail">Cool-down — easy spin (' + cooldown + ' min)</span></div>';
+      runningTime += cooldown;
+    }
+
+    stepsList.innerHTML = html;
+
+    const totalMin = Math.floor(runningTime);
+    const totalSec = Math.round((runningTime - totalMin) * 60);
+    document.getElementById('totalCaption').textContent = "Total session time: " + totalMin + " min" + (totalSec > 0 ? ' ' + totalSec + ' sec' : '') + " (" + reps + "x" + work + "min hard efforts)";
+
+    document.getElementById('result').classList.add('visible');
+  }
+</script>
+
+</body>
+</html>
