@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interval Set Builder</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 540px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+  input[type="number"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+  }
+  input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+
+  .row-3 {
+    display: flex;
+    gap: 8px;
+  }
+  .row-3 > div { flex: 1; }
+  .row-3 label { font-size: 11px; color: #6b7280; margin-bottom: 4px; }
+
+  button.build-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.build-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    display: none;
+  }
+  .result.visible { display: block; }
+  .step-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 9px 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 13px;
+  }
+  .step-item:last-child { border-bottom: none; }
+  .step-name { font-weight: 600; color: #111827; }
+  .step-detail { color: #16a34a; font-weight: 600; }
+  .total-caption {
+    font-size: 13px;
+    color: #4b5563;
+    margin-top: 12px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Interval Set Builder</h1>
+  <p class="subtitle">Build your pool set — warm-up, main set intervals, cool-down, with target pace built in.</p>
+
+  <label for="warmupInput">Warm-up (m)</label>
+  <input type="number" id="warmupInput" min="0" step="50" value="200">
+
+  <label>Target pace per 100m (from your Pace Calculator)</label>
+  <div class="row-3">
+    <div><label>Minutes</label><input type="number" id="paceMinInput" min="0" value="1"></div>
+    <div><label>Seconds</label><input type="number" id="paceSecInput" min="0" max="59" value="45"></div>
+  </div>
+
+  <label>Main set</label>
+  <div class="row-3">
+    <div><label>Reps</label><input type="number" id="repsInput" min="1" value="8"></div>
+    <div><label>Distance (m)</label><input type="number" id="distInput" min="25" step="25" value="100"></div>
+    <div><label>Rest (sec)</label><input type="number" id="restInput" min="0" value="15"></div>
+  </div>
+
+  <label for="cooldownInput">Cool-down (m)</label>
+  <input type="number" id="cooldownInput" min="0" step="50" value="200">
+
+  <button class="build-btn" onclick="buildSet()">Build My Set</button>
+
+  <div class="result" id="result">
+    <div id="stepsList"></div>
+    <p class="total-caption" id="totalCaption"></p>
+  </div>
+</div>
+
+<script>
+  function buildSet() {
+    const warmup = parseFloat(document.getElementById('warmupInput').value) || 0;
+    const paceMin = parseFloat(document.getElementById('paceMinInput').value) || 0;
+    const paceSec = parseFloat(document.getElementById('paceSecInput').value) || 0;
+    const reps = parseInt(document.getElementById('repsInput').value, 10) || 0;
+    const dist = parseFloat(document.getElementById('distInput').value) || 0;
+    const rest = parseFloat(document.getElementById('restInput').value) || 0;
+    const cooldown = parseFloat(document.getElementById('cooldownInput').value) || 0;
+
+    if (reps === 0 || dist === 0) return;
+
+    const paceSecondsPer100 = (paceMin * 60) + paceSec;
+    const targetSecondsPerRep = (paceSecondsPer100 / 100) * dist;
+    const targetMin = Math.floor(targetSecondsPerRep / 60);
+    const targetSec = Math.round(targetSecondsPerRep % 60);
+    const targetStr = targetMin + ':' + (targetSec < 10 ? '0' + targetSec : targetSec);
+
+    const stepsList = document.getElementById('stepsList');
+    let html = '';
+
+    if (warmup > 0) {
+      html += '<div class="step-item"><span class="step-name">Warm-up</span><span class="step-detail">' + warmup + 'm easy</span></div>';
+    }
+
+    html += '<div class="step-item"><span class="step-name">Main Set</span><span class="step-detail">' + reps + ' x ' + dist + 'm @ ' + targetStr + '</span></div>';
+    html += '<div class="step-item"><span class="step-name">Rest between reps</span><span class="step-detail">' + rest + ' sec</span></div>';
+
+    if (cooldown > 0) {
+      html += '<div class="step-item"><span class="step-name">Cool-down</span><span class="step-detail">' + cooldown + 'm easy</span></div>';
+    }
+
+    stepsList.innerHTML = html;
+
+    const totalDistance = warmup + (reps * dist) + cooldown;
+    const totalWorkTime = (reps * targetSecondsPerRep) + ((reps - 1) * rest);
+    const totalMin = Math.floor(totalWorkTime / 60);
+
+    document.getElementById('totalCaption').textContent = "Total distance: " + totalDistance + "m — main set work time: roughly " + totalMin + " minutes";
+
+    document.getElementById('result').classList.add('visible');
+  }
+</script>
+
+</body>
+</html>
