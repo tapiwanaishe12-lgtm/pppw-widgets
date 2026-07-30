@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Station Time Predictor</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 540px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  .column-labels {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .column-labels .name-col { flex: 1.5; font-size: 11px; color: #6b7280; font-weight: 600; }
+  .column-labels .num-col { flex: 1; font-size: 11px; color: #6b7280; font-weight: 600; text-align: center; }
+
+  .station-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+    align-items: center;
+  }
+  .station-row .fixed-label { flex: 1.5; font-size: 12px; font-weight: 600; color: #111827; }
+  .station-row input[type="number"] { flex: 1; }
+  input[type="number"] {
+    padding: 7px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #111827;
+  }
+  input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+
+  button.calc-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.calc-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 22px;
+    padding: 18px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    display: none;
+    text-align: center;
+  }
+  .result.visible { display: block; }
+  .result-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: #16a34a;
+  }
+  .result-label {
+    font-size: 13px;
+    color: #4b5563;
+  }
+  .breakdown {
+    margin-top: 12px;
+    display: flex;
+    justify-content: space-around;
+    font-size: 12px;
+    color: #374151;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Station Time Predictor</h1>
+  <p class="subtitle">Enter your best estimated time per station and per 1km run — see your projected total race time.</p>
+
+  <div class="column-labels">
+    <span class="name-col">Segment</span>
+    <span class="num-col">Min:Sec</span>
+  </div>
+
+  <div class="station-row"><span class="fixed-label">Run 1-8 (avg per km)</span><input type="number" id="runTime" step="0.25" placeholder="4.5"></div>
+  <div class="station-row"><span class="fixed-label">SkiErg (1000m)</span><input type="number" id="ski" step="0.25" placeholder="4"></div>
+  <div class="station-row"><span class="fixed-label">Sled Push</span><input type="number" id="sledPush" step="0.25" placeholder="2.5"></div>
+  <div class="station-row"><span class="fixed-label">Sled Pull</span><input type="number" id="sledPull" step="0.25" placeholder="3"></div>
+  <div class="station-row"><span class="fixed-label">Burpee Broad Jumps</span><input type="number" id="burpees" step="0.25" placeholder="4.5"></div>
+  <div class="station-row"><span class="fixed-label">Rowing (1000m)</span><input type="number" id="row" step="0.25" placeholder="4"></div>
+  <div class="station-row"><span class="fixed-label">Farmers Carry</span><input type="number" id="farmers" step="0.25" placeholder="2"></div>
+  <div class="station-row"><span class="fixed-label">Sandbag Lunges</span><input type="number" id="lunges" step="0.25" placeholder="4"></div>
+  <div class="station-row"><span class="fixed-label">Wall Balls</span><input type="number" id="wallballs" step="0.25" placeholder="5"></div>
+
+  <button class="calc-btn" onclick="calculatePrediction()">Predict My Race Time</button>
+
+  <div class="result" id="result">
+    <p class="result-value" id="totalTime"></p>
+    <p class="result-label">projected total race time</p>
+    <div class="breakdown" id="breakdown"></div>
+  </div>
+</div>
+
+<script>
+  function calculatePrediction() {
+    const runPerKm = parseFloat(document.getElementById('runTime').value) || 0;
+    const stations = [
+      parseFloat(document.getElementById('ski').value) || 0,
+      parseFloat(document.getElementById('sledPush').value) || 0,
+      parseFloat(document.getElementById('sledPull').value) || 0,
+      parseFloat(document.getElementById('burpees').value) || 0,
+      parseFloat(document.getElementById('row').value) || 0,
+      parseFloat(document.getElementById('farmers').value) || 0,
+      parseFloat(document.getElementById('lunges').value) || 0,
+      parseFloat(document.getElementById('wallballs').value) || 0
+    ];
+
+    const totalRunMinutes = runPerKm * 8;
+    const totalStationMinutes = stations.reduce((sum, s) => sum + s, 0);
+    const totalMinutes = totalRunMinutes + totalStationMinutes;
+
+    if (totalMinutes === 0) return;
+
+    const hours = Math.floor(totalMinutes / 60);
+    const mins = Math.floor(totalMinutes % 60);
+    const secs = Math.round((totalMinutes % 1) * 60);
+    const secsStr = secs < 10 ? '0' + secs : secs;
+
+    document.getElementById('totalTime').textContent = (hours > 0 ? hours + ':' : '') + (hours > 0 && mins < 10 ? '0' + mins : mins) + ':' + secsStr;
+
+    document.getElementById('breakdown').innerHTML =
+      '<span>Running: ' + totalRunMinutes.toFixed(1) + ' min</span><span>Stations: ' + totalStationMinutes.toFixed(1) + ' min</span>';
+
+    document.getElementById('result').classList.add('visible');
+  }
+</script>
+
+</body>
+</html>
