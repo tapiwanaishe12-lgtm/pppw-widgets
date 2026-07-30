@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session Spacing Planner</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 540px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+
+  .day-grid {
+    display: flex;
+    gap: 4px;
+    margin-top: 8px;
+  }
+  .day-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .day-label {
+    font-size: 10px;
+    color: #6b7280;
+    font-weight: 600;
+  }
+  .day-btn {
+    width: 100%;
+    padding: 8px 0;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #ffffff;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    color: #111827;
+  }
+  .day-btn:hover { border-color: #16a34a; }
+  .day-btn.selected-lift {
+    border-color: #16a34a;
+    background: #16a34a;
+    color: #ffffff;
+  }
+  .day-btn.selected-run {
+    border-color: #3b82f6;
+    background: #3b82f6;
+    color: #ffffff;
+  }
+
+  .legend {
+    display: flex;
+    gap: 16px;
+    margin-top: 10px;
+    font-size: 11px;
+    color: #6b7280;
+  }
+  .legend-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+
+  button.check-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.check-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 20px;
+    padding: 16px;
+    border-radius: 10px;
+    display: none;
+  }
+  .result.visible { display: block; }
+  .result-message {
+    font-size: 13px;
+    color: #374151;
+    line-height: 1.6;
+  }
+  .tier-good { background: #f0fdf4; border: 1px solid #bbf7d0; }
+  .tier-tight { background: #fffbeb; border: 1px solid #fde68a; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Session Spacing Planner</h1>
+  <p class="subtitle">Tap to mark heavy leg lift days and hard run days — see if the spacing works in your favor.</p>
+
+  <label>Your week</label>
+  <div class="day-grid" id="dayGrid"></div>
+  <div class="legend">
+    <span><span class="legend-dot" style="background:#16a34a;"></span>Heavy Leg Lift</span>
+    <span><span class="legend-dot" style="background:#3b82f6;"></span>Hard Run</span>
+  </div>
+
+  <button class="check-btn" onclick="checkSpacing()">Check My Spacing</button>
+
+  <div class="result" id="result">
+    <div class="result-message" id="resultMessage"></div>
+  </div>
+</div>
+
+<script>
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  let schedule = new Array(7).fill(null); // null, 'lift', 'run'
+
+  function renderGrid() {
+    const grid = document.getElementById('dayGrid');
+    grid.innerHTML = '';
+
+    days.forEach((day, i) => {
+      const col = document.createElement('div');
+      col.className = 'day-col';
+      col.innerHTML = `
+        <span class="day-label">${day}</span>
+        <div class="day-btn" id="btn-${i}" onclick="cycleDay(${i})">—</div>
+      `;
+      grid.appendChild(col);
+    });
+  }
+
+  function cycleDay(index) {
+    const current = schedule[index];
+    let next;
+    if (current === null) next = 'lift';
+    else if (current === 'lift') next = 'run';
+    else next = null;
+
+    schedule[index] = next;
+    const btn = document.getElementById('btn-' + index);
+    btn.className = 'day-btn' + (next === 'lift' ? ' selected-lift' : next === 'run' ? ' selected-run' : '');
+    btn.textContent = next === 'lift' ? 'LIFT' : next === 'run' ? 'RUN' : '—';
+  }
+
+  function checkSpacing() {
+    const result = document.getElementById('result');
+    const message = document.getElementById('resultMessage');
+
+    const liftDays = schedule.map((v, i) => v === 'lift' ? i : null).filter(v => v !== null);
+    const runDays = schedule.map((v, i) => v === 'run' ? i : null).filter(v => v !== null);
+
+    if (liftDays.length === 0 || runDays.length === 0) {
+      message.textContent = "Mark at least one heavy leg lift day and one hard run day to check spacing.";
+      result.className = 'result visible tier-good';
+      result.classList.add('visible');
+      return;
+    }
+
+    // Find minimum gap between any lift day and any run day
+    let minGap = 7;
+    liftDays.forEach(l => {
+      runDays.forEach(r => {
+        const gap = Math.min(Math.abs(l - r), 7 - Math.abs(l - r));
+        if (gap < minGap) minGap = gap;
+      });
+    });
+
+    if (minGap === 0) {
+      result.className = 'result visible tier-tight';
+      message.textContent = "You've got a heavy leg day and a hard run on the same day. This is genuinely demanding — if you do this, consider running easy rather than hard on a heavy lift day, or accept reduced quality in one of the two.";
+    } else if (minGap === 1) {
+      result.className = 'result visible tier-tight';
+      message.textContent = "Only one day between your heaviest leg session and your hardest run. This is tight — legs are often still fatigued at this spacing, which can compromise run quality. Consider whether a rest or easy day could sit between them.";
+    } else {
+      result.className = 'result visible tier-good';
+      message.textContent = "Good spacing — at least " + minGap + " days between your heaviest leg session and your hardest run. This gives genuine recovery time between the two most demanding sessions of your week.";
+    }
+
+    result.classList.add('visible');
+  }
+
+  renderGrid();
+</script>
+
+</body>
+</html>
