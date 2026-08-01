@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interval Session Builder</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 560px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 28px 24px;
+    background: #ffffff;
+  }
+  .eyebrow {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+  }
+  .column-labels {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .column-labels span { font-size: 10px; color: #6b7280; font-weight: 600; }
+  .column-labels .c-dist { flex: 1; }
+  .column-labels .c-pace { flex: 1.2; text-align: center; }
+  .column-labels .c-rest { flex: 1; text-align: center; }
+
+  .interval-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+    align-items: center;
+  }
+  .interval-row .c-dist { flex: 1; }
+  .interval-row .c-pace { flex: 1.2; display: flex; gap: 3px; }
+  .interval-row .c-pace input { width: 50%; }
+  .interval-row .c-rest { flex: 1; }
+  input[type="number"] {
+    padding: 7px 6px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 11px;
+    color: #111827;
+    width: 100%;
+  }
+  input:focus {
+    outline: none;
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+  }
+  .remove-row {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    font-size: 15px;
+    cursor: pointer;
+    padding: 0 2px;
+    flex-shrink: 0;
+  }
+  .remove-row:hover { color: #b91c1c; }
+
+  .add-row-btn {
+    margin-top: 12px;
+    padding: 9px 14px;
+    background: #ffffff;
+    color: #16a34a;
+    border: 1px solid #16a34a;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .add-row-btn:hover { background: #f0fdf4; }
+
+  button.build-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.build-btn:hover { background: #128a3e; }
+
+  .result {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    display: none;
+  }
+  .result.visible { display: block; }
+  .step-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 13px;
+  }
+  .step-item:last-child { border-bottom: none; }
+  .step-detail { color: #111827; }
+  .step-time { color: #16a34a; font-weight: 600; }
+  .total-box {
+    margin-top: 14px;
+    padding: 14px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 13px;
+    color: #374151;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p class="eyebrow">Plant Powered Performance World</p>
+  <h1>Interval Session Builder</h1>
+  <p class="subtitle">Add each rep with its own distance and target pace — works for classic intervals, ladders, progressions, or threshold sets.</p>
+
+  <div class="column-labels">
+    <span class="c-dist">Distance (m)</span>
+    <span class="c-pace">Target pace /km (min:sec)</span>
+    <span class="c-rest">Rest (sec)</span>
+  </div>
+
+  <div id="intervalsContainer"></div>
+  <button class="add-row-btn" onclick="addInterval()">+ Add Rep</button>
+
+  <button class="build-btn" onclick="buildSession()">Build My Session</button>
+
+  <div class="result" id="result">
+    <div id="stepsList"></div>
+    <div class="total-box" id="totalBox"></div>
+  </div>
+</div>
+
+<script>
+  let rowCount = 0;
+
+  function addInterval(dist, paceMin, paceSec, rest) {
+    rowCount++;
+    const container = document.getElementById('intervalsContainer');
+    const row = document.createElement('div');
+    row.className = 'interval-row';
+    row.setAttribute('data-row-id', rowCount);
+    row.innerHTML = `
+      <div class="c-dist"><input type="number" min="50" step="50" placeholder="800" value="${dist || ''}"></div>
+      <div class="c-pace">
+        <input type="number" min="0" placeholder="min" value="${paceMin || ''}">
+        <input type="number" min="0" max="59" placeholder="sec" value="${paceSec || ''}">
+      </div>
+      <div class="c-rest"><input type="number" min="0" placeholder="90" value="${rest || ''}"></div>
+      <button class="remove-row" onclick="removeInterval(${rowCount})">✕</button>
+    `;
+    container.appendChild(row);
+  }
+
+  function removeInterval(id) {
+    const row = document.querySelector('[data-row-id="' + id + '"]');
+    if (row) row.remove();
+  }
+
+  function buildSession() {
+    const rows = document.querySelectorAll('.interval-row');
+    const stepsList = document.getElementById('stepsList');
+    let html = '';
+    let totalDistance = 0;
+    let totalWorkSeconds = 0;
+    let totalRestSeconds = 0;
+    let repCount = 0;
+
+    rows.forEach((row, i) => {
+      const inputs = row.querySelectorAll('input');
+      const dist = parseFloat(inputs[0].value);
+      const paceMin = parseFloat(inputs[1].value) || 0;
+      const paceSec = parseFloat(inputs[2].value) || 0;
+      const rest = parseFloat(inputs[3].value) || 0;
+
+      if (!dist || (paceMin === 0 && paceSec === 0)) return;
+
+      const paceSecondsPerKm = (paceMin * 60) + paceSec;
+      const repSeconds = (paceSecondsPerKm / 1000) * dist;
+      const repMin = Math.floor(repSeconds / 60);
+      const repSec = Math.round(repSeconds % 60);
+      const repSecStr = repSec < 10 ? '0' + repSec : repSec;
+
+      repCount++;
+      totalDistance += dist;
+      totalWorkSeconds += repSeconds;
+      totalRestSeconds += rest;
+
+      html += '<div class="step-item"><span class="step-detail">Rep ' + repCount + ' — ' + dist + 'm</span><span class="step-time">' + repMin + ':' + repSecStr + ' (rest ' + rest + 's)</span></div>';
+    });
+
+    stepsList.innerHTML = html;
+
+    if (repCount === 0) {
+      document.getElementById('totalBox').textContent = "Add at least one rep with distance and target pace.";
+      document.getElementById('result').classList.add('visible');
+      return;
+    }
+
+    const totalSeconds = totalWorkSeconds + totalRestSeconds;
+    const totalMin = Math.floor(totalSeconds / 60);
+
+    document.getElementById('totalBox').textContent = repCount + " reps, " + totalDistance + "m total distance — roughly " + totalMin + " minutes including rest";
+
+    document.getElementById('result').classList.add('visible');
+  }
+
+  // Pre-fill with a classic interval example
+  addInterval(800, 3, 30, 90);
+  addInterval(800, 3, 30, 90);
+  addInterval(800, 3, 30, 90);
+  addInterval(800, 3, 30, 90);
+</script>
+
+</body>
+</html>
