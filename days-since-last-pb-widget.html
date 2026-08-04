@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Days Since Last PB</title>
+<style>
+  :root{
+    --green:#16a34a;
+    --green-dark:#0f7c37;
+    --green-light:#eafbf1;
+    --green-pale:#f4fdf8;
+    --white:#ffffff;
+    --text:#1f2937;
+    --gray:#6b7280;
+    --line:#d9f2e3;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background:var(--white);
+    color:var(--text);
+    padding:20px;
+  }
+  .wrap{max-width:440px;margin:0 auto;}
+  h1{
+    font-size:17px;
+    letter-spacing:0.02em;
+    margin:0 0 4px 0;
+    color:var(--green-dark);
+  }
+  .sub{
+    font-size:12.5px;
+    color:var(--gray);
+    margin:0 0 18px 0;
+  }
+  .field{margin-bottom:14px;}
+  label{
+    display:block;
+    font-size:11px;
+    color:var(--gray);
+    margin-bottom:4px;
+  }
+  input{
+    width:100%;
+    padding:9px 10px;
+    border:1px solid var(--line);
+    border-radius:7px;
+    font-size:14px;
+    color:var(--text);
+    background:var(--green-pale);
+  }
+  input:focus{
+    outline:none;
+    border-color:var(--green);
+    background:var(--white);
+  }
+  button{
+    width:100%;
+    padding:11px;
+    margin-top:6px;
+    background:var(--green);
+    color:var(--white);
+    border:none;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    letter-spacing:0.02em;
+  }
+  button:hover{background:var(--green-dark);}
+  .result{
+    margin-top:16px;
+    background:var(--green-light);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:18px;
+    display:none;
+    text-align:center;
+  }
+  .result.show{display:block;}
+  .days{
+    font-size:34px;
+    font-weight:800;
+    color:var(--green-dark);
+    margin:0 0 2px 0;
+  }
+  .days-label{
+    font-size:11px;
+    color:var(--gray);
+    margin:0 0 10px 0;
+  }
+  .note{
+    font-size:12px;
+    color:var(--text);
+    line-height:1.5;
+    padding-top:10px;
+    border-top:1px solid var(--line);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🏆 Days Since Last PB</h1>
+  <p class="sub">Enter the date of your most recent personal best, across any discipline.</p>
+
+  <div class="field">
+    <label>Date of last PB</label>
+    <input type="date" id="pbDate">
+  </div>
+
+  <button onclick="calculate()">Show days since</button>
+
+  <div class="result" id="result">
+    <p class="days" id="daysValue">--</p>
+    <p class="days-label">DAYS SINCE YOUR LAST PB</p>
+    <p class="note" id="noteText"></p>
+  </div>
+</div>
+
+<script>
+function calculate(){
+  const val = document.getElementById('pbDate').value;
+  if(!val){
+    alert('Enter the date of your last PB.');
+    return;
+  }
+
+  const pbDate = new Date(val);
+  const today = new Date();
+  pbDate.setHours(0,0,0,0);
+  today.setHours(0,0,0,0);
+
+  const diffDays = Math.round((today - pbDate) / (1000 * 60 * 60 * 24));
+
+  if(diffDays < 0){
+    alert('That date is in the future — enter a past date.');
+    return;
+  }
+
+  document.getElementById('daysValue').textContent = diffDays;
+
+  let note;
+  if(diffDays <= 14){
+    note = 'Recent PB — nice work. Log it in your Personal-Bests-Log while the details are fresh.';
+  } else if(diffDays <= 60){
+    note = 'A normal gap between PBs — not every training block produces one, and that\'s expected.';
+  } else {
+    note = 'It\'s been a while — worth checking your Training Plateau Troubleshooter, or simply planning a benchmark test to see where you actually stand.';
+  }
+  document.getElementById('noteText').textContent = note;
+
+  document.getElementById('result').classList.add('show');
+}
+</script>
+</body>
+</html>
