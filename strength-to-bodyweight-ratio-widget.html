@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Strength-to-Bodyweight Ratio Calculator</title>
+<style>
+  :root{
+    --green:#16a34a;
+    --green-dark:#0f7c37;
+    --green-light:#eafbf1;
+    --green-pale:#f4fdf8;
+    --white:#ffffff;
+    --text:#1f2937;
+    --gray:#6b7280;
+    --line:#d9f2e3;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background:var(--white);
+    color:var(--text);
+    padding:20px;
+  }
+  .wrap{max-width:460px;margin:0 auto;}
+  h1{
+    font-size:17px;
+    letter-spacing:0.02em;
+    margin:0 0 4px 0;
+    color:var(--green-dark);
+  }
+  .sub{
+    font-size:12.5px;
+    color:var(--gray);
+    margin:0 0 18px 0;
+  }
+  .field{margin-bottom:12px;}
+  label{
+    display:block;
+    font-size:11px;
+    color:var(--gray);
+    margin-bottom:4px;
+  }
+  input{
+    width:100%;
+    padding:9px 10px;
+    border:1px solid var(--line);
+    border-radius:7px;
+    font-size:14px;
+    color:var(--text);
+    background:var(--green-pale);
+  }
+  input:focus{
+    outline:none;
+    border-color:var(--green);
+    background:var(--white);
+  }
+  button{
+    width:100%;
+    padding:11px;
+    margin-top:6px;
+    background:var(--green);
+    color:var(--white);
+    border:none;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    letter-spacing:0.02em;
+  }
+  button:hover{background:var(--green-dark);}
+  .result{
+    margin-top:16px;
+    background:var(--green-light);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px;
+    display:none;
+    text-align:center;
+  }
+  .result.show{display:block;}
+  .ratio{
+    font-size:26px;
+    font-weight:800;
+    color:var(--green-dark);
+    margin:0 0 2px 0;
+  }
+  .ratio-label{
+    font-size:11px;
+    color:var(--gray);
+    margin:0 0 12px 0;
+  }
+  .note{
+    font-size:11.5px;
+    color:var(--text);
+    line-height:1.5;
+    text-align:left;
+    padding-top:10px;
+    border-top:1px solid var(--line);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>📏 Strength-to-Bodyweight Ratio</h1>
+  <p class="sub">A performance metric, not a body metric — useful for comparing your own progress over time, discipline to discipline.</p>
+
+  <div class="field">
+    <label>Lift weight (same units as bodyweight)</label>
+    <input type="number" id="lift" placeholder="e.g. 100">
+  </div>
+  <div class="field">
+    <label>Bodyweight</label>
+    <input type="number" id="bodyweight" placeholder="e.g. 75">
+  </div>
+
+  <button onclick="calculate()">Calculate ratio</button>
+
+  <div class="result" id="result">
+    <p class="ratio" id="ratioValue">--</p>
+    <p class="ratio-label">TIMES YOUR BODYWEIGHT</p>
+    <p class="note">This ratio is most useful tracked against your own history over time — not compared against anyone else's. It's one lens among many; your Strength Progress Log and Personal Bests page tell the fuller story.</p>
+  </div>
+</div>
+
+<script>
+function calculate(){
+  const lift = parseFloat(document.getElementById('lift').value);
+  const bw = parseFloat(document.getElementById('bodyweight').value);
+
+  if(!lift || !bw){
+    alert('Enter both the lift weight and your bodyweight.');
+    return;
+  }
+
+  const ratio = lift / bw;
+  document.getElementById('ratioValue').textContent = `${ratio.toFixed(2)}x`;
+  document.getElementById('result').classList.add('show');
+}
+</script>
+</body>
+</html>
