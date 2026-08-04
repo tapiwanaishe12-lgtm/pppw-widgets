@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DOMS Recovery Estimator</title>
+<style>
+  :root{
+    --green:#16a34a;
+    --green-dark:#0f7c37;
+    --green-light:#eafbf1;
+    --green-pale:#f4fdf8;
+    --white:#ffffff;
+    --text:#1f2937;
+    --gray:#6b7280;
+    --line:#d9f2e3;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background:var(--white);
+    color:var(--text);
+    padding:20px;
+  }
+  .wrap{max-width:480px;margin:0 auto;}
+  h1{
+    font-size:17px;
+    letter-spacing:0.02em;
+    margin:0 0 4px 0;
+    color:var(--green-dark);
+  }
+  .sub{
+    font-size:12.5px;
+    color:var(--gray);
+    margin:0 0 18px 0;
+  }
+  .field{margin-bottom:14px;}
+  label{
+    display:block;
+    font-size:11px;
+    color:var(--gray);
+    margin-bottom:6px;
+  }
+  .options{
+    display:flex;
+    flex-wrap:wrap;
+    gap:7px;
+  }
+  .opt{
+    padding:8px 13px;
+    border:1px solid var(--line);
+    border-radius:16px;
+    font-size:12.5px;
+    background:var(--green-pale);
+    color:var(--text);
+    cursor:pointer;
+    user-select:none;
+  }
+  .opt.active{
+    background:var(--green);
+    border-color:var(--green);
+    color:var(--white);
+    font-weight:700;
+  }
+  button{
+    width:100%;
+    padding:11px;
+    margin-top:6px;
+    background:var(--green);
+    color:var(--white);
+    border:none;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    letter-spacing:0.02em;
+  }
+  button:hover{background:var(--green-dark);}
+  .result{
+    margin-top:16px;
+    background:var(--green-light);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px;
+    display:none;
+    text-align:center;
+  }
+  .result.show{display:block;}
+  .est{
+    font-size:24px;
+    font-weight:800;
+    color:var(--green-dark);
+    margin:0 0 2px 0;
+  }
+  .est-label{
+    font-size:11px;
+    color:var(--gray);
+    margin:0 0 12px 0;
+  }
+  .note{
+    font-size:12px;
+    color:var(--text);
+    line-height:1.5;
+    text-align:left;
+    padding-top:10px;
+    border-top:1px solid var(--line);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>😔 DOMS Recovery Estimator</h1>
+  <p class="sub">A rough estimate of when soreness should ease — not a substitute for listening to your body.</p>
+
+  <div class="field">
+    <label>Soreness level right now</label>
+    <div class="options" id="soreness">
+      <div class="opt" data-val="1">1 · Mild</div>
+      <div class="opt" data-val="2">2</div>
+      <div class="opt" data-val="3">3 · Moderate</div>
+      <div class="opt" data-val="4">4</div>
+      <div class="opt" data-val="5">5 · Severe</div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Muscle group affected</label>
+    <div class="options" id="group">
+      <div class="opt" data-val="small">Small (arms, shoulders, calves)</div>
+      <div class="opt" data-val="large">Large (legs, back, chest)</div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Training experience with this movement</label>
+    <div class="options" id="experience">
+      <div class="opt" data-val="novice">New / returning</div>
+      <div class="opt" data-val="intermediate">Regular</div>
+      <div class="opt" data-val="advanced">Very experienced</div>
+    </div>
+  </div>
+
+  <button onclick="estimate()">Estimate recovery</button>
+
+  <div class="result" id="result">
+    <p class="est" id="estValue">--</p>
+    <p class="est-label">ESTIMATED DAYS UNTIL SORENESS EASES</p>
+    <p class="note" id="noteText"></p>
+  </div>
+</div>
+
+<script>
+let sel = { soreness: null, group: null, experience: null };
+
+function setupGroup(id, key){
+  document.querySelectorAll(`#${id} .opt`).forEach(opt => {
+    opt.onclick = () => {
+      document.querySelectorAll(`#${id} .opt`).forEach(o => o.classList.remove('active'));
+      opt.classList.add('active');
+      sel[key] = opt.dataset.val;
+    };
+  });
+}
+setupGroup('soreness', 'soreness');
+setupGroup('group', 'group');
+setupGroup('experience', 'experience');
+
+function estimate(){
+  if(!sel.soreness || !sel.group || !sel.experience){
+    alert('Select an option in all three fields.');
+    return;
+  }
+
+  const base = { '1': 1, '2': 1.5, '3': 2.5, '4': 3.5, '5': 5 };
+  let days = base[sel.soreness];
+
+  if(sel.group === 'large') days += 1;
+  if(sel.experience === 'novice') days += 1;
+  if(sel.experience === 'advanced') days -= 0.5;
+
+  days = Math.max(0.5, days);
+  const low = Math.max(0, Math.floor(days - 0.5));
+  const high = Math.ceil(days + 0.5);
+
+  document.getElementById('estValue').textContent = low === high ? `~${high} day${high===1?'':'s'}` : `${low}-${high} days`;
+
+  let note = 'This is a rough estimate, not a hard rule — soreness that keeps worsening after 72 hours, or sharp/localised pain rather than general muscle ache, is worth treating differently. Log it in your Recovery-Soreness-Log either way.';
+  document.getElementById('noteText').textContent = note;
+
+  document.getElementById('result').classList.add('show');
+}
+</script>
+</body>
+</html>
