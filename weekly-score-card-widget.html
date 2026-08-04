@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weekly Score Card</title>
+<style>
+  :root{
+    --green:#16a34a;
+    --green-dark:#0f7c37;
+    --green-light:#eafbf1;
+    --green-pale:#f4fdf8;
+    --white:#ffffff;
+    --text:#1f2937;
+    --gray:#6b7280;
+    --line:#d9f2e3;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background:var(--white);
+    color:var(--text);
+    padding:20px;
+  }
+  .wrap{max-width:480px;margin:0 auto;}
+  h1{
+    font-size:17px;
+    letter-spacing:0.02em;
+    margin:0 0 4px 0;
+    color:var(--green-dark);
+  }
+  .sub{
+    font-size:12.5px;
+    color:var(--gray);
+    margin:0 0 18px 0;
+  }
+  .cat{
+    margin-bottom:14px;
+  }
+  .cat-label{
+    font-size:12.5px;
+    font-weight:700;
+    color:var(--text);
+    margin-bottom:6px;
+  }
+  .options{
+    display:flex;
+    gap:6px;
+  }
+  .opt{
+    flex:1;
+    text-align:center;
+    padding:8px 0;
+    border:1px solid var(--line);
+    border-radius:7px;
+    font-size:12.5px;
+    background:var(--green-pale);
+    color:var(--text);
+    cursor:pointer;
+    user-select:none;
+  }
+  .opt.active{
+    background:var(--green);
+    border-color:var(--green);
+    color:var(--white);
+    font-weight:700;
+  }
+  button{
+    width:100%;
+    padding:11px;
+    margin-top:6px;
+    background:var(--green);
+    color:var(--white);
+    border:none;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    letter-spacing:0.02em;
+  }
+  button:hover{background:var(--green-dark);}
+  .result{
+    margin-top:16px;
+    background:var(--green-light);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px;
+    display:none;
+    text-align:center;
+  }
+  .result.show{display:block;}
+  .avg{
+    font-size:28px;
+    font-weight:800;
+    color:var(--green-dark);
+    margin:0 0 2px 0;
+  }
+  .avg-label{
+    font-size:11px;
+    color:var(--gray);
+    margin:0 0 12px 0;
+  }
+  .focus-line{
+    font-size:12.5px;
+    color:var(--text);
+    padding-top:10px;
+    border-top:1px solid var(--line);
+    text-align:left;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🗓️ Weekly Score Card</h1>
+  <p class="sub">Rate the four pillars of the week — see where to focus next, at a glance.</p>
+
+  <div id="categories"></div>
+
+  <button onclick="calculate()">See my week</button>
+
+  <div class="result" id="result">
+    <p class="avg" id="avgValue">--</p>
+    <p class="avg-label">AVERAGE SCORE THIS WEEK</p>
+    <p class="focus-line" id="focusLine"></p>
+  </div>
+</div>
+
+<script>
+const categories = [
+  { key: 'training', label: '🏋️ Training consistency', page: 'Weekly Training Split Planner' },
+  { key: 'recovery', label: '🔄 Recovery', page: 'Recovery & Soreness Tracker' },
+  { key: 'nutrition', label: '🌱 Nutrition', page: 'Nutrition for Hybrid Athletes' },
+  { key: 'mindset', label: '🧠 Mindset', page: 'Motivation & Mindset Toolkit' }
+];
+const scores = {};
+
+const container = document.getElementById('categories');
+categories.forEach(cat => {
+  const div = document.createElement('div');
+  div.className = 'cat';
+  div.innerHTML = `<div class="cat-label">${cat.label}</div><div class="options" id="opts-${cat.key}"></div>`;
+  container.appendChild(div);
+  const optsDiv = div.querySelector(`#opts-${cat.key}`);
+  [1,2,3,4,5].forEach(n => {
+    const btn = document.createElement('div');
+    btn.className = 'opt';
+    btn.textContent = n;
+    btn.onclick = () => {
+      scores[cat.key] = n;
+      optsDiv.querySelectorAll('.opt').forEach(o => o.classList.remove('active'));
+      btn.classList.add('active');
+    };
+    optsDiv.appendChild(btn);
+  });
+});
+
+function calculate(){
+  if(Object.keys(scores).length < categories.length){
+    alert('Rate all four categories.');
+    return;
+  }
+
+  const values = Object.values(scores);
+  const avg = values.reduce((a,b) => a+b, 0) / values.length;
+  document.getElementById('avgValue').textContent = avg.toFixed(1);
+
+  const lowestKey = Object.keys(scores).reduce((a,b) => scores[a] <= scores[b] ? a : b);
+  const lowestCat = categories.find(c => c.key === lowestKey);
+
+  document.getElementById('focusLine').textContent = `Lowest this week: ${lowestCat.label} (${scores[lowestKey]}/5) — worth a closer look in your ${lowestCat.page} page next week.`;
+
+  document.getElementById('result').classList.add('show');
+}
+</script>
+</body>
+</html>
