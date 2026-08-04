@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plateau Diagnostic Quiz</title>
+<style>
+  :root{
+    --green:#16a34a;
+    --green-dark:#0f7c37;
+    --green-light:#eafbf1;
+    --green-pale:#f4fdf8;
+    --white:#ffffff;
+    --text:#1f2937;
+    --gray:#6b7280;
+    --line:#d9f2e3;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background:var(--white);
+    color:var(--text);
+    padding:20px;
+  }
+  .wrap{max-width:520px;margin:0 auto;}
+  h1{
+    font-size:17px;
+    letter-spacing:0.02em;
+    margin:0 0 4px 0;
+    color:var(--green-dark);
+  }
+  .sub{
+    font-size:12.5px;
+    color:var(--gray);
+    margin:0 0 18px 0;
+  }
+  .q{
+    margin-bottom:14px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:12px 14px;
+    background:var(--green-pale);
+  }
+  .q-text{
+    font-size:13px;
+    color:var(--text);
+    margin:0 0 8px 0;
+  }
+  .options{
+    display:flex;
+    gap:7px;
+  }
+  .opt{
+    padding:7px 14px;
+    border:1px solid var(--line);
+    border-radius:14px;
+    font-size:12px;
+    background:var(--white);
+    color:var(--text);
+    cursor:pointer;
+    user-select:none;
+  }
+  .opt.active{
+    background:var(--green);
+    border-color:var(--green);
+    color:var(--white);
+    font-weight:700;
+  }
+  button{
+    width:100%;
+    padding:11px;
+    margin-top:6px;
+    background:var(--green);
+    color:var(--white);
+    border:none;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    letter-spacing:0.02em;
+  }
+  button:hover{background:var(--green-dark);}
+  .result{
+    margin-top:16px;
+    background:var(--green-light);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px;
+    display:none;
+  }
+  .result.show{display:block;}
+  .primary{
+    font-size:12px;
+    font-weight:700;
+    color:var(--green-dark);
+    text-transform:uppercase;
+    letter-spacing:0.03em;
+    margin:0 0 8px 0;
+  }
+  .rec-text{
+    font-size:13px;
+    color:var(--text);
+    line-height:1.55;
+    margin:0;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🧩 Plateau Diagnostic Quiz</h1>
+  <p class="sub">Answer honestly — a quick pointer toward where to look first, not a diagnosis.</p>
+
+  <div class="q" data-cat="sleep">
+    <p class="q-text">Have you been sleeping less than your target on most nights recently?</p>
+    <div class="options">
+      <div class="opt" data-val="1">Yes</div>
+      <div class="opt" data-val="0">No</div>
+    </div>
+  </div>
+
+  <div class="q" data-cat="recovery">
+    <p class="q-text">Is soreness taking longer to clear than usual, or building up across sessions?</p>
+    <div class="options">
+      <div class="opt" data-val="1">Yes</div>
+      <div class="opt" data-val="0">No</div>
+    </div>
+  </div>
+
+  <div class="q" data-cat="program">
+    <p class="q-text">Has your program stayed the same (same exercises, same structure) for more than 8-10 weeks?</p>
+    <div class="options">
+      <div class="opt" data-val="1">Yes</div>
+      <div class="opt" data-val="0">No</div>
+    </div>
+  </div>
+
+  <div class="q" data-cat="nutrition">
+    <p class="q-text">Have you been under-fuelling around your hardest sessions recently?</p>
+    <div class="options">
+      <div class="opt" data-val="1">Yes</div>
+      <div class="opt" data-val="0">No</div>
+    </div>
+  </div>
+
+  <div class="q" data-cat="program">
+    <p class="q-text">Has your training load (weight, pace, distance) genuinely increased in the last month, or stayed about the same?</p>
+    <div class="options">
+      <div class="opt" data-val="1">Stayed the same</div>
+      <div class="opt" data-val="0">Increased</div>
+    </div>
+  </div>
+
+  <button onclick="diagnose()">See likely cause</button>
+
+  <div class="result" id="result">
+    <p class="primary" id="primaryLabel"></p>
+    <p class="rec-text" id="recText"></p>
+  </div>
+</div>
+
+<script>
+const questions = document.querySelectorAll('.q');
+const answers = {};
+
+questions.forEach((q, i) => {
+  const cat = q.dataset.cat;
+  q.querySelectorAll('.opt').forEach(opt => {
+    opt.onclick = () => {
+      q.querySelectorAll('.opt').forEach(o => o.classList.remove('active'));
+      opt.classList.add('active');
+      answers[i] = { cat, val: parseInt(opt.dataset.val) };
+    };
+  });
+});
+
+const recommendations = {
+  sleep: 'Sleep is a strong first suspect. Check your Sleep & Training Impact page — a sleep debt building up over weeks is one of the most common, and most fixable, causes of a stalled plateau.',
+  recovery: 'Recovery load is a strong first suspect. Check your Recovery & Soreness Tracker — accumulating soreness that never fully clears usually means your body needs more recovery capacity than you\'re currently giving it, not more training.',
+  program: 'Program stagnation is a strong first suspect. If your structure hasn\'t changed in 8-10+ weeks or your load hasn\'t genuinely progressed, your body has likely adapted to the current stimulus. Check your Weekly Training Split Planner and consider a deliberate program change.',
+  nutrition: 'Fuelling is a strong first suspect. Check your Nutrition for Hybrid Athletes page — under-fuelling around your hardest sessions is a common, quiet cause of stalled progress that\'s easy to overlook.'
+};
+
+function diagnose(){
+  if(Object.keys(answers).length < questions.length){
+    alert('Answer all questions to get a recommendation.');
+    return;
+  }
+
+  const scores = { sleep: 0, recovery: 0, program: 0, nutrition: 0 };
+  Object.values(answers).forEach(a => {
+    scores[a.cat] += a.val;
+  });
+
+  const maxScore = Math.max(...Object.values(scores));
+
+  if(maxScore === 0){
+    document.getElementById('primaryLabel').textContent = 'No clear flag';
+    document.getElementById('recText').textContent = 'Nothing here stands out strongly. Worth checking your Concurrent Training Principles Knowledge Base for interference effects, or simply allowing more time — not every stretch of flat progress is a true plateau.';
+  } else {
+    const topCat = Object.keys(scores).find(k => scores[k] === maxScore);
+    const labels = { sleep: '😴 Sleep', recovery: '🔄 Recovery', program: '🧩 Program', nutrition: '🌱 Nutrition' };
+    document.getElementById('primaryLabel').textContent = labels[topCat];
+    document.getElementById('recText').textContent = recommendations[topCat];
+  }
+
+  document.getElementById('result').classList.add('show');
+}
+</script>
+</body>
+</html>
