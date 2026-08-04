@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Low-Motivation Day Decision Helper</title>
+<style>
+  :root{
+    --green:#16a34a;
+    --green-dark:#0f7c37;
+    --green-light:#eafbf1;
+    --green-pale:#f4fdf8;
+    --white:#ffffff;
+    --text:#1f2937;
+    --gray:#6b7280;
+    --line:#d9f2e3;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background:var(--white);
+    color:var(--text);
+    padding:20px;
+  }
+  .wrap{max-width:480px;margin:0 auto;}
+  h1{
+    font-size:17px;
+    letter-spacing:0.02em;
+    margin:0 0 4px 0;
+    color:var(--green-dark);
+  }
+  .sub{
+    font-size:12.5px;
+    color:var(--gray);
+    margin:0 0 18px 0;
+  }
+  .field{margin-bottom:14px;}
+  label{
+    display:block;
+    font-size:11.5px;
+    color:var(--gray);
+    margin-bottom:6px;
+  }
+  .options{
+    display:flex;
+    flex-wrap:wrap;
+    gap:7px;
+  }
+  .opt{
+    padding:8px 13px;
+    border:1px solid var(--line);
+    border-radius:16px;
+    font-size:12.5px;
+    background:var(--green-pale);
+    color:var(--text);
+    cursor:pointer;
+    user-select:none;
+  }
+  .opt.active{
+    background:var(--green);
+    border-color:var(--green);
+    color:var(--white);
+    font-weight:700;
+  }
+  button{
+    width:100%;
+    padding:11px;
+    margin-top:6px;
+    background:var(--green);
+    color:var(--white);
+    border:none;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    letter-spacing:0.02em;
+  }
+  button:hover{background:var(--green-dark);}
+  .result{
+    margin-top:16px;
+    background:var(--green-light);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px;
+    display:none;
+  }
+  .result.show{display:block;}
+  .rec-title{
+    font-size:12px;
+    font-weight:700;
+    color:var(--green-dark);
+    text-transform:uppercase;
+    letter-spacing:0.03em;
+    margin:0 0 8px 0;
+  }
+  .rec-text{
+    font-size:13px;
+    color:var(--text);
+    line-height:1.55;
+    margin:0;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🧠 Low-Motivation Day Decision Helper</h1>
+  <p class="sub">Not every low-motivation day means the same thing. Answer honestly.</p>
+
+  <div class="field">
+    <label>How's your body feeling — physically?</label>
+    <div class="options" id="physical">
+      <div class="opt" data-val="fine">Fine, just not feeling motivated</div>
+      <div class="opt" data-val="unwell">Genuinely run down, sore, or unwell</div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Motivation level right now</label>
+    <div class="options" id="motivation">
+      <div class="opt" data-val="1">1 — Very low</div>
+      <div class="opt" data-val="2">2</div>
+      <div class="opt" data-val="3">3 — Neutral</div>
+      <div class="opt" data-val="4">4</div>
+      <div class="opt" data-val="5">5 — High</div>
+    </div>
+  </div>
+
+  <button onclick="advise()">What should I do today?</button>
+
+  <div class="result" id="result">
+    <p class="rec-title">SUGGESTION</p>
+    <p class="rec-text" id="recText"></p>
+  </div>
+</div>
+
+<script>
+let sel = { physical: null, motivation: null };
+
+function setup(id, key, parse){
+  document.querySelectorAll(`#${id} .opt`).forEach(opt => {
+    opt.onclick = () => {
+      document.querySelectorAll(`#${id} .opt`).forEach(o => o.classList.remove('active'));
+      opt.classList.add('active');
+      sel[key] = parse(opt.dataset.val);
+    };
+  });
+}
+setup('physical', 'physical', v => v);
+setup('motivation', 'motivation', v => parseInt(v));
+
+function advise(){
+  if(!sel.physical || !sel.motivation){
+    alert('Answer both questions.');
+    return;
+  }
+
+  let advice = '';
+
+  if(sel.physical === 'unwell'){
+    advice = 'This isn\'t really a motivation question — it\'s a recovery question. Check your Recovery Readiness Check and Recovery & Soreness Tracker before deciding today\'s intensity. Low motivation alongside feeling run down is often your body asking for rest, not a discipline problem.';
+  } else if(sel.motivation <= 2){
+    advice = 'Try the 10-minute rule: commit to just 10 minutes of the planned session, no pressure to finish it. Most of the time, starting is the hard part — and if you genuinely still want to stop after 10 minutes, that\'s a fair, informed decision rather than one made before you even began.';
+  } else if(sel.motivation === 3){
+    advice = 'Stick to the plan, but give yourself permission to do an easier version if needed. Neutral motivation is completely normal — most consistent training happens on days like this, not on days you feel amazing.';
+  } else {
+    advice = 'Motivation is on your side today — go ahead as planned. Worth noting what\'s different about today in your Mindset-Log, so you can look back for patterns on what tends to help.';
+  }
+
+  document.getElementById('recText').textContent = advice;
+  document.getElementById('result').classList.add('show');
+}
+</script>
+</body>
+</html>
