@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Endurance Benchmark Comparator</title>
+<style>
+  :root{
+    --green:#16a34a;
+    --green-dark:#0f7c37;
+    --green-light:#eafbf1;
+    --green-pale:#f4fdf8;
+    --white:#ffffff;
+    --text:#1f2937;
+    --gray:#6b7280;
+    --line:#d9f2e3;
+    --amber:#b45309;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background:var(--white);
+    color:var(--text);
+    padding:20px;
+  }
+  .wrap{max-width:480px;margin:0 auto;}
+  h1{
+    font-size:17px;
+    letter-spacing:0.02em;
+    margin:0 0 4px 0;
+    color:var(--green-dark);
+  }
+  .sub{
+    font-size:12.5px;
+    color:var(--gray);
+    margin:0 0 18px 0;
+  }
+  .field{margin-bottom:12px;}
+  label{
+    display:block;
+    font-size:11px;
+    color:var(--gray);
+    margin-bottom:4px;
+  }
+  input{
+    width:100%;
+    padding:9px 10px;
+    border:1px solid var(--line);
+    border-radius:7px;
+    font-size:14px;
+    color:var(--text);
+    background:var(--green-pale);
+  }
+  input:focus{
+    outline:none;
+    border-color:var(--green);
+    background:var(--white);
+  }
+  button{
+    width:100%;
+    padding:11px;
+    margin-top:6px;
+    background:var(--green);
+    color:var(--white);
+    border:none;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    letter-spacing:0.02em;
+  }
+  button:hover{background:var(--green-dark);}
+  .result{
+    margin-top:16px;
+    background:var(--green-light);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px;
+    display:none;
+    text-align:center;
+  }
+  .result.show{display:block;}
+  .delta{
+    font-size:26px;
+    font-weight:800;
+    margin:0 0 2px 0;
+  }
+  .delta.better{color:var(--green-dark);}
+  .delta.worse{color:var(--amber);}
+  .delta-label{
+    font-size:11px;
+    color:var(--gray);
+    margin:0 0 12px 0;
+  }
+  .row-line{
+    display:flex;
+    justify-content:space-between;
+    font-size:12.5px;
+    padding:4px 0;
+    border-top:1px solid var(--line);
+    text-align:left;
+  }
+  .row-line:first-of-type{border-top:none;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>📈 Endurance Benchmark Comparator</h1>
+  <p class="sub">Compare a new time against your previous best on the same test — see the real change, not just a feeling.</p>
+
+  <div class="field">
+    <label>Previous best time (mm:ss or h:mm:ss)</label>
+    <input type="text" id="prevTime" placeholder="24:30">
+  </div>
+  <div class="field">
+    <label>New time (mm:ss or h:mm:ss)</label>
+    <input type="text" id="newTime" placeholder="23:45">
+  </div>
+
+  <button onclick="calculate()">Compare</button>
+
+  <div class="result" id="result">
+    <p class="delta" id="deltaValue">--</p>
+    <p class="delta-label" id="deltaLabel">CHANGE VS PREVIOUS BEST</p>
+    <div class="row-line"><span>Previous</span><span id="prevOut">--</span></div>
+    <div class="row-line"><span>New</span><span id="newOut">--</span></div>
+    <div class="row-line"><span>% change</span><span id="pctOut">--</span></div>
+  </div>
+</div>
+
+<script>
+function parseTime(str){
+  if(!str) return null;
+  const parts = str.trim().split(':').map(Number);
+  if(parts.some(isNaN)) return null;
+  if(parts.length === 3) return parts[0]*3600 + parts[1]*60 + parts[2];
+  if(parts.length === 2) return parts[0]*60 + parts[1];
+  if(parts.length === 1) return parts[0];
+  return null;
+}
+
+function formatTime(totalSeconds){
+  totalSeconds = Math.round(Math.abs(totalSeconds));
+  const h = Math.floor(totalSeconds/3600);
+  const m = Math.floor((totalSeconds%3600)/60);
+  const s = totalSeconds%60;
+  if(h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+
+function calculate(){
+  const prev = parseTime(document.getElementById('prevTime').value);
+  const curr = parseTime(document.getElementById('newTime').value);
+
+  if(prev === null || curr === null){
+    alert('Enter both times in mm:ss or h:mm:ss format.');
+    return;
+  }
+
+  const diff = curr - prev;
+  const pct = (diff / prev) * 100;
+  const better = diff < 0;
+
+  const deltaEl = document.getElementById('deltaValue');
+  deltaEl.textContent = (better ? '−' : '+') + formatTime(diff);
+  deltaEl.className = 'delta ' + (better ? 'better' : 'worse');
+
+  document.getElementById('deltaLabel').textContent = better ? 'FASTER THAN PREVIOUS BEST' : 'SLOWER THAN PREVIOUS BEST';
+  document.getElementById('prevOut').textContent = formatTime(prev);
+  document.getElementById('newOut').textContent = formatTime(curr);
+  document.getElementById('pctOut').textContent = (better ? '−' : '+') + Math.abs(pct).toFixed(1) + '%';
+
+  document.getElementById('result').classList.add('show');
+}
+</script>
+</body>
+</html>
