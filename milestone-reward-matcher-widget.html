@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Milestone Reward Matcher</title>
+<style>
+  :root{
+    --green:#16a34a;
+    --green-dark:#0f7c37;
+    --green-light:#eafbf1;
+    --green-pale:#f4fdf8;
+    --white:#ffffff;
+    --text:#1f2937;
+    --gray:#6b7280;
+    --line:#d9f2e3;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background:var(--white);
+    color:var(--text);
+    padding:20px;
+  }
+  .wrap{max-width:480px;margin:0 auto;}
+  h1{
+    font-size:17px;
+    letter-spacing:0.02em;
+    margin:0 0 4px 0;
+    color:var(--green-dark);
+  }
+  .sub{
+    font-size:12.5px;
+    color:var(--gray);
+    margin:0 0 18px 0;
+  }
+  .field{margin-bottom:14px;}
+  label{
+    display:block;
+    font-size:11.5px;
+    color:var(--gray);
+    margin-bottom:6px;
+  }
+  .options{
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+  }
+  .opt{
+    padding:10px 14px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    font-size:13px;
+    background:var(--green-pale);
+    color:var(--text);
+    cursor:pointer;
+    user-select:none;
+  }
+  .opt .opt-desc{
+    font-size:11px;
+    color:var(--gray);
+    margin-top:2px;
+  }
+  .opt.active{
+    background:var(--green);
+    border-color:var(--green);
+    color:var(--white);
+  }
+  .opt.active .opt-desc{
+    color:rgba(255,255,255,0.85);
+  }
+  button{
+    width:100%;
+    padding:11px;
+    margin-top:6px;
+    background:var(--green);
+    color:var(--white);
+    border:none;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    letter-spacing:0.02em;
+  }
+  button:hover{background:var(--green-dark);}
+  .result{
+    margin-top:16px;
+    background:var(--green-light);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px;
+    display:none;
+  }
+  .result.show{display:block;}
+  .rec-title{
+    font-size:12px;
+    font-weight:700;
+    color:var(--green-dark);
+    text-transform:uppercase;
+    letter-spacing:0.03em;
+    margin:0 0 8px 0;
+  }
+  .rec-text{
+    font-size:13px;
+    color:var(--text);
+    line-height:1.55;
+    margin:0;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🏅 Milestone Reward Matcher</h1>
+  <p class="sub">Match the reward to the size of the achievement — ideas, not a shopping list.</p>
+
+  <div class="field">
+    <label>What kind of milestone is this?</label>
+    <div class="options" id="milestone">
+      <div class="opt" data-val="small">
+        Small — a good week, a small habit win
+        <div class="opt-desc">e.g. hit your planned split, logged consistently</div>
+      </div>
+      <div class="opt" data-val="medium">
+        Medium — a genuine achievement
+        <div class="opt-desc">e.g. new PB, finished a training block, a month of consistency</div>
+      </div>
+      <div class="opt" data-val="big">
+        Big — a major milestone
+        <div class="opt-desc">e.g. finished a race, hit a long-term goal, a big life-training balance win</div>
+      </div>
+    </div>
+  </div>
+
+  <button onclick="suggest()">Suggest reward ideas</button>
+
+  <div class="result" id="result">
+    <p class="rec-title">REWARD IDEAS</p>
+    <p class="rec-text" id="recText"></p>
+  </div>
+</div>
+
+<script>
+let selected = null;
+document.querySelectorAll('#milestone .opt').forEach(opt => {
+  opt.onclick = () => {
+    document.querySelectorAll('#milestone .opt').forEach(o => o.classList.remove('active'));
+    opt.classList.add('active');
+    selected = opt.dataset.val;
+  };
+});
+
+const ideas = {
+  small: 'Something small and immediate: an extra rest day guilt-free, new socks or a small piece of kit, an hour of genuinely doing nothing, or just taking a moment to actually acknowledge it in your Milestones-Rewards-Log rather than moving straight on to the next thing.',
+  medium: 'Something a bit more deliberate: a piece of gear you\'ve been holding off on, a massage or recovery session, a day trip, or a meal out somewhere you actually chose rather than convenience. Worth planning this one in advance rather than deciding on the day.',
+  big: 'Something that matches the size of the achievement: new race-day gear, a proper weekend away, booking the next big goal or event, or an experience you\'ve genuinely wanted. Big milestones are rare — let the reward reflect that rather than defaulting to something small out of habit.'
+};
+
+function suggest(){
+  if(!selected){
+    alert('Pick the size of the milestone first.');
+    return;
+  }
+  document.getElementById('recText').textContent = ideas[selected];
+  document.getElementById('result').classList.add('show');
+}
+</script>
+</body>
+</html>
