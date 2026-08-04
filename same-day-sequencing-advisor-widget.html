@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Same-Day Sequencing Advisor</title>
+<style>
+  :root{
+    --green:#16a34a;
+    --green-dark:#0f7c37;
+    --green-light:#eafbf1;
+    --green-pale:#f4fdf8;
+    --white:#ffffff;
+    --text:#1f2937;
+    --gray:#6b7280;
+    --line:#d9f2e3;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background:var(--white);
+    color:var(--text);
+    padding:20px;
+  }
+  .wrap{max-width:500px;margin:0 auto;}
+  h1{
+    font-size:17px;
+    letter-spacing:0.02em;
+    margin:0 0 4px 0;
+    color:var(--green-dark);
+  }
+  .sub{
+    font-size:12.5px;
+    color:var(--gray);
+    margin:0 0 18px 0;
+  }
+  .field{margin-bottom:14px;}
+  label{
+    display:block;
+    font-size:11px;
+    color:var(--gray);
+    margin-bottom:6px;
+  }
+  .options{
+    display:flex;
+    flex-wrap:wrap;
+    gap:7px;
+  }
+  .opt{
+    padding:8px 13px;
+    border:1px solid var(--line);
+    border-radius:16px;
+    font-size:12.5px;
+    background:var(--green-pale);
+    color:var(--text);
+    cursor:pointer;
+    user-select:none;
+  }
+  .opt.active{
+    background:var(--green);
+    border-color:var(--green);
+    color:var(--white);
+    font-weight:700;
+  }
+  button{
+    width:100%;
+    padding:11px;
+    margin-top:6px;
+    background:var(--green);
+    color:var(--white);
+    border:none;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    letter-spacing:0.02em;
+  }
+  button:hover{background:var(--green-dark);}
+  .result{
+    margin-top:16px;
+    background:var(--green-light);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px;
+    display:none;
+  }
+  .result.show{display:block;}
+  .rec-title{
+    font-size:12px;
+    font-weight:700;
+    color:var(--green-dark);
+    margin:0 0 8px 0;
+    text-transform:uppercase;
+    letter-spacing:0.03em;
+  }
+  .rec-text{
+    font-size:13px;
+    color:var(--text);
+    line-height:1.55;
+    margin:0;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>📖 Same-Day Sequencing Advisor</h1>
+  <p class="sub">Pick the two sessions you're combining today — get a sequencing recommendation, not a guess.</p>
+
+  <div class="field">
+    <label>Session A</label>
+    <div class="options" id="optsA"></div>
+  </div>
+  <div class="field">
+    <label>Session B</label>
+    <div class="options" id="optsB"></div>
+  </div>
+
+  <button onclick="advise()">Get sequencing advice</button>
+
+  <div class="result" id="result">
+    <p class="rec-title" id="recTitle">RECOMMENDATION</p>
+    <p class="rec-text" id="recText"></p>
+  </div>
+</div>
+
+<script>
+const disciplines = ['Run','Lift','Bike','Swim','Cross'];
+let selA = null, selB = null;
+
+function buildOptions(containerId, onSelect){
+  const container = document.getElementById(containerId);
+  disciplines.forEach(d => {
+    const btn = document.createElement('div');
+    btn.className = 'opt';
+    btn.textContent = d;
+    btn.onclick = () => {
+      container.querySelectorAll('.opt').forEach(o => o.classList.remove('active'));
+      btn.classList.add('active');
+      onSelect(d);
+    };
+    container.appendChild(btn);
+  });
+}
+
+buildOptions('optsA', d => selA = d);
+buildOptions('optsB', d => selB = d);
+
+function advise(){
+  if(!selA || !selB){
+    alert('Pick a discipline for both Session A and Session B.');
+    return;
+  }
+  if(selA === selB){
+    document.getElementById('recText').textContent = 'Pick two different sessions — this tool is for combining two disciplines in one day.';
+    document.getElementById('result').classList.add('show');
+    return;
+  }
+
+  const pair = [selA, selB].sort();
+  const enduranceSet = ['Run','Bike','Swim'];
+  const hasLift = pair.includes('Lift');
+  const hasCross = pair.includes('Cross');
+  const enduranceInPair = pair.filter(d => enduranceSet.includes(d));
+
+  let advice = '';
+
+  if(hasLift && enduranceInPair.length === 1){
+    advice = `Lead with whichever session is today's actual priority, while you're freshest. If they're equally important, most people do better lifting first (precision and neuromuscular control fade with fatigue) and finishing with steady aerobic ${enduranceInPair[0].toLowerCase()} work. Leave 6+ hours between sessions where possible — if they're back-to-back, allow at least a 15-30 minute buffer and refuel in between.`;
+  } else if(hasLift && hasCross){
+    advice = `Cross-training combines reasonably well with lifting either way round. If the cross-training session is high-intensity, treat it like an endurance session and consider leading with strength — otherwise, sequence based on which one is today's priority.`;
+  } else if(enduranceInPair.length === 2){
+    advice = `Between two endurance disciplines, lead with whichever is higher intensity or today's priority while you're fresh, and finish with the easier or lower-priority one. If this is triathlon-specific brick practice, match race order instead (Swim → Bike, or Bike → Run) regardless of which feels harder.`;
+  } else if(hasCross){
+    advice = `Cross-training carries relatively low interference risk with most other disciplines — sequence it around whichever other session matters more today.`;
+  } else {
+    advice = `Lead with today's priority session while fresh, and treat the second as secondary — allow adequate fuelling and, where possible, some recovery time between the two.`;
+  }
+
+  document.getElementById('recText').textContent = advice;
+  document.getElementById('result').classList.add('show');
+}
+</script>
+</body>
+</html>
