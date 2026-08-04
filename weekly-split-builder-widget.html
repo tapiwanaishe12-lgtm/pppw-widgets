@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weekly Split Builder</title>
+<style>
+  :root{
+    --green:#16a34a;
+    --green-dark:#0f7c37;
+    --green-light:#eafbf1;
+    --green-pale:#f4fdf8;
+    --white:#ffffff;
+    --text:#1f2937;
+    --gray:#6b7280;
+    --line:#d9f2e3;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background:var(--white);
+    color:var(--text);
+    padding:20px;
+  }
+  .wrap{max-width:560px;margin:0 auto;}
+  h1{
+    font-size:17px;
+    letter-spacing:0.02em;
+    margin:0 0 4px 0;
+    color:var(--green-dark);
+  }
+  .sub{
+    font-size:12.5px;
+    color:var(--gray);
+    margin:0 0 18px 0;
+  }
+  .day-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:9px 12px;
+    margin-bottom:8px;
+    background:var(--green-pale);
+  }
+  .day-label{
+    width:38px;
+    font-weight:700;
+    font-size:13px;
+    color:var(--text);
+    flex-shrink:0;
+  }
+  .options{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    flex:1;
+  }
+  .opt{
+    padding:5px 10px;
+    border:1px solid var(--line);
+    border-radius:14px;
+    font-size:11.5px;
+    background:var(--white);
+    color:var(--text);
+    cursor:pointer;
+    user-select:none;
+  }
+  .opt.active{
+    background:var(--green);
+    border-color:var(--green);
+    color:var(--white);
+    font-weight:700;
+  }
+  .opt.rest.active{
+    background:var(--gray);
+    border-color:var(--gray);
+  }
+  button.calc{
+    width:100%;
+    padding:11px;
+    margin-top:10px;
+    background:var(--green);
+    color:var(--white);
+    border:none;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    letter-spacing:0.02em;
+  }
+  button.calc:hover{background:var(--green-dark);}
+  .result{
+    margin-top:16px;
+    background:var(--green-light);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px;
+    display:none;
+  }
+  .result.show{display:block;}
+  .tally-line{
+    display:flex;
+    justify-content:space-between;
+    font-size:13px;
+    padding:5px 0;
+    border-top:1px solid var(--line);
+  }
+  .tally-line:first-of-type{border-top:none;}
+  .tally-name{color:var(--text);}
+  .tally-count{color:var(--green-dark);font-weight:700;}
+  .flag{
+    margin-top:12px;
+    padding-top:12px;
+    border-top:1px solid var(--line);
+    font-size:12px;
+    color:var(--green-dark);
+    line-height:1.5;
+  }
+  .flag.warn{color:#b45309;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>📋 Weekly Split Builder</h1>
+  <p class="sub">Assign a discipline to each day before the week starts. See your actual split, not just your intention.</p>
+
+  <div id="days"></div>
+
+  <button class="calc" onclick="calculate()">Check my split</button>
+
+  <div class="result" id="result">
+    <div id="tally"></div>
+    <div class="flag" id="flag"></div>
+  </div>
+</div>
+
+<script>
+const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const disciplines = ['Run','Lift','Bike','Swim','Cross','Rest'];
+const selections = {};
+
+const daysDiv = document.getElementById('days');
+days.forEach(day => {
+  selections[day] = null;
+  const row = document.createElement('div');
+  row.className = 'day-row';
+  row.innerHTML = `<div class="day-label">${day}</div><div class="options" id="opts-${day}"></div>`;
+  daysDiv.appendChild(row);
+  const optsDiv = row.querySelector(`#opts-${day}`);
+  disciplines.forEach(d => {
+    const btn = document.createElement('div');
+    btn.className = 'opt' + (d === 'Rest' ? ' rest' : '');
+    btn.textContent = d;
+    btn.onclick = () => {
+      selections[day] = d;
+      optsDiv.querySelectorAll('.opt').forEach(o => o.classList.remove('active'));
+      btn.classList.add('active');
+    };
+    optsDiv.appendChild(btn);
+  });
+});
+
+function calculate(){
+  const counts = {};
+  disciplines.forEach(d => counts[d] = 0);
+  let assigned = 0;
+
+  days.forEach(day => {
+    const val = selections[day];
+    if(val){
+      counts[val]++;
+      assigned++;
+    }
+  });
+
+  if(assigned === 0){
+    alert('Assign at least one day to see your split.');
+    return;
+  }
+
+  let tallyHTML = '';
+  disciplines.forEach(d => {
+    if(counts[d] > 0){
+      tallyHTML += `<div class="tally-line"><span class="tally-name">${d}</span><span class="tally-count">${counts[d]}x</span></div>`;
+    }
+  });
+  document.getElementById('tally').innerHTML = tallyHTML;
+
+  let flagMsg = '';
+  let warn = false;
+  if(counts['Rest'] === 0){
+    flagMsg = '⚠ No rest day assigned this week — worth a deliberate check that this is intentional, not an oversight.';
+    warn = true;
+  } else {
+    const trainingCounts = disciplines.filter(d => d !== 'Rest').map(d => counts[d]);
+    const maxCount = Math.max(...trainingCounts);
+    const maxDiscipline = disciplines.find(d => d !== 'Rest' && counts[d] === maxCount);
+    if(maxCount >= 5){
+      flagMsg = `⚠ ${maxDiscipline} is scheduled ${maxCount}x this week — worth checking this isn't crowding out the other disciplines.`;
+      warn = true;
+    } else {
+      flagMsg = '✓ Split looks reasonably balanced across the week.';
+    }
+  }
+
+  const flagEl = document.getElementById('flag');
+  flagEl.textContent = flagMsg;
+  flagEl.className = 'flag' + (warn ? ' warn' : '');
+
+  document.getElementById('result').classList.add('show');
+}
+</script>
+</body>
+</html>
