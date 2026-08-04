@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Triathlon Brick & Race Splits Planner</title>
+<style>
+  :root{
+    --green:#16a34a;
+    --green-dark:#0f7c37;
+    --black:#111111;
+    --white:#ffffff;
+    --gray:#6b7280;
+    --line:#e5e7eb;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background:var(--white);
+    color:var(--black);
+    padding:20px;
+  }
+  .wrap{max-width:520px;margin:0 auto;}
+  h1{
+    font-size:17px;
+    letter-spacing:0.02em;
+    margin:0 0 4px 0;
+    color:var(--black);
+  }
+  .sub{
+    font-size:12.5px;
+    color:var(--gray);
+    margin:0 0 18px 0;
+  }
+  .leg{
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:12px 14px;
+    margin-bottom:10px;
+  }
+  .leg-head{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-weight:700;
+    font-size:13.5px;
+    margin-bottom:8px;
+  }
+  .dot{
+    width:9px;height:9px;border-radius:50%;
+    background:var(--green);
+    flex-shrink:0;
+  }
+  .dot.transition{background:var(--black);}
+  .row{
+    display:flex;
+    gap:8px;
+  }
+  .field{flex:1;}
+  label{
+    display:block;
+    font-size:10.5px;
+    color:var(--gray);
+    margin-bottom:3px;
+  }
+  input{
+    width:100%;
+    padding:7px 8px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    font-size:13px;
+    color:var(--black);
+    background:#fafafa;
+  }
+  input:focus{
+    outline:none;
+    border-color:var(--green);
+    background:var(--white);
+  }
+  button{
+    width:100%;
+    padding:11px;
+    margin-top:6px;
+    background:var(--black);
+    color:var(--white);
+    border:none;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    letter-spacing:0.02em;
+  }
+  button:hover{background:var(--green-dark);}
+  .result{
+    margin-top:16px;
+    background:var(--black);
+    color:var(--white);
+    border-radius:10px;
+    padding:16px;
+    display:none;
+  }
+  .result.show{display:block;}
+  .total{
+    font-size:26px;
+    font-weight:800;
+    color:var(--green);
+    margin:0 0 2px 0;
+  }
+  .total-label{
+    font-size:11px;
+    color:#9ca3af;
+    margin:0 0 12px 0;
+  }
+  .split-line{
+    display:flex;
+    justify-content:space-between;
+    font-size:12.5px;
+    padding:5px 0;
+    border-top:1px solid #2a2a2a;
+  }
+  .split-line:first-of-type{border-top:none;}
+  .split-name{color:#d1d5db;}
+  .split-time{color:var(--white);font-weight:600;}
+  .pace-note{
+    font-size:11px;
+    color:#9ca3af;
+    margin-top:10px;
+    padding-top:10px;
+    border-top:1px solid #2a2a2a;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🏁 Brick & Race Splits Planner</h1>
+  <p class="sub">Plan or reconstruct a full swim–bike–run sequence, transitions included. See your projected total before race day, not after.</p>
+
+  <div class="leg">
+    <div class="leg-head"><span class="dot"></span>Swim</div>
+    <div class="row">
+      <div class="field"><label>Distance (m)</label><input type="number" id="swimDist" placeholder="750"></div>
+      <div class="field"><label>Time (mm:ss)</label><input type="text" id="swimTime" placeholder="14:30"></div>
+    </div>
+  </div>
+
+  <div class="leg">
+    <div class="leg-head"><span class="dot transition"></span>T1 (Swim → Bike)</div>
+    <div class="row">
+      <div class="field"><label>Transition time (mm:ss)</label><input type="text" id="t1Time" placeholder="2:00"></div>
+    </div>
+  </div>
+
+  <div class="leg">
+    <div class="leg-head"><span class="dot"></span>Bike</div>
+    <div class="row">
+      <div class="field"><label>Distance (km)</label><input type="number" id="bikeDist" placeholder="20"></div>
+      <div class="field"><label>Time (mm:ss or h:mm:ss)</label><input type="text" id="bikeTime" placeholder="38:00"></div>
+    </div>
+  </div>
+
+  <div class="leg">
+    <div class="leg-head"><span class="dot transition"></span>T2 (Bike → Run)</div>
+    <div class="row">
+      <div class="field"><label>Transition time (mm:ss)</label><input type="text" id="t2Time" placeholder="1:30"></div>
+    </div>
+  </div>
+
+  <div class="leg">
+    <div class="leg-head"><span class="dot"></span>Run</div>
+    <div class="row">
+      <div class="field"><label>Distance (km)</label><input type="number" id="runDist" placeholder="5"></div>
+      <div class="field"><label>Time (mm:ss or h:mm:ss)</label><input type="text" id="runTime" placeholder="24:00"></div>
+    </div>
+  </div>
+
+  <button onclick="calculate()">Calculate total time</button>
+
+  <div class="result" id="result">
+    <p class="total" id="totalTime">--:--:--</p>
+    <p class="total-label">TOTAL RACE / SESSION TIME</p>
+    <div id="splits"></div>
+    <p class="pace-note" id="paceNote"></p>
+  </div>
+</div>
+
+<script>
+function parseTime(str){
+  if(!str) return 0;
+  const parts = str.trim().split(':').map(Number);
+  if(parts.some(isNaN)) return null;
+  if(parts.length === 3) return parts[0]*3600 + parts[1]*60 + parts[2];
+  if(parts.length === 2) return parts[0]*60 + parts[1];
+  if(parts.length === 1) return parts[0]*60;
+  return null;
+}
+
+function formatTime(totalSeconds){
+  totalSeconds = Math.round(totalSeconds);
+  const h = Math.floor(totalSeconds/3600);
+  const m = Math.floor((totalSeconds%3600)/60);
+  const s = totalSeconds%60;
+  if(h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+
+function calculate(){
+  const swimDist = parseFloat(document.getElementById('swimDist').value) || 0;
+  const swimTime = parseTime(document.getElementById('swimTime').value) || 0;
+  const t1 = parseTime(document.getElementById('t1Time').value) || 0;
+  const bikeDist = parseFloat(document.getElementById('bikeDist').value) || 0;
+  const bikeTime = parseTime(document.getElementById('bikeTime').value) || 0;
+  const t2 = parseTime(document.getElementById('t2Time').value) || 0;
+  const runDist = parseFloat(document.getElementById('runDist').value) || 0;
+  const runTime = parseTime(document.getElementById('runTime').value) || 0;
+
+  const total = swimTime + t1 + bikeTime + t2 + runTime;
+
+  if(total === 0){
+    alert('Enter at least one leg time to calculate.');
+    return;
+  }
+
+  document.getElementById('totalTime').textContent = formatTime(total);
+
+  let splitsHTML = '';
+  splitsHTML += `<div class="split-line"><span class="split-name">Swim</span><span class="split-time">${formatTime(swimTime)}</span></div>`;
+  splitsHTML += `<div class="split-line"><span class="split-name">T1</span><span class="split-time">${formatTime(t1)}</span></div>`;
+  splitsHTML += `<div class="split-line"><span class="split-name">Bike</span><span class="split-time">${formatTime(bikeTime)}</span></div>`;
+  splitsHTML += `<div class="split-line"><span class="split-name">T2</span><span class="split-time">${formatTime(t2)}</span></div>`;
+  splitsHTML += `<div class="split-line"><span class="split-name">Run</span><span class="split-time">${formatTime(runTime)}</span></div>`;
+  document.getElementById('splits').innerHTML = splitsHTML;
+
+  let paceParts = [];
+  if(swimDist > 0 && swimTime > 0){
+    const pace100 = (swimTime / (swimDist/100));
+    paceParts.push(`Swim pace: ${formatTime(pace100)}/100m`);
+  }
+  if(bikeDist > 0 && bikeTime > 0){
+    const speed = bikeDist / (bikeTime/3600);
+    paceParts.push(`Bike avg: ${speed.toFixed(1)} km/h`);
+  }
+  if(runDist > 0 && runTime > 0){
+    const pacePerKm = runTime / runDist;
+    paceParts.push(`Run pace: ${formatTime(pacePerKm)}/km`);
+  }
+  document.getElementById('paceNote').textContent = paceParts.length ? paceParts.join('  ·  ') : '';
+
+  document.getElementById('result').classList.add('show');
+}
+</script>
+</body>
+</html>
