@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1RM Estimator</title>
+<style>
+  :root{
+    --green:#16a34a;
+    --green-dark:#0f7c37;
+    --green-light:#eafbf1;
+    --green-pale:#f4fdf8;
+    --white:#ffffff;
+    --text:#1f2937;
+    --gray:#6b7280;
+    --line:#d9f2e3;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background:var(--white);
+    color:var(--text);
+    padding:20px;
+  }
+  .wrap{max-width:480px;margin:0 auto;}
+  h1{
+    font-size:17px;
+    letter-spacing:0.02em;
+    margin:0 0 4px 0;
+    color:var(--green-dark);
+  }
+  .sub{
+    font-size:12.5px;
+    color:var(--gray);
+    margin:0 0 18px 0;
+  }
+  .field{margin-bottom:12px;}
+  label{
+    display:block;
+    font-size:11px;
+    color:var(--gray);
+    margin-bottom:4px;
+  }
+  input, select{
+    width:100%;
+    padding:9px 10px;
+    border:1px solid var(--line);
+    border-radius:7px;
+    font-size:14px;
+    color:var(--text);
+    background:var(--green-pale);
+  }
+  input:focus, select:focus{
+    outline:none;
+    border-color:var(--green);
+    background:var(--white);
+  }
+  button{
+    width:100%;
+    padding:11px;
+    margin-top:6px;
+    background:var(--green);
+    color:var(--white);
+    border:none;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    letter-spacing:0.02em;
+  }
+  button:hover{background:var(--green-dark);}
+  .result{
+    margin-top:16px;
+    background:var(--green-light);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px;
+    display:none;
+    text-align:center;
+  }
+  .result.show{display:block;}
+  .est{
+    font-size:28px;
+    font-weight:800;
+    color:var(--green-dark);
+    margin:0 0 2px 0;
+  }
+  .est-label{
+    font-size:11px;
+    color:var(--gray);
+    margin:0 0 14px 0;
+  }
+  .pct-table{
+    text-align:left;
+    margin-top:10px;
+    border-top:1px solid var(--line);
+    padding-top:10px;
+  }
+  .pct-line{
+    display:flex;
+    justify-content:space-between;
+    font-size:12.5px;
+    padding:4px 0;
+  }
+  .pct-name{color:var(--text);}
+  .pct-val{color:var(--green-dark);font-weight:700;}
+  .note{
+    font-size:11px;
+    color:var(--gray);
+    margin-top:12px;
+    padding-top:10px;
+    border-top:1px solid var(--line);
+    text-align:left;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🏆 1RM Estimator</h1>
+  <p class="sub">Estimate your one-rep max from a working set — no need to actually test to failure to know roughly where you stand.</p>
+
+  <div class="field">
+    <label>Weight lifted</label>
+    <input type="number" id="weight" placeholder="e.g. 80 (kg or lb — stay consistent)">
+  </div>
+  <div class="field">
+    <label>Reps completed (best used for 1–10 reps)</label>
+    <input type="number" id="reps" placeholder="e.g. 5">
+  </div>
+
+  <button onclick="calculate()">Estimate my 1RM</button>
+
+  <div class="result" id="result">
+    <p class="est" id="estValue">--</p>
+    <p class="est-label">ESTIMATED ONE-REP MAX</p>
+    <div class="pct-table" id="pctTable"></div>
+    <p class="note">Estimate only — accuracy drops for sets above ~10 reps. Retest periodically rather than relying on one estimate long-term.</p>
+  </div>
+</div>
+
+<script>
+function calculate(){
+  const weight = parseFloat(document.getElementById('weight').value);
+  const reps = parseFloat(document.getElementById('reps').value);
+
+  if(!weight || !reps || reps < 1){
+    alert('Enter both weight and reps to estimate your 1RM.');
+    return;
+  }
+
+  // Epley formula
+  const oneRM = reps === 1 ? weight : weight * (1 + reps / 30);
+
+  document.getElementById('estValue').textContent = oneRM.toFixed(1);
+
+  const percentages = [95, 90, 85, 80, 75, 70];
+  let html = '';
+  percentages.forEach(p => {
+    html += `<div class="pct-line"><span class="pct-name">${p}%</span><span class="pct-val">${(oneRM * p / 100).toFixed(1)}</span></div>`;
+  });
+  document.getElementById('pctTable').innerHTML = html;
+
+  document.getElementById('result').classList.add('show');
+}
+</script>
+</body>
+</html>
