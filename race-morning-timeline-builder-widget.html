@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Race Morning Timeline Builder</title>
+<style>
+  :root{
+    --green:#16a34a;
+    --green-dark:#0f7c37;
+    --green-light:#eafbf1;
+    --green-pale:#f4fdf8;
+    --white:#ffffff;
+    --text:#1f2937;
+    --gray:#6b7280;
+    --line:#d9f2e3;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background:var(--white);
+    color:var(--text);
+    padding:20px;
+  }
+  .wrap{max-width:480px;margin:0 auto;}
+  h1{
+    font-size:17px;
+    letter-spacing:0.02em;
+    margin:0 0 4px 0;
+    color:var(--green-dark);
+  }
+  .sub{
+    font-size:12.5px;
+    color:var(--gray);
+    margin:0 0 18px 0;
+  }
+  .field{margin-bottom:14px;}
+  label{
+    display:block;
+    font-size:11px;
+    color:var(--gray);
+    margin-bottom:4px;
+  }
+  input{
+    width:100%;
+    padding:9px 10px;
+    border:1px solid var(--line);
+    border-radius:7px;
+    font-size:14px;
+    color:var(--text);
+    background:var(--green-pale);
+  }
+  input:focus{
+    outline:none;
+    border-color:var(--green);
+    background:var(--white);
+  }
+  button{
+    width:100%;
+    padding:11px;
+    margin-top:6px;
+    background:var(--green);
+    color:var(--white);
+    border:none;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    letter-spacing:0.02em;
+  }
+  button:hover{background:var(--green-dark);}
+  .result{
+    margin-top:16px;
+    background:var(--green-light);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px;
+    display:none;
+  }
+  .result.show{display:block;}
+  .tl-line{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:13px;
+    padding:7px 0;
+    border-top:1px solid var(--line);
+  }
+  .tl-line:first-of-type{border-top:none;}
+  .tl-name{color:var(--text);}
+  .tl-time{color:var(--green-dark);font-weight:700;}
+  .note{
+    font-size:11px;
+    color:var(--gray);
+    margin-top:10px;
+    padding-top:10px;
+    border-top:1px solid var(--line);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🏅 Race Morning Timeline Builder</h1>
+  <p class="sub">Enter your race start time — get a suggested backward timeline so nothing gets rushed.</p>
+
+  <div class="field">
+    <label>Race start time</label>
+    <input type="time" id="startTime">
+  </div>
+
+  <button onclick="buildTimeline()">Build my timeline</button>
+
+  <div class="result" id="result">
+    <div id="timeline"></div>
+    <p class="note">Standard offsets — adjust based on venue distance, warm-up needs, and your own routine. Test your pre-race routine in training before race day where possible.</p>
+  </div>
+</div>
+
+<script>
+function formatTime(date){
+  let h = date.getHours();
+  let m = date.getMinutes();
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12;
+  if(h === 0) h = 12;
+  return `${h}:${String(m).padStart(2,'0')} ${ampm}`;
+}
+
+function buildTimeline(){
+  const timeVal = document.getElementById('startTime').value;
+  if(!timeVal){
+    alert('Enter your race start time.');
+    return;
+  }
+
+  const [hh, mm] = timeVal.split(':').map(Number);
+  const start = new Date();
+  start.setHours(hh, mm, 0, 0);
+
+  const offsets = [
+    { label: 'Wake up', minsBefore: 210 },
+    { label: 'Breakfast', minsBefore: 165 },
+    { label: 'Leave for venue', minsBefore: 90 },
+    { label: 'Arrive & settle in', minsBefore: 60 },
+    { label: 'Begin warm-up', minsBefore: 30 },
+    { label: 'Final gear check / toilet', minsBefore: 15 },
+    { label: 'At the start line', minsBefore: 5 },
+    { label: 'Race start', minsBefore: 0 }
+  ];
+
+  let html = '';
+  offsets.forEach(o => {
+    const t = new Date(start.getTime() - o.minsBefore * 60000);
+    html += `<div class="tl-line"><span class="tl-name">${o.label}</span><span class="tl-time">${formatTime(t)}</span></div>`;
+  });
+
+  document.getElementById('timeline').innerHTML = html;
+  document.getElementById('result').classList.add('show');
+}
+</script>
+</body>
+</html>
