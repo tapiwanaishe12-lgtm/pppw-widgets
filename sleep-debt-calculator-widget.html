@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sleep Debt Calculator</title>
+<style>
+  :root{
+    --green:#16a34a;
+    --green-dark:#0f7c37;
+    --green-light:#eafbf1;
+    --green-pale:#f4fdf8;
+    --white:#ffffff;
+    --text:#1f2937;
+    --gray:#6b7280;
+    --line:#d9f2e3;
+    --amber:#b45309;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background:var(--white);
+    color:var(--text);
+    padding:20px;
+  }
+  .wrap{max-width:500px;margin:0 auto;}
+  h1{
+    font-size:17px;
+    letter-spacing:0.02em;
+    margin:0 0 4px 0;
+    color:var(--green-dark);
+  }
+  .sub{
+    font-size:12.5px;
+    color:var(--gray);
+    margin:0 0 16px 0;
+  }
+  .target-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:14px;
+  }
+  .target-row label{
+    font-size:12px;
+    color:var(--gray);
+    white-space:nowrap;
+  }
+  .target-row input{
+    width:70px;
+    padding:7px 8px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    font-size:13px;
+    background:var(--green-pale);
+  }
+  .day-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:7px;
+  }
+  .day-label{
+    width:36px;
+    font-size:12.5px;
+    font-weight:700;
+    color:var(--text);
+    flex-shrink:0;
+  }
+  .day-row input{
+    flex:1;
+    padding:7px 9px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    font-size:13px;
+    background:var(--green-pale);
+    color:var(--text);
+  }
+  input:focus{
+    outline:none;
+    border-color:var(--green);
+    background:var(--white);
+  }
+  button{
+    width:100%;
+    padding:11px;
+    margin-top:10px;
+    background:var(--green);
+    color:var(--white);
+    border:none;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    letter-spacing:0.02em;
+  }
+  button:hover{background:var(--green-dark);}
+  .result{
+    margin-top:16px;
+    background:var(--green-light);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px;
+    display:none;
+    text-align:center;
+  }
+  .result.show{display:block;}
+  .debt{
+    font-size:26px;
+    font-weight:800;
+    margin:0 0 2px 0;
+  }
+  .debt.ok{color:var(--green-dark);}
+  .debt.warn{color:var(--amber);}
+  .debt-label{
+    font-size:11px;
+    color:var(--gray);
+    margin:0 0 12px 0;
+  }
+  .avg-line{
+    font-size:12.5px;
+    color:var(--text);
+    padding-top:10px;
+    border-top:1px solid var(--line);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🌙 Sleep Debt Calculator</h1>
+  <p class="sub">Enter your target and this week's actual hours per night — see your cumulative debt, not just one bad night.</p>
+
+  <div class="target-row">
+    <label>Target hours/night:</label>
+    <input type="number" id="target" placeholder="8" step="0.5">
+  </div>
+
+  <div id="days"></div>
+
+  <button onclick="calculate()">Calculate my sleep debt</button>
+
+  <div class="result" id="result">
+    <p class="debt" id="debtValue">--</p>
+    <p class="debt-label" id="debtLabel">CUMULATIVE SLEEP DEBT THIS WEEK</p>
+    <p class="avg-line" id="avgLine"></p>
+  </div>
+</div>
+
+<script>
+const dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const daysDiv = document.getElementById('days');
+dayNames.forEach(d => {
+  const row = document.createElement('div');
+  row.className = 'day-row';
+  row.innerHTML = `<div class="day-label">${d}</div><input type="number" id="hrs-${d}" placeholder="hours slept" step="0.25">`;
+  daysDiv.appendChild(row);
+});
+
+function calculate(){
+  const target = parseFloat(document.getElementById('target').value);
+  if(!target || target <= 0){
+    alert('Enter your target hours per night first.');
+    return;
+  }
+
+  let totalActual = 0;
+  let nightsLogged = 0;
+
+  dayNames.forEach(d => {
+    const val = parseFloat(document.getElementById(`hrs-${d}`).value);
+    if(!isNaN(val) && val > 0){
+      totalActual += val;
+      nightsLogged++;
+    }
+  });
+
+  if(nightsLogged === 0){
+    alert('Enter at least one night of actual sleep.');
+    return;
+  }
+
+  const targetTotal = target * nightsLogged;
+  const debt = targetTotal - totalActual;
+  const avg = totalActual / nightsLogged;
+
+  const debtEl = document.getElementById('debtValue');
+  if(debt <= 0){
+    debtEl.textContent = 'No debt';
+    debtEl.className = 'debt ok';
+  } else {
+    debtEl.textContent = `${debt.toFixed(1)} hrs`;
+    debtEl.className = 'debt ' + (debt >= target ? 'warn' : 'ok');
+  }
+
+  document.getElementById('avgLine').textContent = `Average: ${avg.toFixed(1)} hrs/night across ${nightsLogged} night${nightsLogged===1?'':'s'} logged (target: ${target} hrs)`;
+
+  document.getElementById('result').classList.add('show');
+}
+</script>
+</body>
+</html>
