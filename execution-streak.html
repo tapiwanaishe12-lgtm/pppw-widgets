@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Execution Streak</title>
+<style>
+  :root {
+    --ppw-green: #2f6b3a;
+    --ppw-green-dark: #1f4d28;
+    --ppw-green-light: #eaf5ec;
+    --ppw-border: #cfe3d3;
+    --ppw-text: #1a2e1e;
+    --ppw-muted: #5c6f60;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: transparent;
+    color: var(--ppw-text);
+  }
+  .card {
+    background: #ffffff;
+    border: 1px solid var(--ppw-border);
+    border-radius: 14px;
+    padding: 24px;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+  .eyebrow {
+    color: var(--ppw-green);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  h1 {
+    font-size: 20px;
+    margin: 0 0 8px 0;
+    color: var(--ppw-text);
+  }
+  .desc {
+    font-size: 13px;
+    color: var(--ppw-muted);
+    margin-bottom: 18px;
+    line-height: 1.4;
+  }
+  .label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ppw-text);
+    margin-bottom: 8px;
+  }
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+  .cat-btn {
+    padding: 10px 4px;
+    border: 1px solid var(--ppw-border);
+    background: #fff;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ppw-text);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .cat-btn:hover { background: var(--ppw-green-light); }
+  .cat-btn.selected {
+    background: var(--ppw-green);
+    border-color: var(--ppw-green);
+    color: #fff;
+  }
+  .streak-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .streak-box {
+    background: var(--ppw-green-light);
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+  }
+  .streak-num {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--ppw-green-dark);
+    line-height: 1;
+  }
+  .streak-label {
+    font-size: 11px;
+    color: var(--ppw-muted);
+    margin-top: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .week-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin-bottom: 18px;
+  }
+  .day-cell {
+    text-align: center;
+  }
+  .day-dot {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    background: #f2f5f2;
+    border: 1px solid var(--ppw-border);
+    margin-bottom: 4px;
+  }
+  .day-dot.done { background: var(--ppw-green); border-color: var(--ppw-green); }
+  .day-dot.rest { background: #cfe3d3; border-color: var(--ppw-border); }
+  .day-dot.today-ring { outline: 2px solid var(--ppw-green-dark); outline-offset: 1px; }
+  .day-name {
+    font-size: 10px;
+    color: var(--ppw-muted);
+    font-weight: 600;
+  }
+  button.primary {
+    width: 100%;
+    padding: 13px;
+    background: var(--ppw-green);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 10px;
+  }
+  button.primary:hover { background: var(--ppw-green-dark); }
+  button.secondary {
+    width: 100%;
+    padding: 11px;
+    background: #fff;
+    color: var(--ppw-text);
+    border: 1px solid var(--ppw-border);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 10px;
+  }
+  button.secondary:hover { background: var(--ppw-green-light); }
+  .note {
+    font-size: 12px;
+    color: var(--ppw-muted);
+    text-align: center;
+    padding: 10px;
+    background: var(--ppw-green-light);
+    border-radius: 8px;
+    line-height: 1.4;
+  }
+  .done-today-tag {
+    text-align: center;
+    font-size: 12px;
+    color: var(--ppw-green-dark);
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="eyebrow">Plant Powered Performance World</div>
+  <h1>Execution Streak</h1>
+  <div class="desc">Mark today's plan executed, whichever category it was — or take a planned off day.</div>
+
+  <div class="label">Today's category (if executed)</div>
+  <div class="category-grid" id="categoryGrid">
+    <button class="cat-btn" data-cat="Finance">Finance</button>
+    <button class="cat-btn" data-cat="Work">Work</button>
+    <button class="cat-btn" data-cat="Home">Home</button>
+    <button class="cat-btn" data-cat="Personal">Personal</button>
+  </div>
+
+  <div class="streak-row">
+    <div class="streak-box">
+      <div class="streak-num" id="currentStreak">0</div>
+      <div class="streak-label">Current Streak</div>
+    </div>
+    <div class="streak-box">
+      <div class="streak-num" id="bestStreak">0</div>
+      <div class="streak-label">Best Streak</div>
+    </div>
+  </div>
+
+  <div class="week-row" id="weekRow"></div>
+
+  <div class="done-today-tag" id="doneTodayTag" style="display:none;">✓ Today's execution logged</div>
+
+  <button class="primary" id="markDoneBtn">Mark Today's Plan Executed</button>
+  <button class="secondary" id="restDayBtn">Planned Off Day (Keeps Streak)</button>
+  <button class="secondary" id="resetBtn">Reset Streak</button>
+
+  <div class="note" id="noteBox">Log your first executed day, any category, to start the streak.</div>
+</div>
+
+<script>
+(function() {
+  const STORAGE_KEY = 'ppw_execution_streak_v1';
+  const dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    return { log: {}, selectedCategory: null };
+  }
+
+  function saveState(state) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+  }
+
+  function dateKey(d) {
+    return d.toISOString().slice(0,10);
+  }
+
+  function startOfWeek(d) {
+    const date = new Date(d);
+    const day = (date.getDay() + 6) % 7; // Mon=0
+    date.setDate(date.getDate() - day);
+    date.setHours(0,0,0,0);
+    return date;
+  }
+
+  let state = loadState();
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const todayKey = dateKey(today);
+
+  const categoryGrid = document.getElementById('categoryGrid');
+  const markDoneBtn = document.getElementById('markDoneBtn');
+  const restDayBtn = document.getElementById('restDayBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const noteBox = document.getElementById('noteBox');
+  const doneTodayTag = document.getElementById('doneTodayTag');
+
+  categoryGrid.querySelectorAll('.cat-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      categoryGrid.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      state.selectedCategory = btn.dataset.cat;
+      saveState(state);
+    });
+  });
+
+  function computeStreaks() {
+    const dates = Object.keys(state.log).filter(k => state.log[k]).sort();
+    if (dates.length === 0) return { current: 0, best: 0 };
+
+    let best = 0, run = 0, prev = null;
+    dates.forEach(k => {
+      const d = new Date(k + 'T00:00:00');
+      if (prev) {
+        const diff = Math.round((d - prev) / 86400000);
+        run = diff === 1 ? run + 1 : 1;
+      } else {
+        run = 1;
+      }
+      best = Math.max(best, run);
+      prev = d;
+    });
+
+    // current streak: walk backward from today
+    let current = 0;
+    let cursor = new Date(today);
+    while (true) {
+      const k = dateKey(cursor);
+      if (state.log[k]) {
+        current++;
+        cursor.setDate(cursor.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+    return { current, best: Math.max(best, current) };
+  }
+
+  function render() {
+    const { current, best } = computeStreaks();
+    document.getElementById('currentStreak').textContent = current;
+    document.getElementById('bestStreak').textContent = best;
+
+    const weekRow = document.getElementById('weekRow');
+    weekRow.innerHTML = '';
+    const monday = startOfWeek(today);
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      const k = dateKey(d);
+      const isToday = k === todayKey;
+      const entry = state.log[k];
+
+      const cell = document.createElement('div');
+      cell.className = 'day-cell';
+
+      const dot = document.createElement('div');
+      dot.className = 'day-dot' + (entry === 'done' ? ' done' : entry === 'rest' ? ' rest' : '') + (isToday ? ' today-ring' : '');
+
+      const label = document.createElement('div');
+      label.className = 'day-name';
+      label.textContent = isToday ? 'Today' : dayNames[i];
+
+      cell.appendChild(dot);
+      cell.appendChild(label);
+      weekRow.appendChild(cell);
+    }
+
+    if (state.log[todayKey]) {
+      doneTodayTag.style.display = 'block';
+      noteBox.textContent = current >= 2
+        ? `${current} days in a row. Keep it going.`
+        : 'Nice start — log tomorrow to build the streak.';
+    } else {
+      doneTodayTag.style.display = 'none';
+      noteBox.textContent = current > 0
+        ? `${current}-day streak at risk — log today to keep it alive.`
+        : 'Log your first executed day, any category, to start the streak.';
+    }
+
+    if (state.selectedCategory) {
+      categoryGrid.querySelectorAll('.cat-btn').forEach(b => {
+        b.classList.toggle('selected', b.dataset.cat === state.selectedCategory);
+      });
+    }
+  }
+
+  markDoneBtn.addEventListener('click', () => {
+    state.log[todayKey] = 'done';
+    saveState(state);
+    render();
+  });
+
+  restDayBtn.addEventListener('click', () => {
+    state.log[todayKey] = 'rest';
+    saveState(state);
+    render();
+  });
+
+  resetBtn.addEventListener('click', () => {
+    state = { log: {}, selectedCategory: null };
+    saveState(state);
+    render();
+  });
+
+  render();
+})();
+</script>
+
+</body>
+</html>
