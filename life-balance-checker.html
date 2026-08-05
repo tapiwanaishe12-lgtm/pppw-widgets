@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Life Balance Checker</title>
+<style>
+  :root {
+    --ppw-green: #2f6b3a;
+    --ppw-green-dark: #1f4d28;
+    --ppw-green-light: #eaf5ec;
+    --ppw-amber-light: #fdf3e0;
+    --ppw-amber: #a8721f;
+    --ppw-border: #cfe3d3;
+    --ppw-text: #1a2e1e;
+    --ppw-muted: #5c6f60;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: transparent;
+    color: var(--ppw-text);
+  }
+  .card {
+    background: #ffffff;
+    border: 1px solid var(--ppw-border);
+    border-radius: 14px;
+    padding: 24px;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+  .eyebrow {
+    color: var(--ppw-green);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  h1 {
+    font-size: 20px;
+    margin: 0 0 8px 0;
+  }
+  .desc {
+    font-size: 13px;
+    color: var(--ppw-muted);
+    margin-bottom: 18px;
+    line-height: 1.4;
+  }
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--ppw-border);
+  }
+  .row:last-of-type { border-bottom: none; }
+  .row-label {
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .counter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .counter button {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: 1px solid var(--ppw-border);
+    background: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ppw-green-dark);
+    cursor: pointer;
+    line-height: 1;
+  }
+  .counter button:hover { background: var(--ppw-green-light); }
+  .counter .val {
+    min-width: 18px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 700;
+  }
+  button.primary {
+    width: 100%;
+    padding: 13px;
+    background: var(--ppw-green);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    margin: 18px 0 12px 0;
+  }
+  button.primary:hover { background: var(--ppw-green-dark); }
+  .result {
+    display: none;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  .result.show { display: block; }
+  .result.balanced {
+    background: var(--ppw-green-light);
+    color: var(--ppw-green-dark);
+  }
+  .result.flag {
+    background: var(--ppw-amber-light);
+    color: var(--ppw-amber);
+  }
+  .result strong { display: block; margin-bottom: 3px; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="eyebrow">Plant Powered Performance World</div>
+  <h1>Life Balance Checker</h1>
+  <div class="desc">How many times this week for each category?</div>
+
+  <div id="rows"></div>
+
+  <button class="primary" id="checkBtn">Check My Balance</button>
+
+  <div class="result" id="resultBox"></div>
+</div>
+
+<script>
+(function() {
+  const categories = ['Finance', 'Work', 'Home', 'Personal'];
+  const counts = {};
+  categories.forEach(c => counts[c] = 0);
+
+  const rowsEl = document.getElementById('rows');
+
+  categories.forEach(cat => {
+    const row = document.createElement('div');
+    row.className = 'row';
+
+    const label = document.createElement('div');
+    label.className = 'row-label';
+    label.textContent = cat;
+
+    const counter = document.createElement('div');
+    counter.className = 'counter';
+
+    const minus = document.createElement('button');
+    minus.textContent = '–';
+    minus.addEventListener('click', () => {
+      counts[cat] = Math.max(0, counts[cat] - 1);
+      valEl.textContent = counts[cat];
+    });
+
+    const valEl = document.createElement('div');
+    valEl.className = 'val';
+    valEl.textContent = '0';
+
+    const plus = document.createElement('button');
+    plus.textContent = '+';
+    plus.addEventListener('click', () => {
+      counts[cat] = counts[cat] + 1;
+      valEl.textContent = counts[cat];
+    });
+
+    counter.appendChild(minus);
+    counter.appendChild(valEl);
+    counter.appendChild(plus);
+
+    row.appendChild(label);
+    row.appendChild(counter);
+    rowsEl.appendChild(row);
+  });
+
+  document.getElementById('checkBtn').addEventListener('click', () => {
+    const resultBox = document.getElementById('resultBox');
+    const total = categories.reduce((sum, c) => sum + counts[c], 0);
+
+    if (total === 0) {
+      resultBox.className = 'result show flag';
+      resultBox.innerHTML = '<strong>No entries yet</strong>Log at least one touch in a category to see your balance.';
+      return;
+    }
+
+    const zeroCats = categories.filter(c => counts[c] === 0);
+    const max = Math.max(...categories.map(c => counts[c]));
+    const maxCats = categories.filter(c => counts[c] === max);
+
+    if (zeroCats.length > 0) {
+      resultBox.className = 'result show flag';
+      resultBox.innerHTML = `<strong>${zeroCats.join(' & ')} untouched this week</strong>Everything else is getting attention — worth carving out time before the week closes.`;
+    } else {
+      const range = max - Math.min(...categories.map(c => counts[c]));
+      if (range >= 3) {
+        resultBox.className = 'result show flag';
+        resultBox.innerHTML = `<strong>${maxCats.join(' & ')} dominating this week</strong>Every category's been touched, but the spread is wide — check nothing's being rushed to make time for it.`;
+      } else {
+        resultBox.className = 'result show balanced';
+        resultBox.innerHTML = '<strong>Solid balance</strong>All four categories are getting reasonably even attention this week.';
+      }
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
