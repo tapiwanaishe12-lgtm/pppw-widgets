@@ -29,6 +29,12 @@
     max-width: 440px;
     margin: 0 auto;
   }
+  .header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
   .eyebrow {
     color: var(--ppw-green);
     font-size: 11px;
@@ -39,6 +45,17 @@
   }
   h1 { font-size: 20px; margin: 0 0 8px 0; }
   .desc { font-size: 13px; color: var(--ppw-muted); margin-bottom: 18px; line-height: 1.4; }
+  .currency-select {
+    padding: 6px 8px;
+    border: 1px solid var(--ppw-border);
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ppw-green-dark);
+    background: #fff;
+    flex-shrink: 0;
+  }
+  .currency-select:focus { outline: none; border-color: var(--ppw-green); }
   .field { margin-bottom: 14px; }
   .field label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; }
   .input-wrap { position: relative; }
@@ -52,7 +69,7 @@
   }
   .field input {
     width: 100%;
-    padding: 10px 12px 10px 24px;
+    padding: 10px 12px 10px 26px;
     border: 1px solid var(--ppw-border);
     border-radius: 8px;
     font-size: 14px;
@@ -124,8 +141,20 @@
 <body>
 
 <div class="card">
-  <div class="eyebrow">Plant Powered Performance World</div>
-  <h1>Savings Goal Progress</h1>
+  <div class="header-row">
+    <div>
+      <div class="eyebrow">Plant Powered Performance World</div>
+      <h1>Savings Goal Progress</h1>
+    </div>
+    <select class="currency-select" id="currencySelect">
+      <option value="£">£ GBP</option>
+      <option value="$">$ USD</option>
+      <option value="€">€ EUR</option>
+      <option value="A$">A$ AUD</option>
+      <option value="C$">C$ CAD</option>
+      <option value="NZ$">NZ$ NZD</option>
+    </select>
+  </div>
   <div class="desc">Enter your goal, what you've saved so far, and your monthly contribution — see your progress and when you'll actually hit it.</div>
 
   <div class="field">
@@ -136,7 +165,7 @@
   <div class="field">
     <label for="target">Target amount</label>
     <div class="input-wrap">
-      <span>£</span>
+      <span id="targetSymbol">£</span>
       <input type="number" id="target" placeholder="0" min="0" step="0.01">
     </div>
   </div>
@@ -144,7 +173,7 @@
   <div class="field">
     <label for="current">Saved so far</label>
     <div class="input-wrap">
-      <span>£</span>
+      <span id="currentSymbol">£</span>
       <input type="number" id="current" placeholder="0" min="0" step="0.01">
     </div>
   </div>
@@ -152,7 +181,7 @@
   <div class="field">
     <label for="monthly">Monthly contribution</label>
     <div class="input-wrap">
-      <span>£</span>
+      <span id="monthlySymbol">£</span>
       <input type="number" id="monthly" placeholder="0" min="0" step="0.01">
     </div>
   </div>
@@ -166,7 +195,7 @@
     <div class="progress-caption" id="progressCaption"></div>
     <div class="snapshot-row">
       <div class="snapshot-box">
-        <div class="snapshot-num" id="remaining">£0</div>
+        <div class="snapshot-num" id="remaining">0</div>
         <div class="snapshot-label">Remaining</div>
       </div>
       <div class="snapshot-box">
@@ -180,6 +209,16 @@
 
 <script>
 (function() {
+  let currency = '£';
+
+  const currencySelect = document.getElementById('currencySelect');
+  currencySelect.addEventListener('change', () => {
+    currency = currencySelect.value;
+    document.getElementById('targetSymbol').textContent = currency;
+    document.getElementById('currentSymbol').textContent = currency;
+    document.getElementById('monthlySymbol').textContent = currency;
+  });
+
   document.getElementById('calcBtn').addEventListener('click', () => {
     const name = document.getElementById('goalName').value.trim() || 'Your goal';
     const target = parseFloat(document.getElementById('target').value) || 0;
@@ -191,7 +230,7 @@
       document.getElementById('resultBox').classList.add('show');
       document.getElementById('progressFill').style.width = '0%';
       document.getElementById('progressCaption').textContent = '';
-      document.getElementById('remaining').textContent = '£0';
+      document.getElementById('remaining').textContent = currency + '0';
       document.getElementById('monthsLeft').textContent = '–';
       return;
     }
@@ -201,7 +240,7 @@
 
     document.getElementById('progressFill').style.width = pct + '%';
     document.getElementById('progressCaption').textContent = `${name}: ${pct}% there`;
-    document.getElementById('remaining').textContent = '£' + remaining.toLocaleString('en-GB', {maximumFractionDigits: 0});
+    document.getElementById('remaining').textContent = currency + remaining.toLocaleString('en-GB', {maximumFractionDigits: 0});
 
     const noteBox = document.getElementById('noteBox');
     const monthsLeftEl = document.getElementById('monthsLeft');
@@ -220,7 +259,7 @@
       let timeStr = '';
       if (years > 0) timeStr += years + (years === 1 ? ' year ' : ' years ');
       if (months > 0 || years === 0) timeStr += months + (months === 1 ? ' month' : ' months');
-      noteBox.textContent = `At £${monthly.toLocaleString('en-GB', {maximumFractionDigits: 0})}/month, you'll hit this goal in about ${timeStr.trim()}.`;
+      noteBox.textContent = `At ${currency}${monthly.toLocaleString('en-GB', {maximumFractionDigits: 0})}/month, you'll hit this goal in about ${timeStr.trim()}.`;
     }
 
     document.getElementById('resultBox').classList.add('show');
