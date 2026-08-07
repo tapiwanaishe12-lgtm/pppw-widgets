@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Savings Goal Progress Calculator</title>
+<style>
+  :root {
+    --ppw-green: #2f6b3a;
+    --ppw-green-dark: #1f4d28;
+    --ppw-green-light: #eaf5ec;
+    --ppw-amber-light: #fdf3e0;
+    --ppw-amber: #a8721f;
+    --ppw-border: #cfe3d3;
+    --ppw-text: #1a2e1e;
+    --ppw-muted: #5c6f60;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: transparent;
+    color: var(--ppw-text);
+  }
+  .card {
+    background: #ffffff;
+    border: 1px solid var(--ppw-border);
+    border-radius: 14px;
+    padding: 24px;
+    max-width: 440px;
+    margin: 0 auto;
+  }
+  .header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .eyebrow {
+    color: var(--ppw-green);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  h1 { font-size: 20px; margin: 0 0 8px 0; }
+  .desc { font-size: 13px; color: var(--ppw-muted); margin-bottom: 18px; line-height: 1.4; }
+  .currency-select {
+    padding: 6px 8px;
+    border: 1px solid var(--ppw-border);
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ppw-green-dark);
+    background: #fff;
+    flex-shrink: 0;
+  }
+  .currency-select:focus { outline: none; border-color: var(--ppw-green); }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; }
+  .input-wrap { position: relative; }
+  .input-wrap span {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--ppw-muted);
+    font-size: 14px;
+  }
+  .field input {
+    width: 100%;
+    padding: 10px 12px 10px 26px;
+    border: 1px solid var(--ppw-border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--ppw-text);
+  }
+  .field input:focus { outline: none; border-color: var(--ppw-green); }
+  button.primary {
+    width: 100%;
+    padding: 13px;
+    background: var(--ppw-green);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    margin: 6px 0 16px 0;
+  }
+  button.primary:hover { background: var(--ppw-green-dark); }
+  .result { display: none; }
+  .result.show { display: block; }
+  .progress-track {
+    width: 100%;
+    height: 10px;
+    background: var(--ppw-green-light);
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--ppw-green);
+    border-radius: 5px;
+    transition: width 0.2s ease;
+  }
+  .progress-caption {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ppw-green-dark);
+    text-align: center;
+    margin-bottom: 14px;
+  }
+  .snapshot-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .snapshot-box {
+    background: var(--ppw-green-light);
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+  }
+  .snapshot-num { font-size: 18px; font-weight: 800; color: var(--ppw-green-dark); line-height: 1.1; }
+  .snapshot-label { font-size: 10px; color: var(--ppw-muted); margin-top: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; }
+  .note {
+    font-size: 12px;
+    color: var(--ppw-muted);
+    text-align: center;
+    padding: 10px;
+    background: var(--ppw-green-light);
+    border-radius: 8px;
+    line-height: 1.4;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="header-row">
+    <div>
+      <div class="eyebrow">Plant Powered Performance World</div>
+      <h1>Savings Goal Progress</h1>
+    </div>
+    <select class="currency-select" id="currencySelect">
+      <option value="£">£ GBP</option>
+      <option value="$">$ USD</option>
+      <option value="€">€ EUR</option>
+      <option value="A$">A$ AUD</option>
+      <option value="C$">C$ CAD</option>
+      <option value="NZ$">NZ$ NZD</option>
+    </select>
+  </div>
+  <div class="desc">Enter your goal, what you've saved so far, and your monthly contribution — see your progress and when you'll actually hit it.</div>
+
+  <div class="field">
+    <label for="goalName">Goal name (optional)</label>
+    <input type="text" id="goalName" placeholder="e.g. Emergency fund">
+  </div>
+
+  <div class="field">
+    <label for="target">Target amount</label>
+    <div class="input-wrap">
+      <span id="targetSymbol">£</span>
+      <input type="number" id="target" placeholder="0" min="0" step="0.01">
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="current">Saved so far</label>
+    <div class="input-wrap">
+      <span id="currentSymbol">£</span>
+      <input type="number" id="current" placeholder="0" min="0" step="0.01">
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="monthly">Monthly contribution</label>
+    <div class="input-wrap">
+      <span id="monthlySymbol">£</span>
+      <input type="number" id="monthly" placeholder="0" min="0" step="0.01">
+    </div>
+  </div>
+
+  <button class="primary" id="calcBtn">Check My Progress</button>
+
+  <div class="result" id="resultBox">
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill" style="width:0%;"></div>
+    </div>
+    <div class="progress-caption" id="progressCaption"></div>
+    <div class="snapshot-row">
+      <div class="snapshot-box">
+        <div class="snapshot-num" id="remaining">0</div>
+        <div class="snapshot-label">Remaining</div>
+      </div>
+      <div class="snapshot-box">
+        <div class="snapshot-num" id="monthsLeft">–</div>
+        <div class="snapshot-label">Months To Go</div>
+      </div>
+    </div>
+    <div class="note" id="noteBox"></div>
+  </div>
+</div>
+
+<script>
+(function() {
+  let currency = '£';
+
+  const currencySelect = document.getElementById('currencySelect');
+  currencySelect.addEventListener('change', () => {
+    currency = currencySelect.value;
+    document.getElementById('targetSymbol').textContent = currency;
+    document.getElementById('currentSymbol').textContent = currency;
+    document.getElementById('monthlySymbol').textContent = currency;
+  });
+
+  document.getElementById('calcBtn').addEventListener('click', () => {
+    const name = document.getElementById('goalName').value.trim() || 'Your goal';
+    const target = parseFloat(document.getElementById('target').value) || 0;
+    const current = parseFloat(document.getElementById('current').value) || 0;
+    const monthly = parseFloat(document.getElementById('monthly').value) || 0;
+
+    if (target <= 0) {
+      document.getElementById('noteBox').textContent = 'Enter a target amount to see your progress.';
+      document.getElementById('resultBox').classList.add('show');
+      document.getElementById('progressFill').style.width = '0%';
+      document.getElementById('progressCaption').textContent = '';
+      document.getElementById('remaining').textContent = currency + '0';
+      document.getElementById('monthsLeft').textContent = '–';
+      return;
+    }
+
+    const pct = Math.max(0, Math.min(100, Math.round((current / target) * 100)));
+    const remaining = Math.max(0, target - current);
+
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressCaption').textContent = `${name}: ${pct}% there`;
+    document.getElementById('remaining').textContent = currency + remaining.toLocaleString('en-GB', {maximumFractionDigits: 0});
+
+    const noteBox = document.getElementById('noteBox');
+    const monthsLeftEl = document.getElementById('monthsLeft');
+
+    if (remaining === 0) {
+      monthsLeftEl.textContent = '0';
+      noteBox.textContent = "Goal reached — time to set the next one or redirect this contribution elsewhere.";
+    } else if (monthly <= 0) {
+      monthsLeftEl.textContent = '–';
+      noteBox.textContent = 'Add a monthly contribution to see how long this will take.';
+    } else {
+      const monthsLeft = Math.ceil(remaining / monthly);
+      monthsLeftEl.textContent = monthsLeft;
+      const years = Math.floor(monthsLeft / 12);
+      const months = monthsLeft % 12;
+      let timeStr = '';
+      if (years > 0) timeStr += years + (years === 1 ? ' year ' : ' years ');
+      if (months > 0 || years === 0) timeStr += months + (months === 1 ? ' month' : ' months');
+      noteBox.textContent = `At ${currency}${monthly.toLocaleString('en-GB', {maximumFractionDigits: 0})}/month, you'll hit this goal in about ${timeStr.trim()}.`;
+    }
+
+    document.getElementById('resultBox').classList.add('show');
+  });
+})();
+</script>
+
+</body>
+</html>
