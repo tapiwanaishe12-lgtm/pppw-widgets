@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Document Readiness Checker</title>
+<style>
+  :root {
+    --ppw-green: #2f6b3a;
+    --ppw-green-dark: #1f4d28;
+    --ppw-green-light: #eaf5ec;
+    --ppw-amber-light: #fdf3e0;
+    --ppw-amber: #a8721f;
+    --ppw-border: #cfe3d3;
+    --ppw-text: #1a2e1e;
+    --ppw-muted: #5c6f60;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: transparent;
+    color: var(--ppw-text);
+  }
+  .card {
+    background: #ffffff;
+    border: 1px solid var(--ppw-border);
+    border-radius: 14px;
+    padding: 24px;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+  .eyebrow {
+    color: var(--ppw-green);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  h1 { font-size: 20px; margin: 0 0 8px 0; }
+  .desc { font-size: 13px; color: var(--ppw-muted); margin-bottom: 16px; line-height: 1.4; }
+  .col-labels {
+    display: grid;
+    grid-template-columns: 1.6fr 0.7fr 0.9fr auto;
+    gap: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--ppw-muted);
+    margin-bottom: 6px;
+    text-align: center;
+  }
+  .col-labels div:first-child { text-align: left; }
+  .row {
+    display: grid;
+    grid-template-columns: 1.6fr 0.7fr 0.9fr auto;
+    gap: 6px;
+    align-items: center;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--ppw-border);
+  }
+  .row:last-of-type { border-bottom: none; }
+  .row-label { font-size: 13px; font-weight: 600; }
+  .row-label.custom {
+    border: none;
+    border-bottom: 1px solid transparent;
+    background: transparent;
+    padding: 6px 0;
+    font-family: inherit;
+    color: var(--ppw-text);
+    width: 100%;
+  }
+  .row-label.custom:focus { outline: none; border-bottom: 1px solid var(--ppw-green); }
+  .checkbox-wrap { display: flex; justify-content: center; }
+  .checkbox {
+    width: 22px;
+    height: 22px;
+    border: 1.5px solid var(--ppw-border);
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .checkbox.checked { background: var(--ppw-green); border-color: var(--ppw-green); }
+  .checkbox.checked::after { content: "✓"; color: #fff; font-size: 13px; font-weight: 700; }
+  .remove-btn {
+    width: 22px;
+    height: 22px;
+    border-radius: 5px;
+    border: 1px solid var(--ppw-border);
+    background: #fff;
+    color: var(--ppw-muted);
+    font-size: 13px;
+    cursor: pointer;
+    line-height: 1;
+    visibility: hidden;
+  }
+  .remove-btn.visible { visibility: visible; }
+  .remove-btn:hover { background: var(--ppw-amber-light); color: var(--ppw-amber); }
+  .add-btn {
+    width: 100%;
+    padding: 9px;
+    background: #fff;
+    border: 1px dashed var(--ppw-border);
+    border-radius: 8px;
+    color: var(--ppw-green-dark);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    margin: 10px 0 16px 0;
+  }
+  .add-btn:hover { background: var(--ppw-green-light); }
+  button.primary {
+    width: 100%;
+    padding: 13px;
+    background: var(--ppw-green);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 14px;
+  }
+  button.primary:hover { background: var(--ppw-green-dark); }
+  .result { display: none; border-radius: 8px; padding: 12px; font-size: 13px; line-height: 1.4; }
+  .result.show { display: block; }
+  .result.balanced { background: var(--ppw-green-light); color: var(--ppw-green-dark); }
+  .result.flag { background: var(--ppw-amber-light); color: var(--ppw-amber); }
+  .result strong { display: block; margin-bottom: 3px; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="eyebrow">Plant Powered Performance World</div>
+  <h1>Document Readiness Checker</h1>
+  <div class="desc">Having a document and being able to actually find it aren't the same thing — check both for each one, and add your own beyond the common list below.</div>
+
+  <div class="col-labels">
+    <div>Document</div>
+    <div>Have It</div>
+    <div>Can Find It</div>
+    <div></div>
+  </div>
+  <div id="rows"></div>
+
+  <button class="add-btn" id="addDocBtn">+ Add another document</button>
+  <button class="primary" id="checkBtn">Check My Readiness</button>
+
+  <div class="result" id="resultBox"></div>
+</div>
+
+<script>
+(function() {
+  const defaultDocs = ['Passport', 'Driving License', 'Birth Certificate', 'Will', 'Home/Contents Insurance', 'Life Insurance', 'National Insurance Number', 'Property Deeds/Tenancy Agreement'];
+  const rowsEl = document.getElementById('rows');
+
+  function addRow(name, isCustom) {
+    const row = document.createElement('div');
+    row.className = 'row';
+
+    let labelEl;
+    if (isCustom) {
+      labelEl = document.createElement('input');
+      labelEl.type = 'text';
+      labelEl.className = 'row-label custom';
+      labelEl.placeholder = 'Document name';
+    } else {
+      labelEl = document.createElement('div');
+      labelEl.className = 'row-label';
+      labelEl.textContent = name;
+    }
+
+    const haveWrap = document.createElement('div');
+    haveWrap.className = 'checkbox-wrap';
+    const haveBox = document.createElement('div');
+    haveBox.className = 'checkbox';
+    haveBox.addEventListener('click', () => haveBox.classList.toggle('checked'));
+    haveWrap.appendChild(haveBox);
+
+    const findWrap = document.createElement('div');
+    findWrap.className = 'checkbox-wrap';
+    const findBox = document.createElement('div');
+    findBox.className = 'checkbox';
+    findBox.addEventListener('click', () => findBox.classList.toggle('checked'));
+    findWrap.appendChild(findBox);
+
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'remove-btn' + (isCustom ? ' visible' : '');
+    removeBtn.textContent = '×';
+    removeBtn.addEventListener('click', () => row.remove());
+
+    row.appendChild(labelEl);
+    row.appendChild(haveWrap);
+    row.appendChild(findWrap);
+    row.appendChild(removeBtn);
+    rowsEl.appendChild(row);
+  }
+
+  defaultDocs.forEach(doc => addRow(doc, false));
+  document.getElementById('addDocBtn').addEventListener('click', () => addRow('', true));
+
+  document.getElementById('checkBtn').addEventListener('click', () => {
+    const resultBox = document.getElementById('resultBox');
+    const rows = Array.from(rowsEl.children);
+
+    const entries = rows.map(row => {
+      const labelEl = row.children[0];
+      const name = labelEl.tagName === 'INPUT' ? labelEl.value.trim() : labelEl.textContent;
+      const have = row.children[1].querySelector('.checkbox').classList.contains('checked');
+      const findable = row.children[2].querySelector('.checkbox').classList.contains('checked');
+      return { name, have, findable };
+    }).filter(e => e.name !== '');
+
+    if (entries.length === 0) {
+      resultBox.className = 'result show flag';
+      resultBox.innerHTML = '<strong>No documents to check</strong>Add at least one document, or use the default list.';
+      return;
+    }
+
+    const missing = entries.filter(e => !e.have).map(e => e.name);
+    const unfindable = entries.filter(e => e.have && !e.findable).map(e => e.name);
+    const fullyReady = entries.filter(e => e.have && e.findable);
+
+    if (fullyReady.length === entries.length) {
+      resultBox.className = 'result show balanced';
+      resultBox.innerHTML = `<strong>Fully document-ready</strong>All ${entries.length} items are on hand and easy to find.`;
+      return;
+    }
+
+    let msg = '';
+    if (missing.length > 0) {
+      msg += `<strong>Missing entirely:</strong> ${missing.join(', ')}. `;
+    }
+    if (unfindable.length > 0) {
+      msg += `<strong>Have but hard to locate:</strong> ${unfindable.join(', ')}. `;
+    }
+
+    resultBox.className = 'result show flag';
+    resultBox.innerHTML = `${msg}<br><br>${fullyReady.length}/${entries.length} fully ready — worth tackling the gaps a few at a time rather than all at once.`;
+  });
+})();
+</script>
+
+</body>
+</html>
