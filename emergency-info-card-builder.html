@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Emergency Info Card Builder</title>
+<style>
+  :root {
+    --ppw-green: #2f6b3a;
+    --ppw-green-dark: #1f4d28;
+    --ppw-green-light: #eaf5ec;
+    --ppw-border: #cfe3d3;
+    --ppw-text: #1a2e1e;
+    --ppw-muted: #5c6f60;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: transparent;
+    color: var(--ppw-text);
+  }
+  .card {
+    background: #ffffff;
+    border: 1px solid var(--ppw-border);
+    border-radius: 14px;
+    padding: 24px;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+  .eyebrow {
+    color: var(--ppw-green);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  h1 { font-size: 20px; margin: 0 0 8px 0; }
+  .desc { font-size: 13px; color: var(--ppw-muted); margin-bottom: 16px; line-height: 1.4; }
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ppw-green-dark);
+    margin: 18px 0 8px 0;
+  }
+  .section-label:first-of-type { margin-top: 0; }
+  .col-labels {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    gap: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--ppw-muted);
+    margin-bottom: 6px;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .row.doc-row { grid-template-columns: 1fr 1.4fr auto; }
+  .row input {
+    width: 100%;
+    padding: 8px 9px;
+    border: 1px solid var(--ppw-border);
+    border-radius: 7px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--ppw-text);
+  }
+  .row input:focus { outline: none; border-color: var(--ppw-green); }
+  .remove-btn {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    border: 1px solid var(--ppw-border);
+    background: #fff;
+    color: var(--ppw-muted);
+    font-size: 14px;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .remove-btn:hover { background: #fdf3e0; color: #a8721f; }
+  .add-btn {
+    width: 100%;
+    padding: 8px;
+    background: #fff;
+    border: 1px dashed var(--ppw-border);
+    border-radius: 8px;
+    color: var(--ppw-green-dark);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 4px;
+  }
+  .add-btn:hover { background: var(--ppw-green-light); }
+  .field { margin-bottom: 10px; }
+  .field label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; }
+  .field input, .field textarea {
+    width: 100%;
+    padding: 9px 11px;
+    border: 1px solid var(--ppw-border);
+    border-radius: 7px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--ppw-text);
+  }
+  .field input:focus, .field textarea:focus { outline: none; border-color: var(--ppw-green); }
+  button.primary {
+    width: 100%;
+    padding: 13px;
+    background: var(--ppw-green);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    margin: 18px 0 12px 0;
+  }
+  button.primary:hover { background: var(--ppw-green-dark); }
+  .result { display: none; background: var(--ppw-green-light); border-radius: 10px; padding: 16px; }
+  .result.show { display: block; }
+  .result h2 { font-size: 14px; margin: 0 0 10px 0; color: var(--ppw-green-dark); }
+  .result-section { margin-bottom: 12px; font-size: 13px; line-height: 1.6; }
+  .result-section:last-child { margin-bottom: 0; }
+  .result-section strong { display: block; color: var(--ppw-green-dark); font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="eyebrow">Plant Powered Performance World</div>
+  <h1>Emergency Info Card Builder</h1>
+  <div class="desc">Contacts, key medical info, and where to find critical documents — build one clear card someone else could use if you couldn't tell them yourself.</div>
+
+  <div class="section-label">Emergency Contacts</div>
+  <div class="col-labels"><div>Name</div><div>Relationship</div><div>Phone</div><div></div></div>
+  <div id="contactRows"></div>
+  <button class="add-btn" id="addContactBtn">+ Add another contact</button>
+
+  <div class="section-label">Key Medical Info</div>
+  <div class="field">
+    <label>Blood type (optional)</label>
+    <input type="text" id="bloodType" placeholder="e.g. O+">
+  </div>
+  <div class="field">
+    <label>Allergies</label>
+    <input type="text" id="allergies" placeholder="e.g. Penicillin">
+  </div>
+  <div class="field">
+    <label>Medical conditions / medications</label>
+    <textarea id="conditions" rows="2" placeholder="e.g. Asthma — salbutamol inhaler"></textarea>
+  </div>
+  <div class="field">
+    <label>GP name & phone</label>
+    <input type="text" id="gp" placeholder="e.g. Dr. Smith, 0113 000 0000">
+  </div>
+
+  <div class="section-label">Key Documents & Where To Find Them</div>
+  <div id="docRows"></div>
+  <button class="add-btn" id="addDocBtn">+ Add another document</button>
+
+  <button class="primary" id="buildBtn">Build My Emergency Card</button>
+
+  <div class="result" id="resultBox"></div>
+</div>
+
+<script>
+(function() {
+  const contactRows = document.getElementById('contactRows');
+  const docRows = document.getElementById('docRows');
+
+  function addContactRow() {
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.innerHTML = `
+      <input type="text" placeholder="Name">
+      <input type="text" placeholder="Relationship">
+      <input type="text" placeholder="Phone">
+    `;
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'remove-btn';
+    removeBtn.textContent = '×';
+    removeBtn.addEventListener('click', () => row.remove());
+    row.appendChild(removeBtn);
+    contactRows.appendChild(row);
+  }
+
+  function addDocRow() {
+    const row = document.createElement('div');
+    row.className = 'row doc-row';
+    row.innerHTML = `
+      <input type="text" placeholder="e.g. Will">
+      <input type="text" placeholder="Location or link (e.g. Google Drive URL, 'filing cabinet')">
+    `;
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'remove-btn';
+    removeBtn.textContent = '×';
+    removeBtn.addEventListener('click', () => row.remove());
+    row.appendChild(removeBtn);
+    docRows.appendChild(row);
+  }
+
+  [1, 2].forEach(addContactRow);
+  ['Will', 'Home Insurance Policy'].forEach(() => addDocRow());
+
+  document.getElementById('addContactBtn').addEventListener('click', addContactRow);
+  document.getElementById('addDocBtn').addEventListener('click', addDocRow);
+
+  document.getElementById('buildBtn').addEventListener('click', () => {
+    const resultBox = document.getElementById('resultBox');
+    resultBox.classList.add('show');
+
+    const contacts = Array.from(contactRows.children).map(row => {
+      const inputs = row.querySelectorAll('input');
+      return { name: inputs[0].value.trim(), rel: inputs[1].value.trim(), phone: inputs[2].value.trim() };
+    }).filter(c => c.name);
+
+    const docs = Array.from(docRows.children).map(row => {
+      const inputs = row.querySelectorAll('input');
+      return { name: inputs[0].value.trim(), location: inputs[1].value.trim() };
+    }).filter(d => d.name);
+
+    const bloodType = document.getElementById('bloodType').value.trim();
+    const allergies = document.getElementById('allergies').value.trim();
+    const conditions = document.getElementById('conditions').value.trim();
+    const gp = document.getElementById('gp').value.trim();
+
+    let html = '<h2>Emergency Info Card</h2>';
+
+    html += '<div class="result-section"><strong>Contacts</strong>';
+    if (contacts.length === 0) {
+      html += 'No contacts added yet.';
+    } else {
+      html += contacts.map(c => `${c.name}${c.rel ? ' (' + c.rel + ')' : ''}${c.phone ? ' — ' + c.phone : ''}`).join('<br>');
+    }
+    html += '</div>';
+
+    html += '<div class="result-section"><strong>Medical</strong>';
+    const medBits = [];
+    if (bloodType) medBits.push('Blood type: ' + bloodType);
+    if (allergies) medBits.push('Allergies: ' + allergies);
+    if (conditions) medBits.push('Conditions/Meds: ' + conditions);
+    if (gp) medBits.push('GP: ' + gp);
+    html += medBits.length ? medBits.join('<br>') : 'No medical info added yet.';
+    html += '</div>';
+
+    html += '<div class="result-section"><strong>Key Documents</strong>';
+    if (docs.length === 0) {
+      html += 'No documents added yet.';
+    } else {
+      html += docs.map(d => `${d.name} — ${d.location || 'location not set'}`).join('<br>');
+    }
+    html += '</div>';
+
+    resultBox.innerHTML = html;
+  });
+})();
+</script>
+
+</body>
+</html>
