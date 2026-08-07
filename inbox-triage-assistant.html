@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Inbox Triage Assistant</title>
+<style>
+  :root {
+    --ppw-green: #2f6b3a;
+    --ppw-green-dark: #1f4d28;
+    --ppw-green-light: #eaf5ec;
+    --ppw-border: #cfe3d3;
+    --ppw-text: #1a2e1e;
+    --ppw-muted: #5c6f60;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: transparent;
+    color: var(--ppw-text);
+  }
+  .card {
+    background: #ffffff;
+    border: 1px solid var(--ppw-border);
+    border-radius: 14px;
+    padding: 24px;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  .eyebrow {
+    color: var(--ppw-green);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  h1 { font-size: 20px; margin: 0 0 8px 0; }
+  .desc { font-size: 13px; color: var(--ppw-muted); margin-bottom: 14px; line-height: 1.4; }
+  textarea {
+    width: 100%;
+    min-height: 110px;
+    padding: 12px;
+    border: 1px solid var(--ppw-border);
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--ppw-text);
+    resize: vertical;
+    margin-bottom: 6px;
+  }
+  textarea:focus { outline: none; border-color: var(--ppw-green); }
+  .hint { font-size: 11px; color: var(--ppw-muted); margin-bottom: 14px; }
+  button.primary {
+    width: 100%;
+    padding: 13px;
+    background: var(--ppw-green);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 14px;
+  }
+  button.primary:hover { background: var(--ppw-green-dark); }
+  .result { display: none; }
+  .result.show { display: block; }
+  .item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    background: var(--ppw-green-light);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+  }
+  .item-row .item-text {
+    font-size: 13px;
+    color: var(--ppw-text);
+    flex: 1;
+  }
+  .item-row .item-dest {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ppw-green-dark);
+    text-align: right;
+    white-space: nowrap;
+  }
+  .note {
+    font-size: 12px;
+    color: var(--ppw-muted);
+    text-align: center;
+    padding: 10px;
+    line-height: 1.4;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="eyebrow">Plant Powered Performance World</div>
+  <h1>Inbox Triage Assistant</h1>
+  <div class="desc">Paste your brain dump, one thought per line — get a suggested destination page for each, so nothing just sits in the inbox unsorted.</div>
+
+  <textarea id="itemsInput" placeholder="e.g. book dentist appointment&#10;idea: birthday gift for mum&#10;pay the internet bill&#10;want to learn pottery someday&#10;fix the leaky tap"></textarea>
+  <div class="hint">One item per line.</div>
+
+  <button class="primary" id="triageBtn">Suggest Destinations</button>
+
+  <div class="result" id="resultBox"></div>
+</div>
+
+<script>
+(function() {
+  const destinationMap = [
+    { name: 'Budget / Bill Tracker', keywords: ['pay', 'bill', 'invoice', 'subscription', 'budget', 'money', 'save', 'debt'] },
+    { name: 'Birthdays & Occasions / Gift Ideas', keywords: ['birthday', 'gift', 'anniversary', 'present', 'occasion'] },
+    { name: 'Home Maintenance & Chores', keywords: ['fix', 'clean', 'repair', 'leak', 'boiler', 'tap', 'gutter', 'chore'] },
+    { name: 'Pet Care Planner', keywords: ['vet', 'flea', 'worming', 'pet', 'dog', 'cat'] },
+    { name: 'Family Planner', keywords: ['school', 'kids', 'pickup', 'appointment', 'dentist', 'doctor'] },
+    { name: 'Work Projects Tracker', keywords: ['client', 'project', 'deadline', 'meeting', 'work', 'proposal'] },
+    { name: 'Personal Projects Tracker', keywords: ['learn', 'hobby', 'someday', 'want to try', 'pottery', 'craft'] },
+    { name: 'Trip Planner', keywords: ['trip', 'travel', 'flight', 'holiday', 'vacation', 'book flights'] },
+    { name: 'Goals & Vision Tracker', keywords: ['goal', 'dream', 'want to', 'vision', 'future'] },
+    { name: 'Errands & To-Buy Tracker', keywords: ['buy', 'errand', 'pick up', 'return', 'drop off'] },
+    { name: 'Habit Tracker', keywords: ['habit', 'daily', 'routine', 'stop', 'start doing'] }
+  ];
+
+  function suggestDestination(item) {
+    const lower = item.toLowerCase();
+    for (const dest of destinationMap) {
+      if (dest.keywords.some(kw => lower.includes(kw))) {
+        return dest.name;
+      }
+    }
+    return 'Daily Execution (general task)';
+  }
+
+  document.getElementById('triageBtn').addEventListener('click', () => {
+    const raw = document.getElementById('itemsInput').value;
+    const items = raw.split('\n').map(s => s.trim()).filter(Boolean);
+
+    const resultBox = document.getElementById('resultBox');
+    resultBox.innerHTML = '';
+    resultBox.classList.add('show');
+
+    if (items.length === 0) {
+      resultBox.innerHTML = '<div class="note">Add a few items above to get suggestions.</div>';
+      return;
+    }
+
+    items.forEach(item => {
+      const dest = suggestDestination(item);
+      const row = document.createElement('div');
+      row.className = 'item-row';
+      row.innerHTML = `<span class="item-text">${item}</span><span class="item-dest">→ ${dest}</span>`;
+      resultBox.appendChild(row);
+    });
+
+    const note = document.createElement('div');
+    note.className = 'note';
+    note.textContent = 'Best guesses based on keywords — move each item to its real destination page once sorted, then clear it from here.';
+    resultBox.appendChild(note);
+  });
+})();
+</script>
+
+</body>
+</html>
