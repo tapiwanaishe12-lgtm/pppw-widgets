@@ -35,8 +35,25 @@
     text-transform: uppercase;
     margin-bottom: 4px;
   }
+  .header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
   h1 { font-size: 20px; margin: 0 0 8px 0; }
-  .desc { font-size: 13px; color: var(--ppw-muted); margin-bottom: 18px; line-height: 1.4; }
+  .desc { font-size: 13px; color: var(--ppw-muted); margin-bottom: 16px; line-height: 1.4; }
+  .currency-select {
+    padding: 6px 8px;
+    border: 1px solid var(--ppw-border);
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ppw-green-dark);
+    background: #fff;
+    flex-shrink: 0;
+  }
+  .currency-select:focus { outline: none; border-color: var(--ppw-green); }
   .section-label {
     font-size: 11px;
     font-weight: 700;
@@ -66,7 +83,7 @@
     font-family: inherit;
     color: var(--ppw-text);
   }
-  .field .input-wrap input { padding-left: 24px; }
+  .field .input-wrap input { padding-left: 26px; }
   .field input:focus { outline: none; border-color: var(--ppw-green); }
   button.primary {
     width: 100%;
@@ -111,8 +128,19 @@
 <body>
 
 <div class="card">
-  <div class="eyebrow">Plant Powered Performance World</div>
-  <h1>Vehicle Running Cost Calculator</h1>
+  <div class="header-row">
+    <div>
+      <div class="eyebrow">Plant Powered Performance World</div>
+      <h1>Vehicle Running Cost Calculator</h1>
+    </div>
+    <select class="currency-select" id="currencySelect">
+      <option value="£">£ GBP</option>
+      <option value="$">$ USD</option>
+      <option value="€">€ EUR</option>
+      <option value="A$">A$ AUD</option>
+      <option value="C$">C$ CAD</option>
+    </select>
+  </div>
   <div class="desc">Combine fuel efficiency and fixed costs to see what your car actually costs per mile and per month — not just what fuel alone costs.</div>
 
   <div class="section-label">Fuel</div>
@@ -121,9 +149,9 @@
     <input type="number" id="mpg" placeholder="e.g. 45" min="0" step="0.1">
   </div>
   <div class="field">
-    <label for="fuelPrice">Fuel price (per litre)</label>
+    <label for="fuelPrice" id="fuelPriceLabel">Fuel price (per litre)</label>
     <div class="input-wrap">
-      <span>£</span>
+      <span id="fuelPriceSymbol">£</span>
       <input type="number" id="fuelPrice" placeholder="e.g. 1.45" min="0" step="0.01">
     </div>
   </div>
@@ -134,9 +162,9 @@
 
   <div class="section-label">Fixed Monthly Costs</div>
   <div class="field">
-    <label for="fixedCosts">Insurance + tax + finance (monthly total)</label>
+    <label for="fixedCosts">Insurance + tax/registration + finance (monthly total)</label>
     <div class="input-wrap">
-      <span>£</span>
+      <span id="fixedCostsSymbol">£</span>
       <input type="number" id="fixedCosts" placeholder="e.g. 180" min="0" step="1">
     </div>
   </div>
@@ -146,11 +174,11 @@
   <div class="result" id="resultBox">
     <div class="snapshot-row">
       <div class="snapshot-box">
-        <div class="snapshot-num" id="costPerMile">£0.00</div>
+        <div class="snapshot-num" id="costPerMile">0.00</div>
         <div class="snapshot-label">Cost Per Mile</div>
       </div>
       <div class="snapshot-box">
-        <div class="snapshot-num" id="monthlyCost">£0</div>
+        <div class="snapshot-num" id="monthlyCost">0</div>
         <div class="snapshot-label">Per Month</div>
       </div>
     </div>
@@ -161,6 +189,14 @@
 <script>
 (function() {
   const LITRES_PER_GALLON = 4.546;
+  let currency = '£';
+
+  const currencySelect = document.getElementById('currencySelect');
+  currencySelect.addEventListener('change', () => {
+    currency = currencySelect.value;
+    document.getElementById('fuelPriceSymbol').textContent = currency;
+    document.getElementById('fixedCostsSymbol').textContent = currency;
+  });
 
   document.getElementById('calcBtn').addEventListener('click', () => {
     const mpg = parseFloat(document.getElementById('mpg').value) || 0;
@@ -172,8 +208,8 @@
     const noteBox = document.getElementById('noteBox');
 
     if (mpg === 0 || fuelPrice === 0) {
-      document.getElementById('costPerMile').textContent = '£0.00';
-      document.getElementById('monthlyCost').textContent = '£0';
+      document.getElementById('costPerMile').textContent = currency + '0.00';
+      document.getElementById('monthlyCost').textContent = currency + '0';
       noteBox.textContent = 'Add fuel economy and fuel price to calculate.';
       resultBox.classList.add('show');
       return;
@@ -185,13 +221,13 @@
     const totalMonthlyCost = monthlyFuelCost + fixedCosts;
     const totalCostPerMile = monthlyMiles > 0 ? totalMonthlyCost / monthlyMiles : fuelCostPerMile;
 
-    document.getElementById('costPerMile').textContent = '£' + totalCostPerMile.toFixed(2);
-    document.getElementById('monthlyCost').textContent = '£' + Math.round(totalMonthlyCost).toLocaleString('en-GB');
+    document.getElementById('costPerMile').textContent = currency + totalCostPerMile.toFixed(2);
+    document.getElementById('monthlyCost').textContent = currency + Math.round(totalMonthlyCost).toLocaleString('en-GB');
 
     if (monthlyMiles === 0) {
-      noteBox.textContent = `Fuel alone costs £${fuelCostPerMile.toFixed(2)} per mile. Add monthly mileage to see your full monthly running cost.`;
+      noteBox.textContent = `Fuel alone costs ${currency}${fuelCostPerMile.toFixed(2)} per mile. Add monthly mileage to see your full monthly running cost.`;
     } else {
-      noteBox.textContent = `£${Math.round(monthlyFuelCost)} in fuel plus £${Math.round(fixedCosts)} in fixed costs this month, across ${monthlyMiles} miles.`;
+      noteBox.textContent = `${currency}${Math.round(monthlyFuelCost)} in fuel plus ${currency}${Math.round(fixedCosts)} in fixed costs this month, across ${monthlyMiles} miles.`;
     }
 
     resultBox.classList.add('show');
