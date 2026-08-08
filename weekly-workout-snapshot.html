@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Weekly Workout Snapshot</title>
+<style>
+  :root {
+    --ppw-green: #2f6b3a;
+    --ppw-green-dark: #1f4d28;
+    --ppw-green-light: #eaf5ec;
+    --ppw-amber-light: #fdf3e0;
+    --ppw-amber: #a8721f;
+    --ppw-border: #cfe3d3;
+    --ppw-text: #1a2e1e;
+    --ppw-muted: #5c6f60;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: transparent;
+    color: var(--ppw-text);
+  }
+  .card {
+    background: #ffffff;
+    border: 1px solid var(--ppw-border);
+    border-radius: 14px;
+    padding: 24px;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  .eyebrow {
+    color: var(--ppw-green);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  h1 { font-size: 20px; margin: 0 0 8px 0; }
+  .desc { font-size: 13px; color: var(--ppw-muted); margin-bottom: 16px; line-height: 1.4; }
+  .col-labels {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 0.8fr auto;
+    gap: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--ppw-muted);
+    margin-bottom: 6px;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 0.8fr auto;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .row input, .row select {
+    width: 100%;
+    padding: 8px 9px;
+    border: 1px solid var(--ppw-border);
+    border-radius: 7px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--ppw-text);
+  }
+  .row input:focus, .row select:focus { outline: none; border-color: var(--ppw-green); }
+  .remove-btn {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    border: 1px solid var(--ppw-border);
+    background: #fff;
+    color: var(--ppw-muted);
+    font-size: 14px;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .remove-btn:hover { background: var(--ppw-amber-light); color: var(--ppw-amber); }
+  .add-btn {
+    width: 100%;
+    padding: 9px;
+    background: #fff;
+    border: 1px dashed var(--ppw-border);
+    border-radius: 8px;
+    color: var(--ppw-green-dark);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    margin: 8px 0 16px 0;
+  }
+  .add-btn:hover { background: var(--ppw-green-light); }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; }
+  .field input.goal {
+    width: 160px;
+    padding: 9px 11px;
+    border: 1px solid var(--ppw-border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--ppw-text);
+  }
+  .field input.goal:focus { outline: none; border-color: var(--ppw-green); }
+  button.primary {
+    width: 100%;
+    padding: 13px;
+    background: var(--ppw-green);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 14px;
+  }
+  button.primary:hover { background: var(--ppw-green-dark); }
+  .result { display: none; }
+  .result.show { display: block; }
+  .progress-track {
+    width: 100%;
+    height: 10px;
+    background: var(--ppw-green-light);
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .progress-fill { height: 100%; background: var(--ppw-green); border-radius: 5px; transition: width 0.2s ease; }
+  .progress-caption { font-size: 14px; font-weight: 700; color: var(--ppw-green-dark); text-align: center; margin-bottom: 14px; }
+  .breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--ppw-green-light);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    font-size: 13px;
+  }
+  .breakdown-row .name { font-weight: 600; }
+  .breakdown-row .mins { font-weight: 700; color: var(--ppw-green-dark); }
+  .note {
+    font-size: 12px;
+    color: var(--ppw-muted);
+    text-align: center;
+    padding: 10px;
+    margin-top: 6px;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="eyebrow">Plant Powered Performance World</div>
+  <h1>Weekly Workout Snapshot</h1>
+  <div class="desc">Log this week's sessions with type and duration — see your total minutes, the breakdown by type, and progress against your weekly goal.</div>
+
+  <div class="col-labels">
+    <div>Workout</div>
+    <div>Type</div>
+    <div>Mins</div>
+    <div></div>
+  </div>
+  <div id="rows"></div>
+  <button class="add-btn" id="addBtn">+ Add another session</button>
+
+  <div class="field">
+    <label for="weeklyGoal">Weekly minutes goal (optional)</label>
+    <input class="goal" type="number" id="weeklyGoal" placeholder="e.g. 150" min="0" step="5">
+  </div>
+
+  <button class="primary" id="checkBtn">Check My Week</button>
+
+  <div class="result" id="resultBox">
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%;"></div></div>
+    <div class="progress-caption" id="progressCaption"></div>
+    <div id="breakdownList"></div>
+    <div class="note" id="noteBox"></div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const rowsEl = document.getElementById('rows');
+  const types = ['Strength', 'Cardio', 'Flexibility/Mobility', 'Sports/Recreational', 'Other'];
+
+  function addRow(name = '') {
+    const row = document.createElement('div');
+    row.className = 'row';
+
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.placeholder = 'e.g. Morning run';
+    nameInput.value = name;
+
+    const typeSelect = document.createElement('select');
+    types.forEach(t => {
+      const o = document.createElement('option');
+      o.value = t;
+      o.textContent = t;
+      typeSelect.appendChild(o);
+    });
+
+    const minsInput = document.createElement('input');
+    minsInput.type = 'number';
+    minsInput.placeholder = '0';
+    minsInput.min = '0';
+    minsInput.step = '5';
+
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'remove-btn';
+    removeBtn.textContent = '×';
+    removeBtn.addEventListener('click', () => row.remove());
+
+    row.appendChild(nameInput);
+    row.appendChild(typeSelect);
+    row.appendChild(minsInput);
+    row.appendChild(removeBtn);
+    rowsEl.appendChild(row);
+  }
+
+  ['Morning run', 'Gym session'].forEach(addRow);
+  document.getElementById('addBtn').addEventListener('click', () => addRow());
+
+  document.getElementById('checkBtn').addEventListener('click', () => {
+    const resultBox = document.getElementById('resultBox');
+    resultBox.classList.add('show');
+
+    const goal = parseFloat(document.getElementById('weeklyGoal').value) || 0;
+    const breakdown = {};
+    let total = 0;
+
+    rowsEl.querySelectorAll('.row').forEach(row => {
+      const name = row.children[0].value.trim();
+      const type = row.children[1].value;
+      const mins = parseFloat(row.children[2].value) || 0;
+      if (!name || mins <= 0) return;
+      total += mins;
+      breakdown[type] = (breakdown[type] || 0) + mins;
+    });
+
+    const pct = goal > 0 ? Math.min(100, Math.round((total / goal) * 100)) : 0;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressCaption').textContent = goal > 0
+      ? `${total} of ${goal} minutes this week (${pct}%)`
+      : `${total} minutes logged this week`;
+
+    const breakdownList = document.getElementById('breakdownList');
+    breakdownList.innerHTML = '';
+    Object.entries(breakdown)
+      .sort((a, b) => b[1] - a[1])
+      .forEach(([type, mins]) => {
+        const row = document.createElement('div');
+        row.className = 'breakdown-row';
+        row.innerHTML = `<span class="name">${type}</span><span class="mins">${mins} min</span>`;
+        breakdownList.appendChild(row);
+      });
+
+    const noteBox = document.getElementById('noteBox');
+    if (total === 0) {
+      noteBox.textContent = 'Add at least one session with a duration to see your snapshot.';
+    } else if (goal > 0 && total < goal) {
+      noteBox.textContent = `${Math.round(goal - total)} minutes short of this week's goal — still time to close the gap.`;
+    } else if (goal > 0) {
+      noteBox.textContent = 'Weekly goal met — nice work.';
+    } else if (Object.keys(breakdown).length === 1) {
+      noteBox.textContent = `All logged time this week was ${Object.keys(breakdown)[0]} — worth a quick check whether that's intentional.`;
+    } else {
+      noteBox.textContent = 'Good spread across session types this week.';
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
