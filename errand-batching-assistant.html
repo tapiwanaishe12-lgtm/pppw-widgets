@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Errand Batching Assistant</title>
+<style>
+  :root {
+    --ppw-green: #2f6b3a;
+    --ppw-green-dark: #1f4d28;
+    --ppw-green-light: #eaf5ec;
+    --ppw-border: #cfe3d3;
+    --ppw-text: #1a2e1e;
+    --ppw-muted: #5c6f60;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: transparent;
+    color: var(--ppw-text);
+  }
+  .card {
+    background: #ffffff;
+    border: 1px solid var(--ppw-border);
+    border-radius: 14px;
+    padding: 24px;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  .eyebrow {
+    color: var(--ppw-green);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  h1 { font-size: 20px; margin: 0 0 8px 0; }
+  .desc { font-size: 13px; color: var(--ppw-muted); margin-bottom: 14px; line-height: 1.4; }
+  textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 12px;
+    border: 1px solid var(--ppw-border);
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--ppw-text);
+    resize: vertical;
+    margin-bottom: 6px;
+  }
+  textarea:focus { outline: none; border-color: var(--ppw-green); }
+  .hint { font-size: 11px; color: var(--ppw-muted); margin-bottom: 14px; }
+  button.primary {
+    width: 100%;
+    padding: 13px;
+    background: var(--ppw-green);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 14px;
+  }
+  button.primary:hover { background: var(--ppw-green-dark); }
+  .result { display: none; }
+  .result.show { display: block; }
+  .category-block { margin-bottom: 12px; }
+  .category-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ppw-green-dark);
+    background: var(--ppw-green-light);
+    padding: 6px 10px;
+    border-radius: 6px;
+    margin-bottom: 6px;
+  }
+  .category-items {
+    font-size: 13px;
+    color: var(--ppw-text);
+    line-height: 1.7;
+    padding-left: 6px;
+  }
+  .note {
+    font-size: 12px;
+    color: var(--ppw-muted);
+    text-align: center;
+    padding: 10px;
+    margin-top: 6px;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="eyebrow">Plant Powered Performance World</div>
+  <h1>Errand Batching Assistant</h1>
+  <div class="desc">Paste your errands in any order — get them grouped by the type of place they need, so you can see which ones can be knocked out in one trip.</div>
+
+  <textarea id="itemsInput" placeholder="e.g. post the parcel, pick up prescription, return the shoes, get cash out, buy screws for the shelf, drop off dry cleaning"></textarea>
+  <div class="hint">Commas or new lines both work.</div>
+
+  <button class="primary" id="batchBtn">Group My Errands</button>
+
+  <div class="result" id="resultBox"></div>
+</div>
+
+<script>
+(function() {
+  const categoryMap = [
+    { name: '💊 Pharmacy', keywords: ['prescription', 'pharmacy', 'chemist', 'medicine', 'tablets'] },
+    { name: '📮 Post Office', keywords: ['post', 'parcel', 'stamps', 'mail', 'package', 'courier'] },
+    { name: '🏦 Bank / ATM', keywords: ['bank', 'cash', 'atm', 'deposit', 'cheque', 'check'] },
+    { name: '🛒 Supermarket', keywords: ['grocery', 'groceries', 'supermarket', 'food shop'] },
+    { name: '🔧 Hardware / DIY', keywords: ['screws', 'paint', 'hardware', 'diy', 'tools', 'nails', 'drill'] },
+    { name: '👕 Dry Cleaners / Tailor', keywords: ['dry clean', 'tailor', 'alteration', 'suit', 'laundry'] },
+    { name: '🐾 Vet / Pet Shop', keywords: ['vet', 'pet shop', 'dog food', 'cat food', 'flea treatment'] },
+    { name: '↩️ Returns', keywords: ['return', 'exchange', 'refund'] },
+    { name: '🚗 Car / Petrol', keywords: ['petrol', 'fuel', 'gas station', 'car wash', 'tyre', 'garage'] }
+  ];
+
+  function categorize(item) {
+    const lower = item.toLowerCase();
+    for (const cat of categoryMap) {
+      if (cat.keywords.some(kw => lower.includes(kw))) {
+        return cat.name;
+      }
+    }
+    return '📍 Other';
+  }
+
+  document.getElementById('batchBtn').addEventListener('click', () => {
+    const raw = document.getElementById('itemsInput').value;
+    const items = raw
+      .split(/[,\n]/)
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    const resultBox = document.getElementById('resultBox');
+    resultBox.innerHTML = '';
+    resultBox.classList.add('show');
+
+    if (items.length === 0) {
+      resultBox.innerHTML = '<div class="note">Add a few errands above to group them.</div>';
+      return;
+    }
+
+    const grouped = {};
+    items.forEach(item => {
+      const cat = categorize(item);
+      if (!grouped[cat]) grouped[cat] = [];
+      grouped[cat].push(item);
+    });
+
+    const orderedNames = categoryMap.map(c => c.name).concat(['📍 Other']);
+    let multiItemGroups = 0;
+
+    orderedNames.forEach(catName => {
+      if (!grouped[catName]) return;
+      if (grouped[catName].length > 1) multiItemGroups++;
+
+      const block = document.createElement('div');
+      block.className = 'category-block';
+
+      const title = document.createElement('div');
+      title.className = 'category-title';
+      title.textContent = catName;
+
+      const itemsDiv = document.createElement('div');
+      itemsDiv.className = 'category-items';
+      itemsDiv.innerHTML = grouped[catName].map(i => '• ' + i).join('<br>');
+
+      block.appendChild(title);
+      block.appendChild(itemsDiv);
+      resultBox.appendChild(block);
+    });
+
+    const note = document.createElement('div');
+    note.className = 'note';
+    note.textContent = multiItemGroups > 0
+      ? `${multiItemGroups} group${multiItemGroups > 1 ? 's' : ''} have more than one errand — worth planning those as a single trip.`
+      : 'No obvious groupings this time — these errands likely need separate trips.';
+    resultBox.appendChild(note);
+  });
+})();
+</script>
+
+</body>
+</html>
