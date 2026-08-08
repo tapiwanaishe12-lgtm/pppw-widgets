@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Weekly Habit Grid</title>
+<style>
+  :root {
+    --ppw-green: #2f6b3a;
+    --ppw-green-dark: #1f4d28;
+    --ppw-green-light: #eaf5ec;
+    --ppw-amber-light: #fdf3e0;
+    --ppw-amber: #a8721f;
+    --ppw-border: #cfe3d3;
+    --ppw-text: #1a2e1e;
+    --ppw-muted: #5c6f60;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: transparent;
+    color: var(--ppw-text);
+  }
+  .card {
+    background: #ffffff;
+    border: 1px solid var(--ppw-border);
+    border-radius: 14px;
+    padding: 24px;
+    max-width: 560px;
+    margin: 0 auto;
+  }
+  .eyebrow {
+    color: var(--ppw-green);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  h1 { font-size: 20px; margin: 0 0 8px 0; }
+  .desc { font-size: 13px; color: var(--ppw-muted); margin-bottom: 16px; line-height: 1.4; }
+  .grid-wrap { overflow-x: auto; margin-bottom: 10px; }
+  .grid {
+    display: grid;
+    grid-template-columns: 1.4fr repeat(7, 32px) auto;
+    gap: 4px;
+    align-items: center;
+    min-width: 480px;
+  }
+  .grid .head {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--ppw-muted);
+    text-align: center;
+  }
+  .grid .habit-name-cell {
+    display: flex;
+    align-items: center;
+  }
+  .grid input.habit-name {
+    width: 100%;
+    padding: 7px 8px;
+    border: 1px solid var(--ppw-border);
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: inherit;
+    color: var(--ppw-text);
+  }
+  .grid input.habit-name:focus { outline: none; border-color: var(--ppw-green); }
+  .day-cell { display: flex; justify-content: center; }
+  .checkbox {
+    width: 22px;
+    height: 22px;
+    border: 1.5px solid var(--ppw-border);
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .checkbox.checked { background: var(--ppw-green); border-color: var(--ppw-green); }
+  .checkbox.checked::after { content: "✓"; color: #fff; font-size: 12px; font-weight: 700; }
+  .remove-btn {
+    width: 22px;
+    height: 22px;
+    border-radius: 5px;
+    border: 1px solid var(--ppw-border);
+    background: #fff;
+    color: var(--ppw-muted);
+    font-size: 13px;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .remove-btn:hover { background: var(--ppw-amber-light); color: var(--ppw-amber); }
+  .add-btn {
+    width: 100%;
+    padding: 9px;
+    background: #fff;
+    border: 1px dashed var(--ppw-border);
+    border-radius: 8px;
+    color: var(--ppw-green-dark);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    margin: 10px 0 16px 0;
+  }
+  .add-btn:hover { background: var(--ppw-green-light); }
+  button.primary {
+    width: 100%;
+    padding: 13px;
+    background: var(--ppw-green);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 14px;
+  }
+  button.primary:hover { background: var(--ppw-green-dark); }
+  .result { display: none; }
+  .result.show { display: block; }
+  .habit-result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--ppw-green-light);
+    border-radius: 8px;
+    padding: 9px 14px;
+    margin-bottom: 6px;
+    font-size: 13px;
+  }
+  .habit-result-row .name { font-weight: 600; }
+  .habit-result-row .pct { font-weight: 700; color: var(--ppw-green-dark); }
+  .habit-result-row.low .pct { color: var(--ppw-amber); }
+  .note {
+    font-size: 12px;
+    color: var(--ppw-muted);
+    text-align: center;
+    padding: 10px;
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="eyebrow">Plant Powered Performance World</div>
+  <h1>Weekly Habit Grid</h1>
+  <div class="desc">List your habits, tick each day you did them — see a completion rate per habit, not just one overall streak.</div>
+
+  <div class="grid-wrap">
+    <div class="grid" id="grid">
+      <div class="head" style="text-align:left;">Habit</div>
+      <div class="head">Mon</div>
+      <div class="head">Tue</div>
+      <div class="head">Wed</div>
+      <div class="head">Thu</div>
+      <div class="head">Fri</div>
+      <div class="head">Sat</div>
+      <div class="head">Sun</div>
+      <div class="head"></div>
+    </div>
+  </div>
+
+  <button class="add-btn" id="addBtn">+ Add another habit</button>
+  <button class="primary" id="checkBtn">Check My Week</button>
+
+  <div class="result" id="resultBox"></div>
+</div>
+
+<script>
+(function() {
+  const grid = document.getElementById('grid');
+
+  function addHabitRow(name = '') {
+    const nameCell = document.createElement('div');
+    nameCell.className = 'habit-name-cell';
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.className = 'habit-name';
+    nameInput.placeholder = 'e.g. Drink water';
+    nameInput.value = name;
+    nameCell.appendChild(nameInput);
+    grid.appendChild(nameCell);
+
+    const dayBoxes = [];
+    for (let i = 0; i < 7; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'day-cell';
+      const box = document.createElement('div');
+      box.className = 'checkbox';
+      box.addEventListener('click', () => box.classList.toggle('checked'));
+      cell.appendChild(box);
+      grid.appendChild(cell);
+      dayBoxes.push(box);
+    }
+
+    const removeCell = document.createElement('div');
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'remove-btn';
+    removeBtn.textContent = '×';
+    removeBtn.addEventListener('click', () => {
+      [nameCell, removeCell, ...dayBoxes.map(b => b.parentElement)].forEach(el => el.remove());
+    });
+    removeCell.appendChild(removeBtn);
+    grid.appendChild(removeCell);
+  }
+
+  ['Drink water', 'Move for 20 min', 'Read'].forEach(addHabitRow);
+  document.getElementById('addBtn').addEventListener('click', () => addHabitRow());
+
+  document.getElementById('checkBtn').addEventListener('click', () => {
+    const resultBox = document.getElementById('resultBox');
+    resultBox.innerHTML = '';
+    resultBox.classList.add('show');
+
+    const nameCells = grid.querySelectorAll('.habit-name-cell');
+    const results = [];
+
+    nameCells.forEach(nameCell => {
+      const name = nameCell.querySelector('input').value.trim();
+      if (!name) return;
+
+      let row = nameCell;
+      let checkedCount = 0;
+      for (let i = 0; i < 7; i++) {
+        row = row.nextElementSibling;
+        const box = row.querySelector('.checkbox');
+        if (box && box.classList.contains('checked')) checkedCount++;
+      }
+      const pct = Math.round((checkedCount / 7) * 100);
+      results.push({ name, checkedCount, pct });
+    });
+
+    if (results.length === 0) {
+      resultBox.innerHTML = '<div class="note">Add at least one habit to check your week.</div>';
+      return;
+    }
+
+    results.forEach(r => {
+      const row = document.createElement('div');
+      row.className = 'habit-result-row' + (r.pct < 50 ? ' low' : '');
+      row.innerHTML = `<span class="name">${r.name}</span><span class="pct">${r.checkedCount}/7 — ${r.pct}%</span>`;
+      resultBox.appendChild(row);
+    });
+
+    const lowest = results.reduce((min, r) => r.pct < min.pct ? r : min, results[0]);
+    const note = document.createElement('div');
+    note.className = 'note';
+    note.textContent = results.every(r => r.pct >= 70)
+      ? 'Strong week across the board.'
+      : `${lowest.name} is trailing this week — worth noticing, not necessarily fixing immediately.`;
+    resultBox.appendChild(note);
+  });
+})();
+</script>
+
+</body>
+</html>
