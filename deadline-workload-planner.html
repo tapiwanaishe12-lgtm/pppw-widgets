@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Deadline & Workload Planner</title>
+<style>
+  :root {
+    --ppw-green: #2f6b3a;
+    --ppw-green-dark: #1f4d28;
+    --ppw-green-light: #eaf5ec;
+    --ppw-amber-light: #fdf3e0;
+    --ppw-amber: #a8721f;
+    --ppw-red-light: #fbe4e2;
+    --ppw-red: #a83a2f;
+    --ppw-border: #cfe3d3;
+    --ppw-text: #1a2e1e;
+    --ppw-muted: #5c6f60;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: transparent;
+    color: var(--ppw-text);
+  }
+  .card {
+    background: #ffffff;
+    border: 1px solid var(--ppw-border);
+    border-radius: 14px;
+    padding: 24px;
+    max-width: 560px;
+    margin: 0 auto;
+  }
+  .eyebrow {
+    color: var(--ppw-green);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  h1 { font-size: 20px; margin: 0 0 8px 0; }
+  .desc { font-size: 13px; color: var(--ppw-muted); margin-bottom: 16px; line-height: 1.4; }
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ppw-green-dark);
+    margin: 18px 0 8px 0;
+  }
+  .section-label:first-of-type { margin-top: 0; }
+  .col-labels {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr 1fr 0.8fr auto;
+    gap: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--ppw-muted);
+    margin-bottom: 6px;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr 1fr 0.8fr auto;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .row input, .row select {
+    width: 100%;
+    padding: 8px 9px;
+    border: 1px solid var(--ppw-border);
+    border-radius: 7px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--ppw-text);
+  }
+  .row input:focus, .row select:focus { outline: none; border-color: var(--ppw-green); }
+  .remove-btn {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    border: 1px solid var(--ppw-border);
+    background: #fff;
+    color: var(--ppw-muted);
+    font-size: 14px;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .remove-btn:hover { background: var(--ppw-amber-light); color: var(--ppw-amber); }
+  .add-btn {
+    width: 100%;
+    padding: 9px;
+    background: #fff;
+    border: 1px dashed var(--ppw-border);
+    border-radius: 8px;
+    color: var(--ppw-green-dark);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    margin: 8px 0 4px 0;
+  }
+  .add-btn:hover { background: var(--ppw-green-light); }
+  .field { margin-bottom: 4px; }
+  .field label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; }
+  .field input {
+    width: 160px;
+    padding: 9px 11px;
+    border: 1px solid var(--ppw-border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--ppw-text);
+  }
+  .field input:focus { outline: none; border-color: var(--ppw-green); }
+  button.primary {
+    width: 100%;
+    padding: 13px;
+    background: var(--ppw-green);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    margin: 16px 0 14px 0;
+  }
+  button.primary:hover { background: var(--ppw-green-dark); }
+  .result { display: none; }
+  .result.show { display: block; }
+  .capacity-box {
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 14px;
+  }
+  .capacity-box.balanced { background: var(--ppw-green-light); }
+  .capacity-box.flag { background: var(--ppw-red-light); }
+  .capacity-box.tight { background: var(--ppw-amber-light); }
+  .capacity-box strong { display: block; font-size: 13px; margin-bottom: 4px; }
+  .capacity-box.balanced strong { color: var(--ppw-green-dark); }
+  .capacity-box.flag strong { color: var(--ppw-red); }
+  .capacity-box.tight strong { color: var(--ppw-amber); }
+  .capacity-box p { margin: 0; font-size: 12px; color: var(--ppw-text); line-height: 1.4; }
+  .rank-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 10px;
+    background: var(--ppw-green-light);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+  }
+  .rank-row .rank-num { font-size: 15px; font-weight: 800; color: var(--ppw-green-dark); }
+  .rank-row .rank-info .title { font-size: 13px; font-weight: 700; color: var(--ppw-text); }
+  .rank-row .rank-info .sub { font-size: 11px; color: var(--ppw-muted); margin-top: 2px; }
+  .rank-row .rank-days { font-size: 12px; font-weight: 700; color: var(--ppw-green-dark); text-align: right; white-space: nowrap; }
+  .rank-row.urgent .rank-days { color: var(--ppw-red); }
+  .rank-row.soon .rank-days { color: var(--ppw-amber); }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="eyebrow">Plant Powered Performance World</div>
+  <h1>Deadline & Workload Planner</h1>
+  <div class="desc">Add every deadline with its type and estimated hours — see what's most urgent, and whether your upcoming workload is actually realistic given your study time.</div>
+
+  <div class="col-labels">
+    <div>Task</div>
+    <div>Type</div>
+    <div>Due Date</div>
+    <div>Hrs</div>
+    <div></div>
+  </div>
+  <div id="rows"></div>
+  <button class="add-btn" id="addBtn">+ Add another deadline</button>
+
+  <div class="section-label">Your Study Capacity</div>
+  <div class="field">
+    <label for="weeklyHours">Study hours available per week</label>
+    <input type="number" id="weeklyHours" placeholder="e.g. 15" min="0" step="1">
+  </div>
+
+  <button class="primary" id="planBtn">Plan My Workload</button>
+
+  <div class="result" id="resultBox"></div>
+</div>
+
+<script>
+(function() {
+  const rowsEl = document.getElementById('rows');
+  const types = ['Assignment', 'Exam', 'Project', 'Reading/Revision', 'Presentation'];
+
+  function addRow(name = '') {
+    const row = document.createElement('div');
+    row.className = 'row';
+
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.placeholder = 'e.g. Essay draft';
+    nameInput.value = name;
+
+    const typeSelect = document.createElement('select');
+    types.forEach(t => {
+      const o = document.createElement('option');
+      o.value = t;
+      o.textContent = t;
+      typeSelect.appendChild(o);
+    });
+
+    const dateInput = document.createElement('input');
+    dateInput.type = 'date';
+
+    const hoursInput = document.createElement('input');
+    hoursInput.type = 'number';
+    hoursInput.placeholder = '0';
+    hoursInput.min = '0';
+    hoursInput.step = '0.5';
+
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'remove-btn';
+    removeBtn.textContent = '×';
+    removeBtn.addEventListener('click', () => row.remove());
+
+    row.appendChild(nameInput);
+    row.appendChild(typeSelect);
+    row.appendChild(dateInput);
+    row.appendChild(hoursInput);
+    row.appendChild(removeBtn);
+    rowsEl.appendChild(row);
+  }
+
+  ['Essay draft', 'Revision', 'Group project'].forEach(addRow);
+  document.getElementById('addBtn').addEventListener('click', () => addRow());
+
+  document.getElementById('planBtn').addEventListener('click', () => {
+    const resultBox = document.getElementById('resultBox');
+    resultBox.innerHTML = '';
+    resultBox.classList.add('show');
+
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const weeklyHours = parseFloat(document.getElementById('weeklyHours').value) || 0;
+
+    const tasks = [];
+    rowsEl.querySelectorAll('.row').forEach(row => {
+      const name = row.children[0].value.trim();
+      const type = row.children[1].value;
+      const dateStr = row.children[2].value;
+      const hours = parseFloat(row.children[3].value) || 0;
+
+      if (!name || !dateStr) return;
+
+      const dueDate = new Date(dateStr + 'T00:00:00');
+      const daysUntil = Math.round((dueDate - today) / 86400000);
+
+      tasks.push({ name, type, daysUntil, hours });
+    });
+
+    if (tasks.length === 0) {
+      resultBox.innerHTML = '<div class="capacity-box flag"><strong>No deadlines added yet</strong><p>Add at least one task with a due date to plan your workload.</p></div>';
+      return;
+    }
+
+    // Capacity check: total hours needed in the next 14 days vs. two weeks of available hours
+    const next14 = tasks.filter(t => t.daysUntil >= 0 && t.daysUntil <= 14);
+    const hoursNeededNext14 = next14.reduce((sum, t) => sum + t.hours, 0);
+    const hoursAvailableNext14 = weeklyHours * 2;
+
+    let capacityBox = document.createElement('div');
+    if (weeklyHours === 0) {
+      capacityBox.className = 'capacity-box flag';
+      capacityBox.innerHTML = `<strong>Add your weekly study hours</strong><p>Enter how many hours you actually have available per week to see if the next two weeks are realistic.</p>`;
+    } else if (hoursNeededNext14 > hoursAvailableNext14) {
+      const over = Math.round(hoursNeededNext14 - hoursAvailableNext14);
+      capacityBox.className = 'capacity-box flag';
+      capacityBox.innerHTML = `<strong>Overloaded — ${over}hrs over capacity in the next 2 weeks</strong><p>${hoursNeededNext14}hrs of work due against ${hoursAvailableNext14}hrs available. Something needs to start earlier, get extra time requested, or be scoped down.</p>`;
+    } else if (hoursNeededNext14 >= hoursAvailableNext14 * 0.8) {
+      capacityBox.className = 'capacity-box tight';
+      capacityBox.innerHTML = `<strong>Tight but doable</strong><p>${hoursNeededNext14}hrs of work due against ${hoursAvailableNext14}hrs available over the next 2 weeks. Little room for anything unexpected.</p>`;
+    } else {
+      capacityBox.className = 'capacity-box balanced';
+      capacityBox.innerHTML = `<strong>Manageable workload</strong><p>${hoursNeededNext14}hrs of work due against ${hoursAvailableNext14}hrs available over the next 2 weeks — reasonable breathing room.</p>`;
+    }
+    resultBox.appendChild(capacityBox);
+
+    // Priority ranking: urgency score = hours / max(daysUntil, 0.5), higher = more pressing
+    const ranked = tasks
+      .filter(t => t.daysUntil >= 0)
+      .map(t => ({ ...t, score: t.hours / Math.max(t.daysUntil, 0.5) }))
+      .sort((a, b) => b.score - a.score);
+
+    ranked.forEach((t, i) => {
+      const row = document.createElement('div');
+      let cls = '';
+      if (t.daysUntil <= 3) cls = 'urgent';
+      else if (t.daysUntil <= 7) cls = 'soon';
+      row.className = 'rank-row ' + cls;
+
+      const dayLabel = t.daysUntil === 0 ? 'Due today' : `${t.daysUntil}d left`;
+      row.innerHTML = `
+        <div class="rank-num">#${i + 1}</div>
+        <div class="rank-info">
+          <div class="title">${t.name}</div>
+          <div class="sub">${t.type} — ${t.hours}hrs estimated</div>
+        </div>
+        <div class="rank-days">${dayLabel}</div>
+      `;
+      resultBox.appendChild(row);
+    });
+
+    const overdue = tasks.filter(t => t.daysUntil < 0);
+    if (overdue.length > 0) {
+      const overdueNote = document.createElement('div');
+      overdueNote.className = 'capacity-box flag';
+      overdueNote.style.marginTop = '8px';
+      overdueNote.innerHTML = `<strong>Past due date, still logged:</strong><p>${overdue.map(t => t.name).join(', ')}</p>`;
+      resultBox.appendChild(overdueNote);
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
