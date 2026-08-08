@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Project Priority Ranker</title>
+<style>
+  :root {
+    --ppw-green: #2f6b3a;
+    --ppw-green-dark: #1f4d28;
+    --ppw-green-light: #eaf5ec;
+    --ppw-amber-light: #fdf3e0;
+    --ppw-amber: #a8721f;
+    --ppw-border: #cfe3d3;
+    --ppw-text: #1a2e1e;
+    --ppw-muted: #5c6f60;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: transparent;
+    color: var(--ppw-text);
+  }
+  .card {
+    background: #ffffff;
+    border: 1px solid var(--ppw-border);
+    border-radius: 14px;
+    padding: 24px;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  .eyebrow {
+    color: var(--ppw-green);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  h1 { font-size: 20px; margin: 0 0 8px 0; }
+  .desc { font-size: 13px; color: var(--ppw-muted); margin-bottom: 16px; line-height: 1.4; }
+  .col-labels {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr auto;
+    gap: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--ppw-muted);
+    margin-bottom: 6px;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr auto;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .row input, .row select {
+    width: 100%;
+    padding: 8px 9px;
+    border: 1px solid var(--ppw-border);
+    border-radius: 7px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--ppw-text);
+  }
+  .row input:focus, .row select:focus { outline: none; border-color: var(--ppw-green); }
+  .remove-btn {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    border: 1px solid var(--ppw-border);
+    background: #fff;
+    color: var(--ppw-muted);
+    font-size: 14px;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .remove-btn:hover { background: var(--ppw-amber-light); color: var(--ppw-amber); }
+  .add-btn {
+    width: 100%;
+    padding: 9px;
+    background: #fff;
+    border: 1px dashed var(--ppw-border);
+    border-radius: 8px;
+    color: var(--ppw-green-dark);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    margin: 8px 0 16px 0;
+  }
+  .add-btn:hover { background: var(--ppw-green-light); }
+  button.primary {
+    width: 100%;
+    padding: 13px;
+    background: var(--ppw-green);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 14px;
+  }
+  button.primary:hover { background: var(--ppw-green-dark); }
+  .result { display: none; }
+  .result.show { display: block; }
+  .rank-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--ppw-green-light);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+  }
+  .rank-row .rank-num {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--ppw-green-dark);
+    min-width: 20px;
+  }
+  .rank-row .rank-name {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ppw-text);
+  }
+  .rank-row .rank-score {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ppw-green-dark);
+  }
+  .note {
+    font-size: 12px;
+    color: var(--ppw-muted);
+    text-align: center;
+    padding: 10px;
+    line-height: 1.4;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="eyebrow">Plant Powered Performance World</div>
+  <h1>Project Priority Ranker</h1>
+  <div class="desc">Rate each active project on urgency and importance (1-5) — get them ranked so the "what should I actually focus on" decision isn't a guess.</div>
+
+  <div class="col-labels">
+    <div>Project</div>
+    <div>Urgency</div>
+    <div>Importance</div>
+    <div></div>
+  </div>
+  <div id="rows"></div>
+
+  <button class="add-btn" id="addBtn">+ Add another project</button>
+  <button class="primary" id="rankBtn">Rank My Projects</button>
+
+  <div class="result" id="resultBox"></div>
+</div>
+
+<script>
+(function() {
+  const rowsEl = document.getElementById('rows');
+
+  function scaleOptions() {
+    const sel = document.createElement('select');
+    for (let i = 1; i <= 5; i++) {
+      const o = document.createElement('option');
+      o.value = i;
+      o.textContent = i;
+      sel.appendChild(o);
+    }
+    sel.value = '3';
+    return sel;
+  }
+
+  function addRow(name = '') {
+    const row = document.createElement('div');
+    row.className = 'row';
+
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.placeholder = 'e.g. Client proposal';
+    nameInput.value = name;
+
+    const urgencySelect = scaleOptions();
+    const importanceSelect = scaleOptions();
+
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'remove-btn';
+    removeBtn.textContent = '×';
+    removeBtn.addEventListener('click', () => row.remove());
+
+    row.appendChild(nameInput);
+    row.appendChild(urgencySelect);
+    row.appendChild(importanceSelect);
+    row.appendChild(removeBtn);
+    rowsEl.appendChild(row);
+  }
+
+  ['Project A', 'Project B', 'Project C'].forEach(addRow);
+  document.getElementById('addBtn').addEventListener('click', () => addRow());
+
+  document.getElementById('rankBtn').addEventListener('click', () => {
+    const resultBox = document.getElementById('resultBox');
+    resultBox.innerHTML = '';
+    resultBox.classList.add('show');
+
+    const projects = Array.from(rowsEl.querySelectorAll('.row'))
+      .map(row => {
+        const name = row.children[0].value.trim();
+        const urgency = parseInt(row.children[1].value, 10);
+        const importance = parseInt(row.children[2].value, 10);
+        return { name, urgency, importance, score: urgency * importance };
+      })
+      .filter(p => p.name !== '');
+
+    if (projects.length === 0) {
+      resultBox.innerHTML = '<div class="note">Add at least one project to rank.</div>';
+      return;
+    }
+
+    projects.sort((a, b) => b.score - a.score);
+
+    projects.forEach((p, i) => {
+      const row = document.createElement('div');
+      row.className = 'rank-row';
+      row.innerHTML = `<span class="rank-num">#${i + 1}</span><span class="rank-name">${p.name}</span><span class="rank-score">Score: ${p.score}/25</span>`;
+      resultBox.appendChild(row);
+    });
+
+    const note = document.createElement('div');
+    note.className = 'note';
+    note.textContent = 'Score = Urgency × Importance. Highest score isn\'t automatically "do this first" — use it as a prompt to check your instinct, not to override it blindly.';
+    resultBox.appendChild(note);
+  });
+})();
+</script>
+
+</body>
+</html>
