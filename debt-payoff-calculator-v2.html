@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Debt Payoff Calculator</title>
+<style>
+  :root {
+    --ppw-green: #2f6b3a;
+    --ppw-green-dark: #1f4d28;
+    --ppw-green-light: #eaf5ec;
+    --ppw-border: #cfe3d3;
+    --ppw-text: #1a2e1e;
+    --ppw-muted: #5c6f60;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: transparent;
+    color: var(--ppw-text);
+  }
+  .card {
+    background: #ffffff;
+    border: 1px solid var(--ppw-border);
+    border-radius: 14px;
+    padding: 24px;
+    max-width: 440px;
+    margin: 0 auto;
+  }
+  .header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .eyebrow {
+    color: var(--ppw-green);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  h1 { font-size: 20px; margin: 0 0 8px 0; }
+  .desc { font-size: 13px; color: var(--ppw-muted); margin-bottom: 18px; line-height: 1.4; }
+  .currency-select {
+    padding: 6px 8px;
+    border: 1px solid var(--ppw-border);
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ppw-green-dark);
+    background: #fff;
+    flex-shrink: 0;
+  }
+  .currency-select:focus { outline: none; border-color: var(--ppw-green); }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; }
+  .input-wrap { position: relative; }
+  .input-wrap span {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--ppw-muted);
+    font-size: 14px;
+  }
+  .field input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--ppw-border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--ppw-text);
+  }
+  .field input.no-prefix { padding-left: 12px; }
+  .field .input-wrap input { padding-left: 26px; }
+  .field input:focus { outline: none; border-color: var(--ppw-green); }
+  button.primary {
+    width: 100%;
+    padding: 13px;
+    background: var(--ppw-green);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    margin: 6px 0 16px 0;
+  }
+  button.primary:hover { background: var(--ppw-green-dark); }
+  .result { display: none; }
+  .result.show { display: block; }
+  .snapshot-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .snapshot-box {
+    background: var(--ppw-green-light);
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+  }
+  .snapshot-num { font-size: 18px; font-weight: 800; color: var(--ppw-green-dark); line-height: 1.1; }
+  .snapshot-label { font-size: 10px; color: var(--ppw-muted); margin-top: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; }
+  .note {
+    font-size: 12px;
+    color: var(--ppw-muted);
+    text-align: center;
+    padding: 10px;
+    background: var(--ppw-green-light);
+    border-radius: 8px;
+    line-height: 1.4;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="header-row">
+    <div>
+      <div class="eyebrow">Plant Powered Performance World</div>
+      <h1>Debt Payoff Calculator</h1>
+    </div>
+    <select class="currency-select" id="currencySelect">
+      <option value="£">£ GBP</option>
+      <option value="$">$ USD</option>
+      <option value="€">€ EUR</option>
+      <option value="A$">A$ AUD</option>
+      <option value="C$">C$ CAD</option>
+      <option value="NZ$">NZ$ NZD</option>
+    </select>
+  </div>
+  <div class="desc">Enter a balance, interest rate, and monthly payment — see roughly how long it'll take and what it costs in interest.</div>
+
+  <div class="field">
+    <label for="balance">Current balance</label>
+    <div class="input-wrap">
+      <span id="balanceSymbol">£</span>
+      <input type="number" id="balance" placeholder="0" min="0" step="0.01">
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="rate">Interest rate (APR %)</label>
+    <input class="no-prefix" type="number" id="rate" placeholder="0" min="0" step="0.1">
+  </div>
+
+  <div class="field">
+    <label for="payment">Monthly payment</label>
+    <div class="input-wrap">
+      <span id="paymentSymbol">£</span>
+      <input type="number" id="payment" placeholder="0" min="0" step="0.01">
+    </div>
+  </div>
+
+  <button class="primary" id="calcBtn">Calculate Payoff Time</button>
+
+  <div class="result" id="resultBox">
+    <div class="snapshot-row">
+      <div class="snapshot-box">
+        <div class="snapshot-num" id="monthsLeft">–</div>
+        <div class="snapshot-label">Months To Clear</div>
+      </div>
+      <div class="snapshot-box">
+        <div class="snapshot-num" id="totalInterest">0</div>
+        <div class="snapshot-label">Total Interest</div>
+      </div>
+    </div>
+    <div class="note" id="noteBox"></div>
+  </div>
+</div>
+
+<script>
+(function() {
+  let currency = '£';
+
+  const currencySelect = document.getElementById('currencySelect');
+  currencySelect.addEventListener('change', () => {
+    currency = currencySelect.value;
+    document.getElementById('balanceSymbol').textContent = currency;
+    document.getElementById('paymentSymbol').textContent = currency;
+  });
+
+  document.getElementById('calcBtn').addEventListener('click', () => {
+    const balance = parseFloat(document.getElementById('balance').value) || 0;
+    const aprPct = parseFloat(document.getElementById('rate').value) || 0;
+    const payment = parseFloat(document.getElementById('payment').value) || 0;
+    const noteBox = document.getElementById('noteBox');
+    const monthsEl = document.getElementById('monthsLeft');
+    const interestEl = document.getElementById('totalInterest');
+
+    if (balance <= 0 || payment <= 0) {
+      monthsEl.textContent = '–';
+      interestEl.textContent = currency + '0';
+      noteBox.textContent = 'Enter a balance and monthly payment to calculate.';
+      document.getElementById('resultBox').classList.add('show');
+      return;
+    }
+
+    const monthlyRate = aprPct / 100 / 12;
+
+    if (monthlyRate > 0 && payment <= balance * monthlyRate) {
+      monthsEl.textContent = '∞';
+      interestEl.textContent = '–';
+      noteBox.textContent = "This payment doesn't cover the monthly interest — the balance won't go down at this rate. It needs to increase.";
+      document.getElementById('resultBox').classList.add('show');
+      return;
+    }
+
+    let months = 0;
+    let remaining = balance;
+    let totalInterest = 0;
+    const maxMonths = 1200;
+
+    if (monthlyRate === 0) {
+      months = Math.ceil(balance / payment);
+      totalInterest = 0;
+    } else {
+      while (remaining > 0 && months < maxMonths) {
+        const interest = remaining * monthlyRate;
+        totalInterest += interest;
+        remaining = remaining + interest - payment;
+        months++;
+      }
+    }
+
+    monthsEl.textContent = months >= maxMonths ? '100+ yrs' : months;
+    interestEl.textContent = currency + Math.round(totalInterest).toLocaleString('en-GB');
+
+    const years = Math.floor(months / 12);
+    const remMonths = months % 12;
+    let timeStr = '';
+    if (years > 0) timeStr += years + (years === 1 ? ' year ' : ' years ');
+    if (remMonths > 0 || years === 0) timeStr += remMonths + (remMonths === 1 ? ' month' : ' months');
+
+    if (months < maxMonths) {
+      noteBox.textContent = `Clear at this rate in about ${timeStr.trim()}, paying roughly ${currency}${Math.round(totalInterest).toLocaleString('en-GB')} in interest along the way.`;
+    } else {
+      noteBox.textContent = 'At this payment, it would take over 100 years — the payment needs to increase significantly.';
+    }
+
+    document.getElementById('resultBox').classList.add('show');
+  });
+})();
+</script>
+
+</body>
+</html>
