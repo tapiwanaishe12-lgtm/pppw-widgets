@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Project Momentum Checker</title>
+<style>
+  :root {
+    --ppw-green: #2f6b3a;
+    --ppw-green-dark: #1f4d28;
+    --ppw-green-light: #eaf5ec;
+    --ppw-amber-light: #fdf3e0;
+    --ppw-amber: #a8721f;
+    --ppw-red-light: #fbe4e2;
+    --ppw-red: #a83a2f;
+    --ppw-border: #cfe3d3;
+    --ppw-text: #1a2e1e;
+    --ppw-muted: #5c6f60;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: transparent;
+    color: var(--ppw-text);
+  }
+  .card {
+    background: #ffffff;
+    border: 1px solid var(--ppw-border);
+    border-radius: 14px;
+    padding: 24px;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  .eyebrow {
+    color: var(--ppw-green);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  h1 { font-size: 20px; margin: 0 0 8px 0; }
+  .desc { font-size: 13px; color: var(--ppw-muted); margin-bottom: 16px; line-height: 1.4; }
+  .col-labels {
+    display: grid;
+    grid-template-columns: 1.3fr 1.1fr 0.8fr auto;
+    gap: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--ppw-muted);
+    margin-bottom: 6px;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 1.3fr 1.1fr 0.8fr auto;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .row input, .row select {
+    width: 100%;
+    padding: 8px 9px;
+    border: 1px solid var(--ppw-border);
+    border-radius: 7px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--ppw-text);
+  }
+  .row input:focus, .row select:focus { outline: none; border-color: var(--ppw-green); }
+  .remove-btn {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    border: 1px solid var(--ppw-border);
+    background: #fff;
+    color: var(--ppw-muted);
+    font-size: 14px;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .remove-btn:hover { background: var(--ppw-amber-light); color: var(--ppw-amber); }
+  .add-btn {
+    width: 100%;
+    padding: 9px;
+    background: #fff;
+    border: 1px dashed var(--ppw-border);
+    border-radius: 8px;
+    color: var(--ppw-green-dark);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    margin: 8px 0 16px 0;
+  }
+  .add-btn:hover { background: var(--ppw-green-light); }
+  button.primary {
+    width: 100%;
+    padding: 13px;
+    background: var(--ppw-green);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 14px;
+  }
+  button.primary:hover { background: var(--ppw-green-dark); }
+  .result { display: none; }
+  .result.show { display: block; }
+  .status-row {
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+  .status-row.fresh { background: var(--ppw-green-light); }
+  .status-row.cooling { background: var(--ppw-amber-light); }
+  .status-row.cold { background: var(--ppw-red-light); }
+  .status-row .top-line {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 700;
+  }
+  .status-row.fresh .top-line { color: var(--ppw-green-dark); }
+  .status-row.cooling .top-line { color: var(--ppw-amber); }
+  .status-row.cold .top-line { color: var(--ppw-red); }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="eyebrow">Plant Powered Performance World</div>
+  <h1>Project Momentum Checker</h1>
+  <div class="desc">Add each personal project and when you last worked on it — see which ones are still warm and which are quietly going cold.</div>
+
+  <div class="col-labels">
+    <div>Project</div>
+    <div>Last Worked On</div>
+    <div>Excitement</div>
+    <div></div>
+  </div>
+  <div id="rows"></div>
+
+  <button class="add-btn" id="addBtn">+ Add another project</button>
+  <button class="primary" id="checkBtn">Check My Momentum</button>
+
+  <div class="result" id="resultBox"></div>
+</div>
+
+<script>
+(function() {
+  const rowsEl = document.getElementById('rows');
+
+  function excitementSelect() {
+    const sel = document.createElement('select');
+    for (let i = 1; i <= 5; i++) {
+      const o = document.createElement('option');
+      o.value = i;
+      o.textContent = i + '/5';
+      sel.appendChild(o);
+    }
+    sel.value = '3';
+    return sel;
+  }
+
+  function addRow(name = '') {
+    const row = document.createElement('div');
+    row.className = 'row';
+
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.placeholder = 'e.g. Learn pottery';
+    nameInput.value = name;
+
+    const dateInput = document.createElement('input');
+    dateInput.type = 'date';
+
+    const excitementSelectEl = excitementSelect();
+
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'remove-btn';
+    removeBtn.textContent = '×';
+    removeBtn.addEventListener('click', () => row.remove());
+
+    row.appendChild(nameInput);
+    row.appendChild(dateInput);
+    row.appendChild(excitementSelectEl);
+    row.appendChild(removeBtn);
+    rowsEl.appendChild(row);
+  }
+
+  ['Project A', 'Project B'].forEach(addRow);
+  document.getElementById('addBtn').addEventListener('click', () => addRow());
+
+  document.getElementById('checkBtn').addEventListener('click', () => {
+    const resultBox = document.getElementById('resultBox');
+    resultBox.innerHTML = '';
+    resultBox.classList.add('show');
+
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    let anyEntries = false;
+
+    const entries = [];
+
+    rowsEl.querySelectorAll('.row').forEach(row => {
+      const name = row.children[0].value.trim();
+      const dateStr = row.children[1].value;
+      const excitement = parseInt(row.children[2].value, 10);
+
+      if (!name || !dateStr) return;
+      anyEntries = true;
+
+      const lastDate = new Date(dateStr + 'T00:00:00');
+      const daysSince = Math.round((today - lastDate) / 86400000);
+
+      entries.push({ name, daysSince, excitement });
+    });
+
+    entries.sort((a, b) => b.daysSince - a.daysSince);
+
+    entries.forEach(e => {
+      let cls, label;
+      if (e.daysSince <= 7) {
+        cls = 'fresh';
+        label = `Active — ${e.daysSince}d ago`;
+      } else if (e.daysSince <= 30) {
+        cls = 'cooling';
+        label = `Cooling — ${e.daysSince}d ago`;
+      } else {
+        cls = 'cold';
+        label = `Gone cold — ${e.daysSince}d ago`;
+      }
+
+      const note = (cls === 'cold' && e.excitement >= 4)
+        ? ' (still rated high excitement — worth reviving or being honest it\'s stalled)'
+        : '';
+
+      const row = document.createElement('div');
+      row.className = 'status-row ' + cls;
+      row.innerHTML = `<div class="top-line"><span>${e.name}</span><span>${label}</span></div>${note ? `<div style="font-size:11px;color:var(--ppw-muted);margin-top:4px;">${note}</div>` : ''}`;
+      resultBox.appendChild(row);
+    });
+
+    if (!anyEntries) {
+      resultBox.innerHTML = '<div class="status-row cooling"><div class="top-line">Add a name and date to at least one project</div></div>';
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
