@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Weekly Capacity Checker</title>
+<style>
+  :root {
+    --ppw-green: #2f6b3a;
+    --ppw-green-dark: #1f4d28;
+    --ppw-green-light: #eaf5ec;
+    --ppw-amber-light: #fdf3e0;
+    --ppw-amber: #a8721f;
+    --ppw-red-light: #fbe4e2;
+    --ppw-red: #a83a2f;
+    --ppw-border: #cfe3d3;
+    --ppw-text: #1a2e1e;
+    --ppw-muted: #5c6f60;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: transparent;
+    color: var(--ppw-text);
+  }
+  .card {
+    background: #ffffff;
+    border: 1px solid var(--ppw-border);
+    border-radius: 14px;
+    padding: 24px;
+    max-width: 460px;
+    margin: 0 auto;
+  }
+  .eyebrow {
+    color: var(--ppw-green);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  h1 { font-size: 20px; margin: 0 0 8px 0; }
+  .desc { font-size: 13px; color: var(--ppw-muted); margin-bottom: 16px; line-height: 1.4; }
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; }
+  .field input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--ppw-border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--ppw-text);
+  }
+  .field input:focus { outline: none; border-color: var(--ppw-green); }
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--ppw-border);
+  }
+  .row:last-of-type { border-bottom: none; }
+  .row-label { font-size: 14px; font-weight: 600; }
+  .row input {
+    width: 70px;
+    padding: 7px 9px;
+    border: 1px solid var(--ppw-border);
+    border-radius: 7px;
+    font-size: 13px;
+    text-align: center;
+    font-family: inherit;
+  }
+  .row input:focus { outline: none; border-color: var(--ppw-green); }
+  button.primary {
+    width: 100%;
+    padding: 13px;
+    background: var(--ppw-green);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    margin: 18px 0 12px 0;
+  }
+  button.primary:hover { background: var(--ppw-green-dark); }
+  .result { display: none; border-radius: 8px; padding: 12px; font-size: 13px; line-height: 1.4; }
+  .result.show { display: block; }
+  .result.balanced { background: var(--ppw-green-light); color: var(--ppw-green-dark); }
+  .result.flag { background: var(--ppw-red-light); color: var(--ppw-red); }
+  .result.tight { background: var(--ppw-amber-light); color: var(--ppw-amber); }
+  .result strong { display: block; margin-bottom: 3px; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="eyebrow">Plant Powered Performance World</div>
+  <h1>Weekly Capacity Checker</h1>
+  <div class="desc">Estimate hours needed per category this week, and how many hours you actually have — see if the week's realistic before it starts.</div>
+
+  <div class="field">
+    <label for="available">Hours actually available this week</label>
+    <input type="number" id="available" placeholder="e.g. 20" min="0" step="1">
+  </div>
+
+  <div id="rows"></div>
+
+  <button class="primary" id="checkBtn">Check My Capacity</button>
+
+  <div class="result" id="resultBox"></div>
+</div>
+
+<script>
+(function() {
+  const categories = ['Finance', 'Work', 'Home', 'Personal'];
+  const hours = {};
+  const rowsEl = document.getElementById('rows');
+
+  categories.forEach(cat => {
+    const row = document.createElement('div');
+    row.className = 'row';
+
+    const label = document.createElement('div');
+    label.className = 'row-label';
+    label.textContent = cat;
+
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.placeholder = '0';
+    input.min = '0';
+    input.step = '0.5';
+
+    row.appendChild(label);
+    row.appendChild(input);
+    rowsEl.appendChild(row);
+
+    hours[cat] = input;
+  });
+
+  document.getElementById('checkBtn').addEventListener('click', () => {
+    const resultBox = document.getElementById('resultBox');
+    const available = parseFloat(document.getElementById('available').value) || 0;
+    let totalNeeded = 0;
+
+    categories.forEach(cat => {
+      totalNeeded += parseFloat(hours[cat].value) || 0;
+    });
+
+    if (available === 0 && totalNeeded === 0) {
+      resultBox.className = 'result show flag';
+      resultBox.innerHTML = '<strong>Add your numbers first</strong>Enter available hours and an estimate for at least one category.';
+      return;
+    }
+
+    const diff = available - totalNeeded;
+
+    if (diff < 0) {
+      resultBox.className = 'result show flag';
+      resultBox.innerHTML = `<strong>Overcommitted by ${Math.abs(diff)} hours</strong>You've planned ${totalNeeded} hours against ${available} available. Something on the list needs to move, shrink, or wait — better to know now than mid-week.`;
+    } else if (diff <= available * 0.1) {
+      resultBox.className = 'result show tight';
+      resultBox.innerHTML = `<strong>Tight but workable — ${diff} hours of slack</strong>${totalNeeded} hours planned against ${available} available. Little room for anything unexpected this week.`;
+    } else {
+      resultBox.className = 'result show balanced';
+      resultBox.innerHTML = `<strong>Realistic week — ${diff} hours of slack</strong>${totalNeeded} hours planned against ${available} available, with reasonable room to breathe.`;
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
