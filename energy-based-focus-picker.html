@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Energy-Based Focus Picker</title>
+<style>
+  :root {
+    --ppw-green: #2f6b3a;
+    --ppw-green-dark: #1f4d28;
+    --ppw-green-light: #eaf5ec;
+    --ppw-border: #cfe3d3;
+    --ppw-text: #1a2e1e;
+    --ppw-muted: #5c6f60;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: transparent;
+    color: var(--ppw-text);
+  }
+  .card {
+    background: #ffffff;
+    border: 1px solid var(--ppw-border);
+    border-radius: 14px;
+    padding: 24px;
+    max-width: 440px;
+    margin: 0 auto;
+  }
+  .eyebrow {
+    color: var(--ppw-green);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  h1 { font-size: 20px; margin: 0 0 8px 0; }
+  .desc { font-size: 13px; color: var(--ppw-muted); margin-bottom: 18px; line-height: 1.4; }
+  .label { font-size: 12px; font-weight: 600; margin-bottom: 8px; }
+  .option-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+  .option-btn {
+    padding: 12px 4px;
+    border: 1px solid var(--ppw-border);
+    background: #fff;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ppw-text);
+    cursor: pointer;
+    text-align: center;
+  }
+  .option-btn:hover { background: var(--ppw-green-light); }
+  .option-btn.selected {
+    background: var(--ppw-green);
+    border-color: var(--ppw-green);
+    color: #fff;
+  }
+  button.primary {
+    width: 100%;
+    padding: 13px;
+    background: var(--ppw-green);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 14px;
+  }
+  button.primary:hover { background: var(--ppw-green-dark); }
+  .result { display: none; border-radius: 8px; padding: 14px; background: var(--ppw-green-light); }
+  .result.show { display: block; }
+  .result-title { font-size: 13px; font-weight: 700; color: var(--ppw-green-dark); margin-bottom: 6px; }
+  .result-items { font-size: 13px; color: var(--ppw-text); line-height: 1.7; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="eyebrow">Plant Powered Performance World</div>
+  <h1>Energy-Based Focus Picker</h1>
+  <div class="desc">Pick your energy right now — get a suggestion for what kind of task actually fits, instead of defaulting to whatever's loudest.</div>
+
+  <div class="label">Current energy level</div>
+  <div class="option-grid" id="energyGrid">
+    <button class="option-btn" data-level="Low">Low</button>
+    <button class="option-btn" data-level="Medium">Medium</button>
+    <button class="option-btn" data-level="High">High</button>
+  </div>
+
+  <button class="primary" id="pickBtn">What Should I Focus On</button>
+
+  <div class="result" id="resultBox"></div>
+</div>
+
+<script>
+(function() {
+  const suggestions = {
+    'Low': {
+      title: 'Low energy — go for easy wins',
+      items: [
+        'Quick admin: emails, filing, small errands',
+        'Tidying or organizing a small space',
+        'Anything on your list you\'ve been avoiding purely because it\'s boring, not hard',
+        'A short walk, then reassess — sometimes low energy is really just needing a reset'
+      ]
+    },
+    'Medium': {
+      title: 'Medium energy — steady, moderate tasks',
+      items: [
+        'Routine work that needs focus but not intensity',
+        'Planning or organizing something for later',
+        'Responding to messages that need a real answer, not just a quick one',
+        'Anything you can do at a steady pace without pushing hard'
+      ]
+    },
+    'High': {
+      title: 'High energy — protect this for the hard stuff',
+      items: [
+        'Your most demanding or important task of the day',
+        'Anything requiring deep focus or creative thinking',
+        'A conversation or decision you\'ve been putting off',
+        'Starting something new rather than just maintaining what\'s already moving'
+      ]
+    }
+  };
+
+  const energyGrid = document.getElementById('energyGrid');
+  let selectedLevel = null;
+
+  energyGrid.querySelectorAll('.option-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      energyGrid.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedLevel = btn.dataset.level;
+    });
+  });
+
+  document.getElementById('pickBtn').addEventListener('click', () => {
+    const resultBox = document.getElementById('resultBox');
+    resultBox.classList.add('show');
+
+    if (!selectedLevel) {
+      resultBox.innerHTML = '<div class="result-title">Pick an energy level above first</div>';
+      return;
+    }
+
+    const s = suggestions[selectedLevel];
+    resultBox.innerHTML = `<div class="result-title">${s.title}</div><div class="result-items">${s.items.map(i => '• ' + i).join('<br>')}</div>`;
+  });
+})();
+</script>
+
+</body>
+</html>
