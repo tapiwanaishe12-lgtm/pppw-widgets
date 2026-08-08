@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Monthly Pacing Checker</title>
+<style>
+  :root {
+    --ppw-green: #2f6b3a;
+    --ppw-green-dark: #1f4d28;
+    --ppw-green-light: #eaf5ec;
+    --ppw-amber-light: #fdf3e0;
+    --ppw-amber: #a8721f;
+    --ppw-red-light: #fbe4e2;
+    --ppw-red: #a83a2f;
+    --ppw-border: #cfe3d3;
+    --ppw-text: #1a2e1e;
+    --ppw-muted: #5c6f60;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: transparent;
+    color: var(--ppw-text);
+  }
+  .card {
+    background: #ffffff;
+    border: 1px solid var(--ppw-border);
+    border-radius: 14px;
+    padding: 24px;
+    max-width: 440px;
+    margin: 0 auto;
+  }
+  .eyebrow {
+    color: var(--ppw-green);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  h1 { font-size: 20px; margin: 0 0 8px 0; }
+  .desc { font-size: 13px; color: var(--ppw-muted); margin-bottom: 18px; line-height: 1.4; }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; }
+  .field input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--ppw-border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--ppw-text);
+  }
+  .field input:focus { outline: none; border-color: var(--ppw-green); }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  button.primary {
+    width: 100%;
+    padding: 13px;
+    background: var(--ppw-green);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    margin: 6px 0 16px 0;
+  }
+  button.primary:hover { background: var(--ppw-green-dark); }
+  .result { display: none; }
+  .result.show { display: block; }
+  .bar-row { margin-bottom: 12px; }
+  .bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ppw-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 5px;
+  }
+  .progress-track {
+    width: 100%;
+    height: 10px;
+    background: var(--ppw-green-light);
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  .progress-fill { height: 100%; border-radius: 5px; transition: width 0.2s ease; }
+  .progress-fill.time { background: var(--ppw-muted); }
+  .progress-fill.goals { background: var(--ppw-green); }
+  .verdict { border-radius: 8px; padding: 12px; font-size: 13px; line-height: 1.4; margin-top: 8px; }
+  .verdict.balanced { background: var(--ppw-green-light); color: var(--ppw-green-dark); }
+  .verdict.flag { background: var(--ppw-red-light); color: var(--ppw-red); }
+  .verdict.tight { background: var(--ppw-amber-light); color: var(--ppw-amber); }
+  .verdict strong { display: block; margin-bottom: 3px; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="eyebrow">Plant Powered Performance World</div>
+  <h1>Monthly Pacing Checker</h1>
+  <div class="desc">Compare how much of the month has passed against how many of this month's goals are actually done.</div>
+
+  <div class="two-col">
+    <div class="field">
+      <label for="totalDays">Days in this month</label>
+      <input type="number" id="totalDays" placeholder="e.g. 31" min="1" step="1">
+    </div>
+    <div class="field">
+      <label for="dayNow">Today's day of month</label>
+      <input type="number" id="dayNow" placeholder="e.g. 14" min="1" step="1">
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="field">
+      <label for="totalGoals">Goals set this month</label>
+      <input type="number" id="totalGoals" placeholder="e.g. 5" min="0" step="1">
+    </div>
+    <div class="field">
+      <label for="doneGoals">Goals done so far</label>
+      <input type="number" id="doneGoals" placeholder="e.g. 2" min="0" step="1">
+    </div>
+  </div>
+
+  <button class="primary" id="checkBtn">Check My Pacing</button>
+
+  <div class="result" id="resultBox">
+    <div class="bar-row">
+      <div class="bar-label"><span>Month Elapsed</span><span id="timePct">0%</span></div>
+      <div class="progress-track"><div class="progress-fill time" id="timeFill" style="width:0%;"></div></div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label"><span>Goals Completed</span><span id="goalsPct">0%</span></div>
+      <div class="progress-track"><div class="progress-fill goals" id="goalsFill" style="width:0%;"></div></div>
+    </div>
+    <div class="verdict" id="verdictBox"></div>
+  </div>
+</div>
+
+<script>
+(function() {
+  document.getElementById('checkBtn').addEventListener('click', () => {
+    const totalDays = parseInt(document.getElementById('totalDays').value, 10) || 0;
+    const dayNow = parseInt(document.getElementById('dayNow').value, 10) || 0;
+    const totalGoals = parseInt(document.getElementById('totalGoals').value, 10) || 0;
+    const doneGoals = parseInt(document.getElementById('doneGoals').value, 10) || 0;
+
+    const resultBox = document.getElementById('resultBox');
+    const verdictBox = document.getElementById('verdictBox');
+
+    if (totalDays === 0) {
+      verdictBox.className = 'verdict flag';
+      verdictBox.innerHTML = '<strong>Add the days in this month first</strong>Enter the total days and today\'s date to calculate pacing.';
+      resultBox.classList.add('show');
+      return;
+    }
+
+    const timePct = Math.min(100, Math.round((dayNow / totalDays) * 100));
+    const goalsPct = totalGoals > 0 ? Math.min(100, Math.round((doneGoals / totalGoals) * 100)) : 0;
+
+    document.getElementById('timePct').textContent = timePct + '%';
+    document.getElementById('timeFill').style.width = timePct + '%';
+    document.getElementById('goalsPct').textContent = goalsPct + '%';
+    document.getElementById('goalsFill').style.width = goalsPct + '%';
+
+    if (totalGoals === 0) {
+      verdictBox.className = 'verdict flag';
+      verdictBox.innerHTML = `<strong>${timePct}% of the month has passed</strong>Add how many goals you set this month to see if you're pacing on track.`;
+    } else {
+      const gap = goalsPct - timePct;
+      if (gap >= -5) {
+        verdictBox.className = 'verdict balanced';
+        verdictBox.innerHTML = `<strong>On pace or ahead</strong>${goalsPct}% of goals done against ${timePct}% of the month gone — tracking well.`;
+      } else if (gap >= -20) {
+        verdictBox.className = 'verdict tight';
+        verdictBox.innerHTML = `<strong>Slightly behind pace</strong>${goalsPct}% of goals done against ${timePct}% of the month gone — still recoverable with focused effort.`;
+      } else {
+        verdictBox.className = 'verdict flag';
+        verdictBox.innerHTML = `<strong>Noticeably behind pace</strong>${goalsPct}% of goals done against ${timePct}% of the month gone — worth reviewing whether the goals or the timeline need adjusting.`;
+      }
+    }
+
+    resultBox.classList.add('show');
+  });
+})();
+</script>
+
+</body>
+</html>
