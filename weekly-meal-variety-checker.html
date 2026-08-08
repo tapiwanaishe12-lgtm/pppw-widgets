@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Weekly Meal Variety Checker</title>
+<style>
+  :root {
+    --ppw-green: #2f6b3a;
+    --ppw-green-dark: #1f4d28;
+    --ppw-green-light: #eaf5ec;
+    --ppw-amber-light: #fdf3e0;
+    --ppw-amber: #a8721f;
+    --ppw-border: #cfe3d3;
+    --ppw-text: #1a2e1e;
+    --ppw-muted: #5c6f60;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: transparent;
+    color: var(--ppw-text);
+  }
+  .card {
+    background: #ffffff;
+    border: 1px solid var(--ppw-border);
+    border-radius: 14px;
+    padding: 24px;
+    max-width: 460px;
+    margin: 0 auto;
+  }
+  .eyebrow {
+    color: var(--ppw-green);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  h1 { font-size: 20px; margin: 0 0 8px 0; }
+  .desc { font-size: 13px; color: var(--ppw-muted); margin-bottom: 16px; line-height: 1.4; }
+  .row {
+    display: grid;
+    grid-template-columns: 70px 1fr;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .row .day-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ppw-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .row input {
+    padding: 9px 11px;
+    border: 1px solid var(--ppw-border);
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--ppw-text);
+  }
+  .row input:focus { outline: none; border-color: var(--ppw-green); }
+  button.primary {
+    width: 100%;
+    padding: 13px;
+    background: var(--ppw-green);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    margin: 14px 0 12px 0;
+  }
+  button.primary:hover { background: var(--ppw-green-dark); }
+  .result { display: none; border-radius: 8px; padding: 12px; font-size: 13px; line-height: 1.4; }
+  .result.show { display: block; }
+  .result.balanced { background: var(--ppw-green-light); color: var(--ppw-green-dark); }
+  .result.flag { background: var(--ppw-amber-light); color: var(--ppw-amber); }
+  .result strong { display: block; margin-bottom: 3px; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="eyebrow">Plant Powered Performance World</div>
+  <h1>Weekly Meal Variety Checker</h1>
+  <div class="desc">Fill in what's planned for dinner each day — check whether the week has actual variety or the same few meals on repeat.</div>
+
+  <div id="rows"></div>
+
+  <button class="primary" id="checkBtn">Check My Week</button>
+
+  <div class="result" id="resultBox"></div>
+</div>
+
+<script>
+(function() {
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const rowsEl = document.getElementById('rows');
+  const inputs = {};
+
+  days.forEach(day => {
+    const row = document.createElement('div');
+    row.className = 'row';
+
+    const label = document.createElement('div');
+    label.className = 'day-label';
+    label.textContent = day;
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = 'e.g. Lentil curry';
+
+    inputs[day] = input;
+    row.appendChild(label);
+    row.appendChild(input);
+    rowsEl.appendChild(row);
+  });
+
+  document.getElementById('checkBtn').addEventListener('click', () => {
+    const resultBox = document.getElementById('resultBox');
+    const entries = days
+      .map(day => ({ day, meal: inputs[day].value.trim() }))
+      .filter(e => e.meal !== '');
+
+    if (entries.length === 0) {
+      resultBox.className = 'result show flag';
+      resultBox.innerHTML = '<strong>No meals entered yet</strong>Fill in at least a few days to check for variety.';
+      return;
+    }
+
+    const counts = {};
+    entries.forEach(e => {
+      const key = e.meal.toLowerCase();
+      counts[key] = (counts[key] || []).concat(e.day);
+    });
+
+    const repeats = Object.entries(counts).filter(([key, days]) => days.length > 1);
+    const uniqueCount = Object.keys(counts).length;
+
+    if (repeats.length === 0) {
+      resultBox.className = 'result show balanced';
+      resultBox.innerHTML = `<strong>Good variety this week</strong>${uniqueCount} different meal${uniqueCount === 1 ? '' : 's'} planned across ${entries.length} day${entries.length === 1 ? '' : 's'}, nothing repeating.`;
+    } else {
+      const repeatList = repeats.map(([key, dayList]) => {
+        const originalCase = entries.find(e => e.meal.toLowerCase() === key).meal;
+        return `${originalCase} (${dayList.join(', ')})`;
+      }).join('; ');
+      resultBox.className = 'result show flag';
+      resultBox.innerHTML = `<strong>Some repeats this week</strong>${repeatList}. Not necessarily a problem if that's intentional — just worth checking it's a choice, not a default.`;
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
