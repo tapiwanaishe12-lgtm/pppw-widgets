@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PB Gap Calculator</title>
+<style>
+  :root {
+    --ppw-green: #2f6b3a;
+    --ppw-green-dark: #1f4d28;
+    --ppw-green-light: #eaf5ec;
+    --ppw-border: #cfe3d3;
+    --ppw-text: #1a2e1e;
+    --ppw-muted: #5c6f60;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: transparent;
+    color: var(--ppw-text);
+  }
+  .card {
+    background: #ffffff;
+    border: 1px solid var(--ppw-border);
+    border-radius: 14px;
+    padding: 24px;
+    max-width: 460px;
+    margin: 0 auto;
+  }
+  .eyebrow {
+    color: var(--ppw-green);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  h1 { font-size: 20px; margin: 0 0 8px 0; }
+  .desc { font-size: 13px; color: var(--ppw-muted); margin-bottom: 18px; line-height: 1.4; }
+  .section-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ppw-text);
+    margin: 14px 0 6px 0;
+  }
+  .row { display: flex; gap: 10px; margin-bottom: 10px; }
+  .field { flex: 1; }
+  label {
+    display: block;
+    font-size: 11px;
+    color: var(--ppw-muted);
+    margin-bottom: 4px;
+  }
+  select, input {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid var(--ppw-border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--ppw-text);
+    background: #fff;
+  }
+  select:focus, input:focus {
+    outline: none;
+    border-color: var(--ppw-green);
+  }
+  .time-row { display: flex; gap: 6px; }
+  .time-row input { text-align: center; }
+  button {
+    width: 100%;
+    margin-top: 6px;
+    padding: 11px;
+    border: none;
+    border-radius: 8px;
+    background: var(--ppw-green);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  button:hover { background: var(--ppw-green-dark); }
+  .results {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--ppw-border);
+    display: none;
+  }
+  .results.show { display: block; }
+  .result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 8px 0;
+  }
+  .result-label { font-size: 13px; color: var(--ppw-muted); }
+  .result-value { font-size: 17px; font-weight: 700; color: var(--ppw-green-dark); }
+  .highlight {
+    background: var(--ppw-green-light);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-top: 4px;
+  }
+  .error { font-size: 12px; color: #b3402a; margin-top: 6px; display: none; }
+  .error.show { display: block; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="eyebrow">Plant Powered Performance World</div>
+  <h1>PB Gap Calculator</h1>
+  <div class="desc">See exactly how much time you need to find to hit your target — and the pace you'll need to hold to get there.</div>
+
+  <div class="section-label">Distance</div>
+  <select id="distance">
+    <option value="1">1K</option>
+    <option value="5" selected>5K</option>
+    <option value="10">10K</option>
+    <option value="10.55">10 Mile</option>
+    <option value="21.1">Half Marathon</option>
+    <option value="42.2">Marathon</option>
+  </select>
+
+  <div class="row">
+    <div class="field">
+      <label>Current PB</label>
+      <div class="time-row">
+        <input type="number" id="curH" placeholder="HH" min="0" max="23">
+        <input type="number" id="curM" placeholder="MM" min="0" max="59">
+        <input type="number" id="curS" placeholder="SS" min="0" max="59">
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="field">
+      <label>Target Time</label>
+      <div class="time-row">
+        <input type="number" id="tgtH" placeholder="HH" min="0" max="23">
+        <input type="number" id="tgtM" placeholder="MM" min="0" max="59">
+        <input type="number" id="tgtS" placeholder="SS" min="0" max="59">
+      </div>
+    </div>
+  </div>
+
+  <button onclick="calculate()">Calculate Gap</button>
+  <div class="error" id="error">Enter a valid current PB and target time.</div>
+
+  <div class="results" id="results">
+    <div class="highlight">
+      <div class="result-row">
+        <span class="result-label">Time to find</span>
+        <span class="result-value" id="timeDiff">—</span>
+      </div>
+      <div class="result-row">
+        <span class="result-label">Improvement needed</span>
+        <span class="result-value" id="pctDiff">—</span>
+      </div>
+    </div>
+    <div class="result-row">
+      <span class="result-label">Current pace / km</span>
+      <span class="result-value" id="curPace">—</span>
+    </div>
+    <div class="result-row">
+      <span class="result-label">Target pace / km</span>
+      <span class="result-value" id="tgtPace">—</span>
+    </div>
+  </div>
+</div>
+
+<script>
+function toSeconds(h, m, s) {
+  h = parseInt(h) || 0;
+  m = parseInt(m) || 0;
+  s = parseInt(s) || 0;
+  return h * 3600 + m * 60 + s;
+}
+
+function formatTime(totalSeconds) {
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = Math.round(totalSeconds % 60);
+  if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+
+function formatPace(secondsPerKm) {
+  const m = Math.floor(secondsPerKm / 60);
+  const s = Math.round(secondsPerKm % 60);
+  return `${m}:${String(s).padStart(2,'0')} /km`;
+}
+
+function calculate() {
+  const distance = parseFloat(document.getElementById('distance').value);
+  const current = toSeconds(
+    document.getElementById('curH').value,
+    document.getElementById('curM').value,
+    document.getElementById('curS').value
+  );
+  const target = toSeconds(
+    document.getElementById('tgtH').value,
+    document.getElementById('tgtM').value,
+    document.getElementById('tgtS').value
+  );
+
+  const errorEl = document.getElementById('error');
+  const resultsEl = document.getElementById('results');
+
+  if (current <= 0 || target <= 0 || target >= current) {
+    errorEl.classList.add('show');
+    resultsEl.classList.remove('show');
+    return;
+  }
+  errorEl.classList.remove('show');
+
+  const diff = current - target;
+  const pctImprovement = (diff / current) * 100;
+  const curPaceSec = current / distance;
+  const tgtPaceSec = target / distance;
+
+  document.getElementById('timeDiff').textContent = formatTime(diff);
+  document.getElementById('pctDiff').textContent = pctImprovement.toFixed(1) + '%';
+  document.getElementById('curPace').textContent = formatPace(curPaceSec);
+  document.getElementById('tgtPace').textContent = formatPace(tgtPaceSec);
+
+  resultsEl.classList.add('show');
+}
+</script>
+</body>
+</html>
