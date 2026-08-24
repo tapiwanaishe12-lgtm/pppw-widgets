@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terrain Rating & Trail Kit Check</title>
+<style>
+  :root {
+    --green: #16a34a;
+    --green-dark: #15803d;
+    --green-light: #dcfce7;
+    --black: #111111;
+    --white: #ffffff;
+    --gray: #6b7280;
+    --border: #e5e7eb;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--white);
+    color: var(--black);
+    padding: 20px;
+  }
+
+  .widget {
+    max-width: 560px;
+    margin: 0 auto;
+  }
+
+  .section {
+    margin-bottom: 26px;
+  }
+
+  .section:last-child {
+    margin-bottom: 0;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 14px;
+  }
+
+  .header h2 {
+    margin: 0 0 4px 0;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--black);
+  }
+
+  .header p {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--gray);
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 24px 0;
+  }
+
+  /* Terrain Rating */
+  .terrain-scale {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+
+  .terrain-scale button {
+    aspect-ratio: 1 / 1;
+    border-radius: 8px;
+    border: 2px solid var(--border);
+    background: var(--white);
+    color: var(--black);
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    padding: 0;
+  }
+
+  .terrain-scale button:hover {
+    border-color: var(--green);
+  }
+
+  .terrain-scale button.selected {
+    background: var(--green);
+    border-color: var(--green-dark);
+    color: var(--white);
+    transform: scale(1.06);
+  }
+
+  .terrain-result {
+    background: var(--green-light);
+    border: 1px solid var(--green);
+    border-radius: 10px;
+    padding: 12px 14px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--green-dark);
+    font-weight: 700;
+    margin-bottom: 14px;
+    min-height: 20px;
+  }
+
+  .terrain-result.empty {
+    color: var(--gray);
+    font-weight: 500;
+  }
+
+  .tag-label {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--gray);
+    margin-bottom: 8px;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .tags button {
+    border: 2px solid var(--border);
+    background: var(--white);
+    color: var(--black);
+    border-radius: 999px;
+    padding: 7px 13px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .tags button:hover {
+    border-color: var(--green);
+  }
+
+  .tags button.selected {
+    background: var(--green);
+    border-color: var(--green-dark);
+    color: var(--white);
+  }
+
+  /* Trail Kit Check */
+  .kit-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 16px;
+    margin-bottom: 16px;
+  }
+
+  .kit-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 0;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .kit-item .box {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    border: 2px solid var(--border);
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+  }
+
+  .kit-item.checked .box {
+    background: var(--green);
+    border-color: var(--green-dark);
+  }
+
+  .kit-item.checked .box::after {
+    content: "✓";
+    color: var(--white);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .kit-item span.label {
+    font-size: 13px;
+    color: var(--black);
+    transition: color 0.15s ease;
+  }
+
+  .kit-item.checked span.label {
+    color: var(--gray);
+    text-decoration: line-through;
+  }
+
+  .kit-status {
+    text-align: center;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    background: #f3f4f6;
+    color: var(--gray);
+    transition: all 0.2s ease;
+  }
+
+  .kit-status.ready {
+    background: var(--green-light);
+    color: var(--green-dark);
+    border: 1px solid var(--green);
+  }
+</style>
+</head>
+<body>
+
+<div class="widget">
+
+  <div class="section">
+    <div class="header">
+      <h2>⛰️ How Technical Was It?</h2>
+      <p>Elevation is in the log above. This is how the terrain actually felt underfoot.</p>
+    </div>
+
+    <div class="terrain-scale" id="terrainScale"></div>
+
+    <div class="terrain-result empty" id="terrainResult">
+      Rate the technicality of today's trail
+    </div>
+
+    <div class="tag-label">CONDITIONS (tap all that apply)</div>
+    <div class="tags" id="tags">
+      <button data-tag="Muddy">Muddy</button>
+      <button data-tag="Rocky">Rocky</button>
+      <button data-tag="Root-Heavy">Root-Heavy</button>
+      <button data-tag="Exposed">Exposed</button>
+      <button data-tag="Wet">Wet</button>
+      <button data-tag="Dry & Dusty">Dry & Dusty</button>
+      <button data-tag="Steep">Steep</button>
+      <button data-tag="Overgrown">Overgrown</button>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section">
+    <div class="header">
+      <h2>🎒 Trail Kit Ready Check</h2>
+      <p>Tap each item off before you head out.</p>
+    </div>
+
+    <div class="kit-columns" id="kitColumns"></div>
+
+    <div class="kit-status" id="kitStatus">0 of 10 packed</div>
+  </div>
+
+</div>
+
+<script>
+  // Terrain Rating
+  const terrainLabels = ["Smooth & Easy", "Mostly Smooth", "Mixed Terrain", "Technical", "Gnarly Singletrack"];
+  const terrainScale = document.getElementById('terrainScale');
+  const terrainResult = document.getElementById('terrainResult');
+
+  for (let i = 1; i <= 5; i++) {
+    const btn = document.createElement('button');
+    btn.textContent = i;
+    btn.addEventListener('click', () => {
+      terrainScale.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      terrainResult.classList.remove('empty');
+      terrainResult.textContent = `${i}/5 — ${terrainLabels[i - 1]}`;
+    });
+    terrainScale.appendChild(btn);
+  }
+
+  document.querySelectorAll('#tags button').forEach(btn => {
+    btn.addEventListener('click', () => btn.classList.toggle('selected'));
+  });
+
+  // Trail Kit Ready Check
+  const kitItems = [
+    "Hydration Vest/Pack Filled",
+    "Trail Shoes Laced & Tied",
+    "Gels & Nutrition Packed",
+    "Phone Charged & Maps Downloaded",
+    "Emergency Whistle",
+    "First Aid Kit",
+    "Headtorch",
+    "Sunscreen Applied",
+    "Poles Packed",
+    "Weather Checked"
+  ];
+
+  const kitColumns = document.getElementById('kitColumns');
+  const kitStatus = document.getElementById('kitStatus');
+  let checkedCount = 0;
+
+  kitItems.forEach(label => {
+    const item = document.createElement('div');
+    item.className = 'kit-item';
+    item.innerHTML = `<div class="box"></div><span class="label">${label}</span>`;
+    item.addEventListener('click', () => {
+      const wasChecked = item.classList.contains('checked');
+      item.classList.toggle('checked');
+      checkedCount += wasChecked ? -1 : 1;
+      updateKitStatus();
+    });
+    kitColumns.appendChild(item);
+  });
+
+  function updateKitStatus() {
+    if (checkedCount === kitItems.length) {
+      kitStatus.classList.add('ready');
+      kitStatus.textContent = "All packed — ready for the trail 🌿";
+    } else {
+      kitStatus.classList.remove('ready');
+      kitStatus.textContent = `${checkedCount} of ${kitItems.length} packed`;
+    }
+  }
+</script>
+
+</body>
+</html>
