@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RPE Effort Selector</title>
+<style>
+  :root {
+    --green: #16a34a;
+    --green-dark: #15803d;
+    --green-light: #dcfce7;
+    --black: #111111;
+    --white: #ffffff;
+    --gray: #6b7280;
+    --border: #e5e7eb;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--white);
+    color: var(--black);
+    padding: 20px;
+  }
+
+  .widget {
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 18px;
+  }
+
+  .header h2 {
+    margin: 0 0 4px 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--black);
+  }
+
+  .header p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--gray);
+  }
+
+  .scale {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 6px;
+    margin-bottom: 18px;
+  }
+
+  .scale button {
+    aspect-ratio: 1 / 1;
+    border-radius: 8px;
+    border: 2px solid var(--border);
+    background: var(--white);
+    color: var(--black);
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    padding: 0;
+  }
+
+  .scale button:hover {
+    border-color: var(--green);
+  }
+
+  .scale button.selected {
+    background: var(--green);
+    border-color: var(--green-dark);
+    color: var(--white);
+    transform: scale(1.08);
+  }
+
+  .result {
+    background: var(--green-light);
+    border: 1px solid var(--green);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+    min-height: 96px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  .result .rpe-value {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--green-dark);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .result .rpe-label {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--black);
+  }
+
+  .result .rpe-desc {
+    font-size: 13px;
+    color: #374151;
+    line-height: 1.4;
+  }
+
+  .result.empty .rpe-label {
+    color: var(--gray);
+    font-weight: 500;
+    font-size: 14px;
+  }
+
+  .notes-section {
+    margin-top: 16px;
+  }
+
+  .notes-section label {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--black);
+    margin-bottom: 6px;
+  }
+
+  .notes-section textarea {
+    width: 100%;
+    min-height: 70px;
+    resize: vertical;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--black);
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+
+  .notes-section textarea:focus {
+    border-color: var(--green);
+  }
+
+  .notes-section textarea::placeholder {
+    color: #9ca3af;
+  }
+
+  .copy-btn {
+    margin-top: 10px;
+    width: 100%;
+    background: var(--green);
+    color: var(--white);
+    border: none;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+
+  .copy-btn:hover {
+    background: var(--green-dark);
+  }
+
+  .copy-btn.copied {
+    background: var(--black);
+  }
+
+  .footer-note {
+    margin-top: 14px;
+    font-size: 11.5px;
+    color: var(--gray);
+    text-align: center;
+    line-height: 1.4;
+  }
+</style>
+</head>
+<body>
+
+<div class="widget">
+  <div class="header">
+    <h2>🌿 How Hard Did That Feel?</h2>
+    <p>Rate your effort — this is the one number no watch can give you.</p>
+  </div>
+
+  <div class="scale" id="scale"></div>
+
+  <div class="result empty" id="result">
+    <div class="rpe-label">Tap a number to log how the run felt</div>
+  </div>
+
+  <div class="notes-section">
+    <label for="notes">Anything worth remembering about this run?</label>
+    <textarea id="notes" placeholder="e.g. legs felt heavy from yesterday's session, held pace fine on the hills, new shoes felt good..."></textarea>
+    <button class="copy-btn" id="copyBtn">Copy Summary To Paste Into Notes</button>
+  </div>
+
+  <div class="footer-note">
+    RPE (Rate of Perceived Exertion) captures effort your body felt, independent of pace or heart rate. Copy your summary above straight into Run Notes & Reflections.
+  </div>
+</div>
+
+<script>
+  const levels = [
+    { value: 1,  label: "Very Easy",      desc: "Barely any effort. Could hold a full conversation without noticing you're running." },
+    { value: 2,  label: "Easy",           desc: "Light effort. Breathing calm, totally conversational." },
+    { value: 3,  label: "Comfortable",    desc: "Steady and relaxed. Could keep this up for hours." },
+    { value: 4,  label: "Moderate",       desc: "Working a little. Conversation is possible but broken up." },
+    { value: 5,  label: "Somewhat Hard",  desc: "Getting warm. Short sentences only." },
+    { value: 6,  label: "Hard",           desc: "Breathing noticeably harder. A few words at a time." },
+    { value: 7,  label: "Very Hard",      desc: "Tough pace. Talking is difficult now." },
+    { value: 8,  label: "Very, Very Hard",desc: "Close to your limit. Focused on holding on." },
+    { value: 9,  label: "Near Maximal",   desc: "Almost everything you have. Can't sustain this long." },
+    { value: 10, label: "Maximal",        desc: "Absolute max effort. Nothing left in the tank." }
+  ];
+
+  const scaleEl = document.getElementById('scale');
+  const resultEl = document.getElementById('result');
+  const notesEl = document.getElementById('notes');
+  const copyBtn = document.getElementById('copyBtn');
+  let selectedLevel = null;
+
+  levels.forEach(level => {
+    const btn = document.createElement('button');
+    btn.textContent = level.value;
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.scale button').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedLevel = level;
+      resultEl.classList.remove('empty');
+      resultEl.innerHTML = `
+        <div class="rpe-value">RPE ${level.value} / 10</div>
+        <div class="rpe-label">${level.label}</div>
+        <div class="rpe-desc">${level.desc}</div>
+      `;
+    });
+    scaleEl.appendChild(btn);
+  });
+
+  copyBtn.addEventListener('click', () => {
+    const notes = notesEl.value.trim();
+    let summary;
+    if (selectedLevel) {
+      summary = `RPE ${selectedLevel.value}/10 (${selectedLevel.label})`;
+      if (notes) summary += ` — ${notes}`;
+    } else if (notes) {
+      summary = notes;
+    } else {
+      summary = "No effort rating or notes added yet.";
+    }
+
+    navigator.clipboard.writeText(summary).then(() => {
+      const original = copyBtn.textContent;
+      copyBtn.textContent = "Copied ✓";
+      copyBtn.classList.add('copied');
+      setTimeout(() => {
+        copyBtn.textContent = original;
+        copyBtn.classList.remove('copied');
+      }, 1600);
+    });
+  });
+</script>
+
+</body>
+</html>
