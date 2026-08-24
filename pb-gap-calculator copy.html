@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PB Gap Calculator</title>
+<style>
+  :root {
+    --ppw-green: #2f6b3a;
+    --ppw-green-dark: #1f4d28;
+    --ppw-green-light: #eaf5ec;
+    --ppw-border: #cfe3d3;
+    --ppw-text: #1a2e1e;
+    --ppw-muted: #5c6f60;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: transparent;
+    color: var(--ppw-text);
+  }
+  .card {
+    background: #ffffff;
+    border: 1px solid var(--ppw-border);
+    border-radius: 14px;
+    padding: 24px;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+  .eyebrow {
+    color: var(--ppw-green);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  h1 { font-size: 20px; margin: 0 0 8px 0; }
+  .desc { font-size: 13px; color: var(--ppw-muted); margin-bottom: 18px; line-height: 1.4; }
+  .section-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ppw-text);
+    margin: 14px 0 6px 0;
+  }
+  .row { display: flex; gap: 10px; margin-bottom: 10px; }
+  .field { flex: 1; }
+  label {
+    display: block;
+    font-size: 11px;
+    color: var(--ppw-muted);
+    margin-bottom: 4px;
+  }
+  select, input {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid var(--ppw-border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--ppw-text);
+    background: #fff;
+  }
+  select:focus, input:focus {
+    outline: none;
+    border-color: var(--ppw-green);
+  }
+  .time-row { display: flex; gap: 6px; }
+  .time-row input { text-align: center; }
+  button {
+    width: 100%;
+    margin-top: 6px;
+    padding: 11px;
+    border: none;
+    border-radius: 8px;
+    background: var(--ppw-green);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  button:hover { background: var(--ppw-green-dark); }
+  .results {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--ppw-border);
+    display: none;
+  }
+  .results.show { display: block; }
+  .result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f5f1;
+  }
+  .result-row:last-child { border-bottom: none; }
+  .result-label { font-size: 13px; color: var(--ppw-muted); }
+  .result-value { font-size: 16px; font-weight: 700; color: var(--ppw-green-dark); }
+  .highlight {
+    background: var(--ppw-green-light);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-top: 4px;
+    margin-bottom: 4px;
+  }
+  .error { font-size: 12px; color: #b3402a; margin-top: 6px; display: none; }
+  .error.show { display: block; }
+
+  /* progress bar */
+  .progress-wrap { margin: 14px 0 4px 0; }
+  .progress-track {
+    width: 100%;
+    height: 10px;
+    background: #eef3ef;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--ppw-green), var(--ppw-green-dark));
+    border-radius: 999px;
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+  .progress-caption {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--ppw-muted);
+    margin-top: 4px;
+  }
+
+  /* splits table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 4px;
+    font-size: 12.5px;
+  }
+  th, td {
+    text-align: left;
+    padding: 7px 6px;
+    border-bottom: 1px solid #f0f5f1;
+  }
+  th {
+    color: var(--ppw-muted);
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  td.num, th.num { text-align: right; }
+
+  .note {
+    font-size: 11.5px;
+    color: var(--ppw-muted);
+    line-height: 1.5;
+    margin-top: 10px;
+    background: #f7faf7;
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--ppw-border);
+    margin: 18px 0;
+  }
+
+  /* toggle / info section */
+  .toggle {
+    margin-top: 6px;
+    border: 1px solid var(--ppw-border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .toggle-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 11px 14px;
+    background: var(--ppw-green-light);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ppw-green-dark);
+  }
+  .toggle-arrow { transition: transform 0.2s ease; font-size: 11px; }
+  .toggle-arrow.open { transform: rotate(90deg); }
+  .toggle-body {
+    display: none;
+    padding: 12px 14px;
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--ppw-text);
+  }
+  .toggle-body.show { display: block; }
+  .toggle-body ul { margin: 6px 0; padding-left: 18px; }
+  .toggle-body li { margin-bottom: 5px; }
+  .toggle-body strong { color: var(--ppw-green-dark); }
+
+  textarea {
+    width: 100%;
+    min-height: 90px;
+    padding: 10px 12px;
+    border: 1px solid var(--ppw-border);
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--ppw-text);
+    resize: vertical;
+    background: #fff;
+  }
+  textarea:focus { outline: none; border-color: var(--ppw-green); }
+
+  .unit-toggle {
+    display: flex;
+    background: var(--ppw-green-light);
+    border-radius: 8px;
+    padding: 3px;
+    margin-bottom: 16px;
+  }
+  .unit-btn {
+    flex: 1;
+    text-align: center;
+    padding: 7px 0;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--ppw-muted);
+    border-radius: 6px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .unit-btn.active {
+    background: var(--ppw-green);
+    color: #fff;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="eyebrow">Plant Powered Performance World</div>
+  <h1>PB Gap Calculator</h1>
+  <div class="desc">See exactly how much time you need to find to hit your target, the pace you'll need to hold, your projected splits, and what that time would look like across other distances.</div>
+
+  <div class="unit-toggle">
+    <div class="unit-btn active" id="unitKmBtn" onclick="setUnit('km')">Per KM</div>
+    <div class="unit-btn" id="unitMiBtn" onclick="setUnit('mi')">Per Mile</div>
+  </div>
+
+  <div class="section-label">Distance</div>
+  <select id="distance">
+    <option value="1">1K</option>
+    <option value="5" selected>5K</option>
+    <option value="10">10K</option>
+    <option value="10.55">10 Mile</option>
+    <option value="21.1">Half Marathon</option>
+    <option value="42.2">Marathon</option>
+  </select>
+
+  <div class="row">
+    <div class="field">
+      <label>Current PB</label>
+      <div class="time-row">
+        <input type="number" id="curH" placeholder="HH" min="0" max="23">
+        <input type="number" id="curM" placeholder="MM" min="0" max="59">
+        <input type="number" id="curS" placeholder="SS" min="0" max="59">
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="field">
+      <label>Target Time</label>
+      <div class="time-row">
+        <input type="number" id="tgtH" placeholder="HH" min="0" max="23">
+        <input type="number" id="tgtM" placeholder="MM" min="0" max="59">
+        <input type="number" id="tgtS" placeholder="SS" min="0" max="59">
+      </div>
+    </div>
+  </div>
+
+  <button onclick="calculate()">Calculate Gap</button>
+  <div class="error" id="error">Enter a valid current PB and target time (target must be faster).</div>
+
+  <div class="results" id="results">
+
+    <div class="highlight">
+      <div class="result-row">
+        <span class="result-label">Time to find</span>
+        <span class="result-value" id="timeDiff">—</span>
+      </div>
+      <div class="result-row">
+        <span class="result-label">Improvement needed</span>
+        <span class="result-value" id="pctDiff">—</span>
+      </div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-caption">
+        <span id="progressLabel">0% of the way there</span>
+        <span id="progressPaceGap">—</span>
+      </div>
+    </div>
+
+    <div class="result-row">
+      <span class="result-label">Current pace</span>
+      <span class="result-value" id="curPace">—</span>
+    </div>
+    <div class="result-row">
+      <span class="result-label">Target pace</span>
+      <span class="result-value" id="tgtPace">—</span>
+    </div>
+
+    <hr class="divider">
+
+    <div class="section-label">Target splits</div>
+    <table>
+      <thead>
+        <tr><th>%</th><th id="splitsDistHeader">Distance</th><th class="num">Split time</th></tr>
+      </thead>
+      <tbody id="splitsBody"></tbody>
+    </table>
+
+    <hr class="divider">
+
+    <div class="section-label">What your target time predicts elsewhere</div>
+    <table>
+      <thead>
+        <tr><th>Distance</th><th class="num">Equivalent time</th></tr>
+      </thead>
+      <tbody id="equivBody"></tbody>
+    </table>
+
+    <div class="note" id="paceNote"></div>
+
+    <hr class="divider">
+
+    <div class="toggle">
+      <div class="toggle-header" onclick="toggleSection('trainingTips')">
+        <span>🏃 How to actually close this gap</span>
+        <span class="toggle-arrow" id="trainingTipsArrow">▸</span>
+      </div>
+      <div class="toggle-body" id="trainingTips">
+        <ul>
+          <li><strong>Easy pace should stay easy.</strong> Most of your weekly mileage (roughly 80%) should be comfortable, conversational effort — this builds the aerobic base that lets your target pace feel sustainable rather than desperate.</li>
+          <li><strong>Add one pace-specific session a week.</strong> Intervals or tempo work at (or slightly faster than) your target pace teaches your body what that effort actually feels like.</li>
+          <li><strong>Small gaps (under 3%)</strong> are often about pacing and race-day execution more than fitness — practice even splits in training.</li>
+          <li><strong>Larger gaps (over 8%)</strong> usually need a full training block (8-16 weeks) of consistent mileage before the target is realistic.</li>
+          <li><strong>Retest periodically.</strong> A recent time trial or race result is a far better predictor than an old PB — update this calculator as your fitness changes.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="toggle">
+      <div class="toggle-header" onclick="toggleSection('paceRef')">
+        <span>📊 Quick pace reference</span>
+        <span class="toggle-arrow" id="paceRefArrow">▸</span>
+      </div>
+      <div class="toggle-body" id="paceRef">
+        <p style="margin-top:0;">Approximate finish times at your <strong>target pace</strong> across common distances, assuming even pacing throughout:</p>
+        <table id="paceRefTable"></table>
+      </div>
+    </div>
+
+    <div class="section-label" style="margin-top:16px;">Notes</div>
+    <div class="desc" style="margin-bottom:8px;">Jot down anything about this target — race you're building towards, conditions, how the last attempt felt.</div>
+    <textarea id="userNotes" placeholder="e.g. Aiming for this at the Lisbon Half in March. Last attempt at target pace felt controlled for first 15K, faded slightly after..."></textarea>
+  </div>
+</div>
+
+<script>
+const distanceLabels = {
+  "1": "1K", "5": "5K", "10": "10K", "10.55": "10 Mile",
+  "21.1": "Half Marathon", "42.2": "Marathon"
+};
+
+let currentUnit = 'km'; // 'km' or 'mi'
+let lastCurrent = null, lastTarget = null, lastDistance = null;
+
+function setUnit(unit) {
+  currentUnit = unit;
+  document.getElementById('unitKmBtn').classList.toggle('active', unit === 'km');
+  document.getElementById('unitMiBtn').classList.toggle('active', unit === 'mi');
+  if (lastCurrent !== null) {
+    renderResults(lastCurrent, lastTarget, lastDistance);
+  }
+}
+
+function toSeconds(h, m, s) {
+  h = parseInt(h) || 0;
+  m = parseInt(m) || 0;
+  s = parseInt(s) || 0;
+  return h * 3600 + m * 60 + s;
+}
+
+function formatTime(totalSeconds) {
+  totalSeconds = Math.max(0, Math.round(totalSeconds));
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = Math.round(totalSeconds % 60);
+  if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+
+function formatPace(secondsPerUnit) {
+  const m = Math.floor(secondsPerUnit / 60);
+  const s = Math.round(secondsPerUnit % 60);
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+
+// Riegel's formula: T2 = T1 * (D2/D1)^1.06
+function predictTime(t1, d1, d2) {
+  return t1 * Math.pow(d2 / d1, 1.06);
+}
+
+function calculate() {
+  const distance = parseFloat(document.getElementById('distance').value);
+  const current = toSeconds(
+    document.getElementById('curH').value,
+    document.getElementById('curM').value,
+    document.getElementById('curS').value
+  );
+  const target = toSeconds(
+    document.getElementById('tgtH').value,
+    document.getElementById('tgtM').value,
+    document.getElementById('tgtS').value
+  );
+
+  const errorEl = document.getElementById('error');
+  const resultsEl = document.getElementById('results');
+
+  if (current <= 0 || target <= 0 || target >= current) {
+    errorEl.classList.add('show');
+    resultsEl.classList.remove('show');
+    return;
+  }
+  errorEl.classList.remove('show');
+
+  lastCurrent = current;
+  lastTarget = target;
+  lastDistance = distance;
+
+  renderResults(current, target, distance);
+  resultsEl.classList.add('show');
+}
+
+function renderResults(current, target, distance) {
+  const diff = current - target;
+  const pctImprovement = (diff / current) * 100;
+  const unitLabel = currentUnit === 'km' ? 'km' : 'mi';
+  const distanceInUnit = currentUnit === 'km' ? distance : distance * 0.621371;
+  const curPaceUnitSec = current / distanceInUnit;
+  const tgtPaceUnitSec = target / distanceInUnit;
+
+  document.getElementById('timeDiff').textContent = formatTime(diff);
+  document.getElementById('pctDiff').textContent = pctImprovement.toFixed(1) + '%';
+  document.getElementById('curPace').textContent = formatPace(curPaceUnitSec) + ` /${unitLabel}`;
+  document.getElementById('tgtPace').textContent = formatPace(tgtPaceUnitSec) + ` /${unitLabel}`;
+
+  document.getElementById('progressFill').style.width = '0%';
+  document.getElementById('progressLabel').textContent = `Target is ${pctImprovement.toFixed(1)}% faster than your current PB`;
+  const paceGap = curPaceUnitSec - tgtPaceUnitSec;
+  document.getElementById('progressPaceGap').textContent = `${formatPace(paceGap)} /${unitLabel} faster needed`;
+
+  // Splits table for target time, shown in chosen unit
+  document.getElementById('splitsDistHeader').textContent = `Distance (${unitLabel})`;
+  const splitPercents = [25, 50, 75, 100];
+  let splitsHtml = '';
+  splitPercents.forEach(pct => {
+    const splitDist = (distanceInUnit * pct / 100);
+    const splitTime = target * (pct / 100);
+    splitsHtml += `<tr><td>${pct}%</td><td>${splitDist.toFixed(2)} ${unitLabel}</td><td class="num">${formatTime(splitTime)}</td></tr>`;
+  });
+  document.getElementById('splitsBody').innerHTML = splitsHtml;
+
+  // Equivalent performances at target time, using Riegel's formula (always keyed off km distances)
+  const otherDistances = Object.keys(distanceLabels).filter(d => parseFloat(d) !== distance);
+  let equivHtml = '';
+  otherDistances.forEach(d => {
+    const dNum = parseFloat(d);
+    const predicted = predictTime(target, distance, dNum);
+    equivHtml += `<tr><td>${distanceLabels[d]}</td><td class="num">${formatTime(predicted)}</td></tr>`;
+  });
+  document.getElementById('equivBody').innerHTML = equivHtml;
+
+  document.getElementById('paceNote').textContent =
+    `Equivalent times are estimated using Riegel's formula and assume similar training and conditions across distances — treat them as a rough guide, not a guarantee. To close a ${pctImprovement.toFixed(1)}% gap, most runners benefit from a mix of easy aerobic mileage and 1-2 sessions a week at or near target pace.`;
+
+  // Quick pace reference table: target pace applied evenly across common distances, in chosen unit
+  const refRows = [
+    { label: '1K', km: 1 },
+    { label: '5K', km: 5 },
+    { label: '10K', km: 10 },
+    { label: '10 Mile', km: 16.09 },
+    { label: 'Half Marathon', km: 21.1 },
+    { label: 'Marathon', km: 42.2 }
+  ];
+  let refHtml = `<tr><th>Distance</th><th class="num">At target pace</th></tr>`;
+  refRows.forEach(r => {
+    const distU = currentUnit === 'km' ? r.km : r.km * 0.621371;
+    refHtml += `<tr><td>${r.label}</td><td class="num">${formatTime(tgtPaceUnitSec * distU)}</td></tr>`;
+  });
+  document.getElementById('paceRefTable').innerHTML = refHtml;
+}
+
+function toggleSection(id) {
+  const body = document.getElementById(id);
+  const arrow = document.getElementById(id + 'Arrow');
+  body.classList.toggle('show');
+  arrow.classList.toggle('open');
+}
+</script>
+</body>
+</html>
