@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monthly Habit Tracker</title>
+<style>
+  :root {
+    --green: #16a34a;
+    --green-dark: #15803d;
+    --green-light: #dcfce7;
+    --black: #111111;
+    --white: #ffffff;
+    --gray: #6b7280;
+    --border: #e5e7eb;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--white);
+    color: var(--black);
+    padding: 20px;
+  }
+
+  .widget {
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 16px;
+  }
+
+  .header h2 {
+    margin: 0 0 4px 0;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--black);
+  }
+
+  .header p {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--gray);
+  }
+
+  .overall-track {
+    width: 100%;
+    height: 22px;
+    background: #f3f4f6;
+    border-radius: 11px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    margin-bottom: 6px;
+  }
+
+  .overall-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green) 0%, var(--green-dark) 100%);
+    width: 0%;
+    transition: width 0.3s ease;
+    border-radius: 11px 0 0 11px;
+  }
+
+  .overall-text {
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--gray);
+    font-weight: 600;
+    margin-bottom: 22px;
+  }
+
+  .overall-text .pct {
+    color: var(--green-dark);
+    font-weight: 700;
+  }
+
+  .columns {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+
+  .category h3 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--black);
+    margin: 0 0 4px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  .category .count {
+    font-size: 11px;
+    color: var(--gray);
+    margin-bottom: 10px;
+  }
+
+  .item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 0;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .item .box {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    border: 2px solid var(--border);
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+  }
+
+  .item.checked .box {
+    background: var(--green);
+    border-color: var(--green-dark);
+  }
+
+  .item.checked .box::after {
+    content: "✓";
+    color: var(--white);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .item span.label {
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: var(--black);
+    transition: color 0.15s ease;
+    flex: 1;
+  }
+
+  .item.checked span.label {
+    color: var(--gray);
+    text-decoration: line-through;
+  }
+
+  .item .remove-btn {
+    background: none;
+    border: none;
+    color: var(--gray);
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 2px;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+
+  .item:hover .remove-btn {
+    opacity: 1;
+  }
+
+  .add-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .add-row input {
+    flex: 1;
+    min-width: 0;
+    border: 2px solid var(--border);
+    border-radius: 7px;
+    padding: 6px 8px;
+    font-size: 12px;
+    font-family: inherit;
+    color: var(--black);
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+
+  .add-row input:focus {
+    border-color: var(--green);
+  }
+
+  .add-row button {
+    background: var(--green);
+    color: var(--white);
+    border: none;
+    border-radius: 7px;
+    padding: 0 12px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    flex-shrink: 0;
+  }
+
+  .add-row button:hover {
+    background: var(--green-dark);
+  }
+
+  @media (max-width: 480px) {
+    .columns {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="widget">
+  <div class="header">
+    <h2>🌿 Monthly Habit Tracker</h2>
+    <p>Work through this honestly at the end of every month. No judgement — just reflect, learn, go again.</p>
+  </div>
+
+  <div class="overall-track">
+    <div class="overall-fill" id="overallFill"></div>
+  </div>
+  <div class="overall-text" id="overallText">0 of 28 habits checked</div>
+
+  <div class="columns" id="columns"></div>
+</div>
+
+<script>
+  const categories = [
+    {
+      name: "Training Habits",
+      items: [
+        "Hit Monthly Mileage Target",
+        "Ran 3+ Times Per Week",
+        "Completed All Planned Long Runs",
+        "Completed All Tempo Sessions",
+        "Completed All Interval Sessions",
+        "Logged Every Single Session",
+        "Tried A New Route This Month",
+        "Ran In Different Weather Conditions",
+        "Increased Weekly Mileage Gradually",
+        "Completed A Trail Run This Month"
+      ]
+    },
+    {
+      name: "Recovery",
+      items: [
+        "Stretched After Every Run",
+        "Slept 7+ Hours Most Nights",
+        "Took Rest Days When Needed",
+        "Stayed Injury Free",
+        "Used A Foam Roller Regularly",
+        "Did A Mobility Session Weekly",
+        "Iced Any Sore Areas Promptly",
+        "Had At Least One Full Rest Day Per Week",
+        "Monitored Heart Rate Regularly",
+        "Listened To My Body And Adjusted Training"
+      ]
+    },
+    {
+      name: "Mindset & Fuel",
+      items: [
+        "Fuelled Properly Before Runs",
+        "Recovered With Nutrition After Runs",
+        "Stayed Consistent Despite Setbacks",
+        "Reviewed Weekly Progress Every Sunday",
+        "Set Intentions At The Start Of Each Week",
+        "Entered A Race Or Event",
+        "Celebrated Small Wins",
+        "Stayed Positive During Hard Sessions"
+      ]
+    }
+  ];
+
+  const columnsEl = document.getElementById('columns');
+  const overallFill = document.getElementById('overallFill');
+  const overallText = document.getElementById('overallText');
+
+  let totalItems = 0;
+  let checkedItems = 0;
+
+  function makeItem(list, label, countEl) {
+    const item = document.createElement('div');
+    item.className = 'item';
+    item.innerHTML = `<div class="box"></div><span class="label">${label}</span><button class="remove-btn" title="Remove">✕</button>`;
+
+    item.querySelector('.box').addEventListener('click', () => {
+      const wasChecked = item.classList.contains('checked');
+      item.classList.toggle('checked');
+      checkedItems += wasChecked ? -1 : 1;
+      updateOverall();
+    });
+    item.querySelector('.label').addEventListener('click', () => item.querySelector('.box').click());
+
+    item.querySelector('.remove-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (item.classList.contains('checked')) checkedItems -= 1;
+      totalItems -= 1;
+      item.remove();
+      updateOverall();
+      updateCount(list, countEl);
+    });
+
+    return item;
+  }
+
+  function updateCount(list, countEl) {
+    countEl.textContent = `${list.children.length} habits`;
+  }
+
+  categories.forEach(category => {
+    totalItems += category.items.length;
+
+    const col = document.createElement('div');
+    col.className = 'category';
+
+    const heading = document.createElement('h3');
+    heading.textContent = category.name;
+    const countEl = document.createElement('div');
+    countEl.className = 'count';
+    countEl.textContent = `${category.items.length} habits`;
+    col.appendChild(heading);
+    col.appendChild(countEl);
+
+    const list = document.createElement('div');
+    list.className = 'item-list';
+    col.appendChild(list);
+
+    category.items.forEach(label => {
+      list.appendChild(makeItem(list, label, countEl));
+    });
+
+    const addRow = document.createElement('div');
+    addRow.className = 'add-row';
+    addRow.innerHTML = `<input type="text" placeholder="Add your own habit..."><button>Add</button>`;
+    const input = addRow.querySelector('input');
+    const addBtn = addRow.querySelector('button');
+
+    function addHabit() {
+      const text = input.value.trim();
+      if (!text) return;
+      list.appendChild(makeItem(list, text, countEl));
+      totalItems += 1;
+      updateOverall();
+      updateCount(list, countEl);
+      input.value = '';
+      input.focus();
+    }
+
+    addBtn.addEventListener('click', addHabit);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') addHabit();
+    });
+
+    col.appendChild(addRow);
+    columnsEl.appendChild(col);
+  });
+
+  function updateOverall() {
+    const pct = totalItems > 0 ? Math.round((checkedItems / totalItems) * 100) : 0;
+    overallFill.style.width = pct + '%';
+    if (totalItems > 0 && checkedItems === totalItems) {
+      overallText.innerHTML = `<span class="pct">100%</span> — full month of good habits 🌿`;
+    } else {
+      overallText.innerHTML = `<span class="pct">${pct}%</span> — ${checkedItems} of ${totalItems} habits checked`;
+    }
+  }
+</script>
+
+</body>
+</html>
