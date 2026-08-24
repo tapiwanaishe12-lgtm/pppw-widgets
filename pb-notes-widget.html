@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PB Notes & Reflections</title>
+<style>
+  :root {
+    --ppw-green: #2f6b3a;
+    --ppw-green-dark: #1f4d28;
+    --ppw-green-light: #eaf5ec;
+    --ppw-border: #cfe3d3;
+    --ppw-text: #1a2e1e;
+    --ppw-muted: #5c6f60;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: transparent;
+    color: var(--ppw-text);
+  }
+  .card {
+    background: #ffffff;
+    border: 1px solid var(--ppw-border);
+    border-radius: 14px;
+    padding: 24px;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+  .eyebrow {
+    color: var(--ppw-green);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  h1 { font-size: 20px; margin: 0 0 8px 0; }
+  .desc { font-size: 13px; color: var(--ppw-muted); margin-bottom: 18px; line-height: 1.4; }
+  .section-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ppw-text);
+    margin: 14px 0 6px 0;
+  }
+  .row { display: flex; gap: 10px; margin-bottom: 10px; }
+  .field { flex: 1; }
+  label {
+    display: block;
+    font-size: 11px;
+    color: var(--ppw-muted);
+    margin-bottom: 4px;
+  }
+  select, input, textarea {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid var(--ppw-border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--ppw-text);
+    background: #fff;
+  }
+  select:focus, input:focus, textarea:focus {
+    outline: none;
+    border-color: var(--ppw-green);
+  }
+  textarea {
+    min-height: 90px;
+    resize: vertical;
+  }
+  button {
+    width: 100%;
+    margin-top: 6px;
+    padding: 11px;
+    border: none;
+    border-radius: 8px;
+    background: var(--ppw-green);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  button:hover { background: var(--ppw-green-dark); }
+  button.secondary {
+    background: #fff;
+    color: var(--ppw-green-dark);
+    border: 1px solid var(--ppw-border);
+    font-weight: 600;
+    margin-top: 8px;
+  }
+  button.secondary:hover { background: var(--ppw-green-light); }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--ppw-border);
+    margin: 18px 0;
+  }
+
+  .entry-list { margin-top: 4px; }
+  .entry {
+    background: #f7faf7;
+    border: 1px solid var(--ppw-border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .entry-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+  }
+  .entry-tag {
+    display: inline-block;
+    background: var(--ppw-green-light);
+    color: var(--ppw-green-dark);
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 999px;
+  }
+  .entry-date { font-size: 11px; color: var(--ppw-muted); }
+  .entry-text { font-size: 13px; line-height: 1.5; color: var(--ppw-text); white-space: pre-wrap; }
+  .entry-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+  }
+  .entry-actions span {
+    font-size: 11px;
+    color: var(--ppw-muted);
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  .entry-actions span:hover { color: var(--ppw-green-dark); }
+
+  .empty-state {
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--ppw-muted);
+    padding: 20px 10px;
+    border: 1px dashed var(--ppw-border);
+    border-radius: 10px;
+  }
+
+  .note {
+    font-size: 11.5px;
+    color: var(--ppw-muted);
+    line-height: 1.5;
+    margin-top: 14px;
+    background: #f7faf7;
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+
+  .prompts {
+    margin-top: 10px;
+  }
+  .prompts ul { margin: 4px 0 0 0; padding-left: 18px; }
+  .prompts li { font-size: 12px; color: var(--ppw-muted); margin-bottom: 4px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="eyebrow">Plant Powered Performance World</div>
+  <h1>PB Notes & Reflections</h1>
+  <div class="desc">Capture the context behind your numbers — how a PB attempt felt, what worked, what you'd change next time. The tables track the times; this is where the story lives.</div>
+
+  <div class="section-label">Distance / Context</div>
+  <select id="entryTag">
+    <option value="1K">1K</option>
+    <option value="5K" selected>5K</option>
+    <option value="10K">10K</option>
+    <option value="10 Mile">10 Mile</option>
+    <option value="Half Marathon">Half Marathon</option>
+    <option value="Marathon">Marathon</option>
+    <option value="General">General</option>
+  </select>
+
+  <div class="row" style="margin-top:10px;">
+    <div class="field">
+      <label>Date</label>
+      <input type="date" id="entryDate">
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="field">
+      <label>Note</label>
+      <textarea id="entryText" placeholder="e.g. Went out too fast on the first 2K, paid for it in the last mile. Legs felt fresh though — taper worked. Next time, hold back 5s/km early."></textarea>
+    </div>
+  </div>
+
+  <button onclick="addEntry()">Add Note</button>
+
+  <div class="prompts">
+    <div class="section-label" style="margin-top:12px;">Not sure what to write? Try:</div>
+    <ul>
+      <li>What went right in this attempt, and what would you repeat?</li>
+      <li>Where did it fall apart, if it did — pacing, fuelling, mindset?</li>
+      <li>What conditions or prep made the biggest difference?</li>
+      <li>What's one thing to change before the next attempt?</li>
+    </ul>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section-label">Your Notes</div>
+  <div class="entry-list" id="entryList">
+    <div class="empty-state" id="emptyState">No notes yet — your first entry will appear here.</div>
+  </div>
+
+  <button class="secondary" id="copyAllBtn" onclick="copyAll()" style="display:none;">Copy All Notes</button>
+
+  <div class="note">Notes are kept on this page only while it's open — they won't be saved if you refresh or close the tab, so use "Copy All Notes" to paste your entries somewhere permanent (like the Notion database above) before navigating away.</div>
+</div>
+
+<script>
+let entries = [];
+
+function todayISO() {
+  const d = new Date();
+  return d.toISOString().split('T')[0];
+}
+document.getElementById('entryDate').value = todayISO();
+
+function formatDisplayDate(iso) {
+  if (!iso) return '';
+  const [y, m, d] = iso.split('-');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${parseInt(d)} ${months[parseInt(m)-1]} ${y}`;
+}
+
+function addEntry() {
+  const tag = document.getElementById('entryTag').value;
+  const date = document.getElementById('entryDate').value || todayISO();
+  const text = document.getElementById('entryText').value.trim();
+
+  if (!text) return;
+
+  entries.unshift({ tag, date, text, id: Date.now() });
+  document.getElementById('entryText').value = '';
+  renderEntries();
+}
+
+function deleteEntry(id) {
+  entries = entries.filter(e => e.id !== id);
+  renderEntries();
+}
+
+function renderEntries() {
+  const listEl = document.getElementById('entryList');
+  const emptyEl = document.getElementById('emptyState');
+  const copyBtn = document.getElementById('copyAllBtn');
+
+  if (entries.length === 0) {
+    listEl.innerHTML = '<div class="empty-state" id="emptyState">No notes yet — your first entry will appear here.</div>';
+    copyBtn.style.display = 'none';
+    return;
+  }
+
+  copyBtn.style.display = 'block';
+  listEl.innerHTML = entries.map(e => `
+    <div class="entry">
+      <div class="entry-header">
+        <span class="entry-tag">${e.tag}</span>
+        <span class="entry-date">${formatDisplayDate(e.date)}</span>
+      </div>
+      <div class="entry-text">${escapeHtml(e.text)}</div>
+      <div class="entry-actions">
+        <span onclick="deleteEntry(${e.id})">Delete</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function copyAll() {
+  const text = entries
+    .slice()
+    .reverse()
+    .map(e => `[${formatDisplayDate(e.date)}] ${e.tag}\n${e.text}`)
+    .join('\n\n');
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copyAllBtn');
+    const original = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = original; }, 1500);
+  });
+}
+</script>
+</body>
+</html>
